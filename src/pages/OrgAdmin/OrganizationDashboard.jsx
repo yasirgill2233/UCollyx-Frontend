@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
+import InviteModal from './InviteModal';
 
 const OrganizationDashboard = () => {
   // Dynamic Data based on your uploaded screen
@@ -8,6 +10,10 @@ const OrganizationDashboard = () => {
     alerts: { withoutRoles: 4, conflicts: 0 }
   };
 
+  const navigate = useNavigate()
+
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
   const recentActions = [
     { id: 1, user: "Sarah Johnson", action: "added as Developer", time: "2 hours ago", icon: "👤" },
     { id: 2, user: "Mike Chen's", action: "role changed to Manager", time: "5 hours ago", icon: "⚙️" },
@@ -15,12 +21,18 @@ const OrganizationDashboard = () => {
     { id: 4, user: "3 team invitations", action: "sent", time: "2 days ago", icon: "📩" },
     { id: 5, user: "Billing plan", action: "upgraded to Business", time: "3 days ago", icon: "💳" }
   ];
+  
+    const onInvite = (newUser) => {
+      console.log(newUser)
+      alert(newUser.role)
+      setShowInviteModal(false)
+    };
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-12 font-sans text-left selection:bg-indigo-100">
       
       {/* --- Workspace Header --- */}
-      <div className="max-w-7xl mx-auto mb-12 flex justify-between items-end">
+      <div className="mx-auto mb-12 flex justify-between items-end">
         <div>
           <nav className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-3">
             <span>Workspace</span>
@@ -32,13 +44,12 @@ const OrganizationDashboard = () => {
         </div>
         
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">Export Data</button>
-          <button className="px-5 py-2.5 bg-indigo-600 rounded-xl text-xs font-bold text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">Invite Member</button>
+          <button onClick={()=>setShowInviteModal(true)} className="px-5 py-2.5 bg-indigo-600 rounded-xl text-xs font-bold text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">Invite Member</button>
         </div>
       </div>
 
       {/* --- Main Dashboard Grid --- */}
-      <div className="max-w-7xl mx-auto grid grid-cols-2 gap-10">
+      <div className="mx-auto grid grid-cols-2 gap-10">
         
         {/* Card 1: Users Overview */}
         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
@@ -86,7 +97,7 @@ const OrganizationDashboard = () => {
               </div>
             </div>
           </div>
-          <button className="mt-12 text-xs font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group/btn">
+          <button onClick={()=>navigate('/user-management')} className="mt-12 text-xs font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group/btn">
             Manage Users <span className="group-hover:translate-x-1 transition-transform">→</span>
           </button>
         </div>
@@ -116,7 +127,7 @@ const OrganizationDashboard = () => {
               </div>
             ))}
           </div>
-          <button className="mt-12 text-xs font-black text-indigo-600 flex items-center gap-2">
+          <button onClick={()=>navigate('/admin-projects-view')} className="mt-12 text-xs font-black text-indigo-600 flex items-center gap-2">
             View Projects <span>→</span>
           </button>
         </div>
@@ -178,6 +189,7 @@ const OrganizationDashboard = () => {
         </div>
 
       </div>
+      {showInviteModal && <InviteModal onClose={() => setShowInviteModal(false)} onInvite={onInvite} />}
     </div>
   );
 };

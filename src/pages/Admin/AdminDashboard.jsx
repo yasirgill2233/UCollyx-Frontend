@@ -39,7 +39,7 @@ const AdminDashboard = () => {
 
       <main className="flex-1">
         {/* Dashboard Content */}
-        <div className="p-8 max-w-[1200px] mx-auto">
+        <div className="p-8 mx-auto">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-[#111827]">Admin Dashboard</h1>
             <p className="text-gray-500 text-sm">Platform governance and security overview</p>

@@ -227,7 +227,7 @@ const OrganizationsScreen = () => {
 
         {/* Table Container */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
                 <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">

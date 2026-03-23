@@ -44,37 +44,35 @@ const Dashboard = () => {
   return (
     <div className="p-6 md:p-12 bg-[#f1f3f67c] min-h-screen font-sans text-slate-900 selection:bg-blue-100">
       {/* --- TOP BAR / HEADER --- */}
-      <header className="max-w-[1600px] mx-auto mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <header className="mx-auto mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-blue-600 font-bold text-xs uppercase tracking-[0.2em]">
-            <Activity size={14} /> Systems Online
-          </div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">
+         
+          <h1 className="text-3xl font-black tracking-tight text-slate-900">
             Welcome, <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Yasir Saleem</span>
           </h1>
           <p className="text-slate-500 font-medium">You have <span className="text-slate-900 font-bold underline decoration-rose-400">2 critical alerts</span> requiring immediate action.</p>
         </div>
 
         <div className="flex gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          {/* <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <div className="relative">
               <MessageSquare size={22} className="text-slate-600" />
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></span>
             </div>
-          </div>
-          <button className="h-14 px-6 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-slate-200">
+          </div> */}
+          {/* <button className="h-14 px-6 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-slate-200">
             Create Project +
-          </button>
+          </button> */}
         </div>
       </header>
 
-      <div className="max-w-[1600px] mx-auto grid grid-cols-12 gap-8">
+      <div className="mx-auto grid grid-cols-12 gap-8">
         
         {/* --- LEFT: MAIN FEED --- */}
         <div className="col-span-12 lg:col-span-8 space-y-8">
           
           {/* 1. Tasks Card */}
-          <section className="bg-white rounded-[32px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 group">
+          <section className="bg-white rounded-lg p-8 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 group">
             <div className="flex justify-between items-end mb-8">
               <div>
                 <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3">
@@ -92,7 +90,7 @@ const Dashboard = () => {
 
             <div className="grid gap-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between p-6 rounded-[24px] bg-[#fcfcfc] border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5 transition-all cursor-pointer group/item">
+                <div key={i} className="flex items-center justify-between p-6 rounded-lg bg-[#fcfcfc] border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5 transition-all cursor-pointer group/item">
                   <div className="flex items-center gap-6">
                     <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center font-black text-slate-300 group-hover/item:text-blue-500 group-hover/item:border-blue-200 transition-all">
                       0{i}
@@ -118,7 +116,7 @@ const Dashboard = () => {
           </section>
 
           {/* 2. Critical Alerts Card */}
-          <section className="bg-[#FFF5F5] rounded-[32px] p-8 border border-rose-100 shadow-sm overflow-hidden relative">
+          <section className="bg-[#FFF5F5] rounded-lg p-8 border border-rose-100 shadow-sm overflow-hidden relative">
              <div className="absolute top-0 right-0 w-32 h-32 bg-rose-200/20 rounded-full -mr-16 -mt-16 blur-3xl"></div>
              
              <div className="flex justify-between items-center mb-8 relative z-10">
@@ -133,7 +131,7 @@ const Dashboard = () => {
 
              <div className="grid md:grid-cols-2 gap-4 relative z-10">
                 {["Database connection timeout", "Payment gateway failing"].map((alert, idx) => (
-                  <div key={idx} className="bg-white/80 backdrop-blur-md border border-rose-200 p-6 rounded-[24px] hover:shadow-lg transition-all group/alert">
+                  <div key={idx} className="bg-white/80 backdrop-blur-md border border-rose-200 p-6 rounded-lg hover:shadow-lg transition-all group/alert">
                     <p className="font-black text-slate-800 text-base leading-tight mb-4 group-hover/alert:text-rose-600 transition-colors">{alert}</p>
                     <div className="flex items-center justify-between">
                        <StatusBadge text="HIGH" />
@@ -151,7 +149,7 @@ const Dashboard = () => {
         <div className="col-span-12 lg:col-span-4 space-y-8">
           
           {/* 3. Projects Card */}
-          <section className="bg-slate-900 rounded-[32px] p-8 text-white shadow-2xl shadow-slate-300 relative overflow-hidden">
+          <section className="bg-slate-900 rounded-lg p-8 text-white shadow-2xl shadow-slate-300 relative overflow-hidden">
              {/* Decorative Gradient Overlay */}
              <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-500/10 via-transparent to-transparent"></div>
 
@@ -186,7 +184,7 @@ const Dashboard = () => {
           </section>
 
           {/* 4. Infrastructure/Deployments */}
-          <section className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm">
+          <section className="bg-white rounded-lg p-8 border border-slate-100 shadow-sm">
              <div className="flex items-center gap-3 mb-8">
                 <div className="p-2.5 bg-slate-100 rounded-xl"><Layout size={20} className="text-slate-600" /></div>
                 <h2 className="font-black text-slate-800">Deployments</h2>
@@ -205,7 +203,7 @@ const Dashboard = () => {
           </section>
 
           {/* 5. Next Session / Meeting */}
-          <section className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[32px] p-8 text-white shadow-xl shadow-blue-200">
+          <section className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg p-8 text-white shadow-xl shadow-blue-200">
              <div className="flex items-center gap-3 mb-6">
                 <Video size={24} className="text-blue-200" />
                 <h2 className="font-black">Up Next</h2>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MoreVertical, UserPlus, Search, X, Mail, Shield, CheckCircle2, Calendar, Hash } from 'lucide-react';
+import InviteModal from './InviteModal';
 
 const initialUsers = [
   { id: 1, name: 'Sarah Gill', email: 'sarah.gill@gmail.com', role: 'Developer', team: 'Backend Team', status: 'Active', lastActive: '2 hours ago' },
@@ -10,12 +11,13 @@ const initialUsers = [
 ];
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState(initialUsers);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [users, setUsers] = useState(initialUsers);
 
   // Notifications logic
   const triggerToast = (msg) => {
@@ -61,7 +63,7 @@ export default function UsersManagement() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-end mb-10">
           <div>
@@ -167,52 +169,6 @@ export default function UsersManagement() {
   );
 }
 
-// Sub-Component: Invite Modal
-function InviteModal({ onClose, onInvite }) {
-  const [formData, setFormData] = useState({ email: '', role: 'Developer', team: 'Frontend Team' });
-
-  return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
-      <div className="bg-white rounded-[28px] w-full max-w-md shadow-2xl border border-slate-100 animate-in zoom-in-95">
-        <div className="p-8 pb-4 flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-black text-slate-900">Invite User</h2>
-            <p className="text-slate-500 text-sm">Add member to workspace.</p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full"><X size={20} /></button>
-        </div>
-        <div className="p-8 pt-2 space-y-4">
-          <input 
-            placeholder="Email Address" 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-          />
-          <select 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-            onChange={(e) => setFormData({...formData, role: e.target.value})}
-          >
-            <option value="Developer">Developer</option>
-            <option value="Manager">Manager</option>
-          </select>
-          <input 
-            placeholder="Team Name" 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({...formData, team: e.target.value})}
-          />
-        </div>
-        <div className="p-6 bg-slate-50/50 flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm">Cancel</button>
-          <button 
-            onClick={() => onInvite({ name: formData.email.split('@')[0], ...formData })}
-            className="flex-[1.5] py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg"
-          >
-            Send Invitation
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Sub-Component: User Details Modal (Drawer)
 function UserDetailsModal({ user, onClose, onDisable }) {

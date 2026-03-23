@@ -1,4 +1,8 @@
-import React, { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import ProjectSidebar from "./ProjectSidebar";
+import CreateProjectModal from "./CreateProjectModal";
+import TeamManagementModal from "./TeamManagementModal";
+import ArchiveProjectModal from "./ArchiveProjectModal";
 
 const AdminProjectsView = () => {
   // --- States ---
@@ -66,17 +70,14 @@ const AdminProjectsView = () => {
     { id: 5, name: "Dania Javeed", email: "dania@acme.com", avatar: "DJ" },
   ];
 
+  const currentProject = projects.find(
+    (p) => p.id === selectedProjectForSidebar?.id,
+  );
   const [selectedUserId, setSelectedUserId] = useState("");
 
   // --- Team Management State ---
   const [memberSearch, setMemberSearch] = useState("");
   const [projectTeam, setProjectTeam] = useState([]);
-
-  // --- Helper: Get Selected Project Object ---
-  const currentProject = useMemo(
-    () => projects.find((p) => p.id === selectedProjectId),
-    [selectedProjectId, projects],
-  );
 
   // --- Helper: Render Avatar Group ---
   const renderAvatarGroup = (memberIds = []) => {
@@ -201,11 +202,59 @@ const AdminProjectsView = () => {
     setProjectTeam((prev) => prev.filter((m) => m.id !== userId));
   };
 
-  const updateRole = (id, newRole) => {
-    setProjectTeam(
-      projectTeam.map((m) => (m.id === id ? { ...m, role: newRole } : m)),
+  const handleRoleChange = (memberId, newRole) => {
+    setProjectTeam((prev) =>
+      prev.map((m) => {
+        if (newRole === "Manager") {
+          // Agar naya role Manager hai, toh baaqi sab ko Member kar do
+          return m.id === memberId
+            ? { ...m, role: "Manager" }
+            : { ...m, role: "Member" };
+        } else {
+          // Agar normal Member select kiya hai toh sirf ussi ko update karo
+          return m.id === memberId ? { ...m, role: "Member" } : m;
+        }
+      }),
     );
   };
+
+  const handleSaveChanges = () => {
+    // 1. Team list mein se Manager ka naam dhoondein
+    const managerObj = projectTeam.find((m) => m.role === "Manager");
+
+    setProjects((prevProjects) =>
+      prevProjects.map((proj) => {
+        if (proj.id === selectedProjectId) {
+          return {
+            ...proj,
+            manager: managerObj ? managerObj.name : null, // Table mein naam update hoga
+            members: projectTeam.map((m) => m.id), // Members ki IDs list update hogi
+          };
+        }
+        return proj;
+      }),
+    );
+
+    // 2. Modal aur Dropdown close karein
+    setActiveModal(null);
+    setOpenDropdownId(null);
+  };
+
+  useEffect(() => {
+    if (activeModal === "team" && selectedProjectId) {
+      const currentProj = projects.find((p) => p.id === selectedProjectId);
+      if (currentProj) {
+        const initialTeam = currentProj.members.map((id) => {
+          const user = allUsers.find((u) => u.id === id);
+          return {
+            ...user,
+            role: user.name === currentProj.manager ? "Manager" : "Member",
+          };
+        });
+        setProjectTeam(initialTeam);
+      }
+    }
+  }, [activeModal, selectedProjectId]);
 
   // --- Handlers ---
   const handleInputChange = (e) => {
@@ -335,15 +384,15 @@ const AdminProjectsView = () => {
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filteredProjects.map((project) => (
-              <tr
-                onClick={() => {
-                  setSelectedProjectForSidebar(project);
-                  setActiveTab("Overview");
-                }}
-                key={project.id}
-                className="hover:bg-slate-50/30 group"
-              >
-                <td className="px-8 py-6">
+              <tr className="hover:bg-slate-50/30 group">
+                <td
+                  onClick={() => {
+                    setSelectedProjectForSidebar(project);
+                    setActiveTab("Overview");
+                  }}
+                  key={project.id}
+                  className="px-8 py-6 hover:cursor-pointer"
+                >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 italic">
                       P
@@ -374,14 +423,14 @@ const AdminProjectsView = () => {
                   {project.manager ? (
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-indigo-100 rounded-full border border-indigo-200 flex items-center justify-center text-[10px] font-bold text-indigo-600 italic">
-                        SK
-                      </div>
-                      <span className="text-sm font-bold text-slate-700">
                         {project.manager
                           .split(" ")
                           .map((n) => n[0])
                           .join("")
                           .toUpperCase()}
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">
+                        {project.manager}
                       </span>
                     </div>
                   ) : (
@@ -413,8 +462,9 @@ const AdminProjectsView = () => {
                         onClick={() => {
                           setSelectedProjectId(project.id);
                           setActiveModal("team");
+                          setOpenDropdownId(null); // Ye line add karein
                         }}
-                        className="w-full px-4 py-2 text-[11px] font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                        className="..."
                       >
                         👥 Manage Team
                       </button>
@@ -442,466 +492,63 @@ const AdminProjectsView = () => {
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           {/* 1. Create Project Modal (Image 7) */}
           {activeModal === "create" && (
-            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl w-full max-w-xl p-10 shadow-2xl animate-in zoom-in duration-200 overflow-y-auto max-h-[90vh]">
-                <div className="flex justify-between items-center mb-8">
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                    Create New Project
-                  </h2>
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className="text-slate-300 hover:text-slate-900 text-xl font-bold"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <form onSubmit={handleCreateSubmit} className="space-y-6">
-                  {/* Name */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Project Name
-                    </label>
-                    <input
-                      name="name"
-                      value={newProject.name}
-                      onChange={handleInputChange}
-                      placeholder="e.g. Mobile App Redesign"
-                      className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none transition-all"
-                      required
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Description
-                    </label>
-                    <textarea
-                      name="description"
-                      value={newProject.description}
-                      onChange={handleInputChange}
-                      placeholder="Describe the goals of this project..."
-                      className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none transition-all h-24 resize-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    {/* Status Selection */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Initial Status
-                      </label>
-                      <select
-                        name="status"
-                        value={newProject.status}
-                        onChange={handleInputChange}
-                        className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none bg-slate-50 cursor-pointer font-bold text-slate-700"
-                      >
-                        <option value="ACTIVE">Active</option>
-                        <option value="PAUSED">Paused</option>
-                        <option value="ARCHIVED">Archived</option>
-                      </select>
-                    </div>
-
-                    {/* Manager Selection */}
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Project Manager
-                      </label>
-                      <select
-                        name="manager"
-                        value={newProject.manager}
-                        onChange={handleInputChange}
-                        className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none bg-slate-50 cursor-pointer font-bold text-slate-700"
-                      >
-                        <option value="">Select Manager (Optional)</option>
-                        <option value="Sarah Khan">Sarah Khan</option>
-                        <option value="Mike Chen">Mike Chen</option>
-                        <option value="Alex Rivera">Alex Rivera</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 pt-2">
-                    <input
-                      type="checkbox"
-                      id="channel"
-                      className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      defaultChecked
-                    />
-                    <label
-                      htmlFor="channel"
-                      className="text-xs font-bold text-slate-500 italic"
-                    >
-                      Auto-create Slack/Team channel for this project
-                    </label>
-                  </div>
-
-                  <div className="flex gap-4 pt-6 border-t border-slate-50">
-                    <button
-                      type="button"
-                      onClick={() => setActiveModal(null)}
-                      className="flex-1 py-4 border border-slate-100 rounded-2xl font-black text-[10px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-                    >
-                      Create & Continue
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
+            <CreateProjectModal
+              activeModal={activeModal}
+              setActiveModal={setActiveModal}
+              newProject={newProject}
+              handleInputChange={handleInputChange}
+              handleCreateSubmit={handleCreateSubmit}
+              allUsers={allUsers}
+            />
           )}
 
           {/* --- TEAM MODAL (IMAGE 8 LOGIC) --- */}
           {activeModal === "team" && (
-            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-              <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-10 shadow-2xl animate-in zoom-in duration-200">
-                <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                      Manage Team
-                    </h2>
-                    <p className="text-sm text-slate-400 font-medium mt-1 italic italic">
-                      Select members for "{selectedProject?.name}"
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className="text-slate-300 hover:text-slate-900 text-xl font-bold"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* SEARCHABLE DROPDOWN & ADD BUTTON */}
-                <div className="flex gap-3 mb-10">
-                  <div className="flex-1">
-                    <select
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="w-full border border-slate-100 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-200 transition-all bg-slate-50/50 font-bold text-slate-600 appearance-none"
-                    >
-                      <option value="">Choose a member from list...</option>
-                      {allUsers.map((user) => (
-                        <option key={user.id} value={user.id}>
-                          {user.name} ({user.email})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <button
-                    onClick={handleAddMember}
-                    className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-100"
-                  >
-                    Add
-                  </button>
-                </div>
-
-                {/* MEMBERS LIST */}
-                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 mb-10">
-                  {projectTeam.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center justify-between p-5 border border-slate-50 rounded-2xl bg-white hover:border-indigo-100 transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs border border-indigo-100 uppercase italic">
-                          {member.avatar}
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-800">
-                            {member.name}
-                          </p>
-                          <p className="text-[11px] font-bold text-slate-400">
-                            {member.email}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6">
-                        <select
-                          name="manager" // Ye name "newProject" ki key se match hona chahiye
-                          value={newProject.manager}
-                          onChange={handleInputChange}
-                          className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-700"
-                        >
-                          <option value="">Select Manager (Optional)</option>
-                          {allUsers.map((user) => (
-                            <option key={user.id} value={user.name}>
-                              {user.name}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => removeMember(member.id)}
-                          className="text-slate-200 hover:text-rose-500 font-bold text-2xl"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-end gap-3 pt-6 border-t border-slate-50">
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className="px-8 py-3.5 rounded-2xl font-black text-[10px] text-slate-400 uppercase tracking-widest hover:bg-slate-50"
-                  >
-                    Discard
-                  </button>
-                  <button
-                    onClick={() => setActiveModal(null)}
-                    className="px-10 py-3.5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-black transition-all"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </div>
+            <TeamManagementModal
+              activeModal={activeModal}
+              setActiveModal={setActiveModal}
+              selectedProject={currentProject} // find kiya hua project
+              selectedUserId={selectedUserId}
+              setSelectedUserId={setSelectedUserId}
+              allUsers={allUsers}
+              projectTeam={projectTeam}
+              handleAddMember={handleAddMember}
+              handleRoleChange={handleRoleChange}
+              removeMember={removeMember}
+              handleSaveChanges={handleSaveChanges}
+            />
           )}
 
           {/* 3. Archive Modal (Image 9) */}
           {activeModal === "archive" && (
-            <div className="bg-white rounded-[2.5rem] w-full max-w-sm p-10 text-center shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
-              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-slate-100 text-3xl">
-                📦
-              </div>
-              <h2 className="text-xl font-black text-slate-800 mb-2 tracking-tight">
-                Archive Project?
-              </h2>
-              <p className="text-sm text-slate-400 font-bold leading-relaxed mb-10 px-4 italic">
-                Archive "{selectedProject?.name}"? It will no longer appear in
-                Active view but all data is preserved.
-              </p>
-              <div className="flex flex-col gap-3">
-                <button
-                  onClick={() => {
-                    setProjects(
-                      projects.map((p) =>
-                        p.id === selectedProject.id
-                          ? { ...p, status: "ARCHIVED" }
-                          : p,
-                      ),
-                    );
-                    setActiveModal(null);
-                  }}
-                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-black transition-all shadow-xl"
-                >
-                  Archive Project
-                </button>
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="w-full py-4 border border-slate-100 rounded-2xl font-black text-[10px] text-slate-400 uppercase tracking-widest hover:bg-slate-50 transition-all"
-                >
-                  Go Back
-                </button>
-              </div>
-            </div>
+            <ArchiveProjectModal
+              activeModal={activeModal}
+              setActiveModal={setActiveModal}
+              selectedProject={selectedProject}
+              projects={projects}
+              setProjects={setProjects}
+              setSelectedProjectForSidebar={setSelectedProjectForSidebar}
+            />
           )}
         </div>
       )}
 
       {/* --- PROJECT DETAIL SIDEBAR --- */}
-      {selectedProjectForSidebar && (
-        <div className="fixed inset-0 z-[150] flex justify-end">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px]"
-            onClick={() => setSelectedProjectForSidebar(null)}
+      {activeModal !== "archive" &&
+        activeModal !== "team" &&
+        selectedProjectForSidebar && (
+          <ProjectSidebar
+            selectedProjectForSidebar={selectedProjectForSidebar}
+            setSelectedProjectForSidebar={setSelectedProjectForSidebar}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            allUsers={allUsers}
+            setActiveModal={setActiveModal}
+            setSelectedProjectId={setSelectedProjectId}
+            setSelectedProject={setSelectedProject}
+            projects={projects} // Ye zaroori hai sync ke liye
           />
-
-          {/* Sidebar Content */}
-          <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-            {/* Header */}
-            <div className="p-8 border-b border-slate-50 flex justify-between items-start">
-              <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  {selectedProjectForSidebar.name}
-                </h2>
-                <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-tighter">
-                  {selectedProjectForSidebar.code}
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedProjectForSidebar(null)}
-                className="w-8 h-8 flex items-center justify-center text-slate-300 hover:text-slate-900 text-xl font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Tabs Navigation */}
-            <div className="flex px-8 gap-8 border-b border-slate-50">
-              {["Overview", "Team", "Channel"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-4 text-xs font-black uppercase tracking-widest transition-all relative ${
-                    activeTab === tab
-                      ? "text-blue-600"
-                      : "text-slate-400 hover:text-slate-600"
-                  }`}
-                >
-                  {tab}
-                  {activeTab === tab && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto p-8">
-              {/* 1. OVERVIEW TAB */}
-              {activeTab === "Overview" && (
-                <div className="space-y-8">
-                  <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Status
-                    </span>
-                    <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-lg border border-emerald-100 uppercase tracking-tighter italic">
-                      {selectedProjectForSidebar.status}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Manager
-                    </span>
-                    <span className="text-sm font-bold text-slate-800">
-                      {selectedProjectForSidebar.manager || "Unassigned"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Created
-                    </span>
-                    <span className="text-sm font-bold text-slate-800">
-                      {selectedProjectForSidebar.date}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Members
-                    </span>
-                    <span className="text-sm font-bold text-slate-800">
-                      {selectedProjectForSidebar.members?.length || 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Channel
-                    </span>
-                    <span className="text-sm font-bold text-indigo-600 italic">
-                      #{" "}
-                      {selectedProjectForSidebar.name
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-3 pt-10">
-                    <button
-                      onClick={() => {
-                        setActiveModal("team");
-                        setSelectedProjectId(selectedProjectForSidebar.id);
-                      }}
-                      className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all"
-                    >
-                      Manage Team
-                    </button>
-                    <button className="flex-1 border border-slate-100 py-4 rounded-2xl font-black text-[10px] text-indigo-600 uppercase tracking-widest hover:bg-slate-50 transition-all">
-                      Open Channel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveModal("archive");
-                        setSelectedProject(selectedProjectForSidebar);
-                      }}
-                      className="flex-1 border border-slate-100 py-4 rounded-2xl font-black text-[10px] text-slate-400 uppercase tracking-widest hover:bg-rose-50 hover:text-rose-500 transition-all"
-                    >
-                      Archive
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* 2. TEAM TAB */}
-              {activeTab === "Team" && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-6">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      {selectedProjectForSidebar.members?.length} Members
-                    </span>
-                    <button
-                      onClick={() => {
-                        setActiveModal("team");
-                        setSelectedProjectId(selectedProjectForSidebar.id);
-                      }}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-blue-700"
-                    >
-                      + Add Member
-                    </button>
-                  </div>
-                  {selectedProjectForSidebar.members.map((memberId) => {
-                    const user = allUsers.find((u) => u.id === memberId);
-                    return (
-                      <div
-                        key={memberId}
-                        className="flex items-center gap-4 p-4 border border-slate-50 rounded-2xl bg-white hover:border-indigo-100 transition-all"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-[10px] border border-indigo-100 uppercase italic">
-                          {user?.avatar || "?"}
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-800">
-                            {user?.name}
-                          </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase italic">
-                            Developer
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 3. CHANNEL TAB */}
-              {activeTab === "Channel" && (
-                <div className="h-full flex flex-col items-center justify-start pt-10">
-                  <div className="w-full p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm italic">
-                      💬
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-slate-800 italic italic tracking-tighter">
-                        #{" "}
-                        {selectedProjectForSidebar.name
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")}
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400">
-                        1 message . {selectedProjectForSidebar.members?.length}{" "}
-                        members
-                      </p>
-                    </div>
-                  </div>
-                  <button className="w-full py-4 border border-indigo-200 text-indigo-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-all italic italic">
-                    Open Full Channel →
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+        )}
     </div>
   );
 };

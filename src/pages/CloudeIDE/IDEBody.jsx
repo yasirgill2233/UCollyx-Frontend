@@ -73,7 +73,7 @@ const IDEBody = () => {
   };
 
   return (
-    <div className="flex flex-1 overflow-hidden h-[calc(100vh-10px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
+    <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
       
       {/* --- Sidebar: File Explorer --- */}
       {showExplorer && (
