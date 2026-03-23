@@ -260,14 +260,14 @@ const MyProject = () => {
                     <td className="px-8 py-6">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => navigate("/kanban-board")}
+                          onClick={() => navigate("/dev/board")}
                           className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm"
                           title="Kanban Board"
                         >
                           <Layout size={16} />
                         </button>
                         <button
-                          onClick={() => navigate("/ide")}
+                          onClick={() => navigate("/dev/ide")}
                           className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 transition-all shadow-sm"
                           title="Open IDE"
                         >

@@ -212,7 +212,7 @@ const MainDashboard = () => {
   // --- NAVIGATION HANDLERS ---
   // In functions ke zariye hum filtered data next page ko pass kar rahe hain
   const handleViewPriorityFeed = () => {
-    navigate("/red-card-alerts", {
+    navigate("/qa/alerts", {
       state: {
         title: "Priority Activity Feed",
         bugs: openBugsFeed, // Sirf Open status waale bugs
@@ -221,7 +221,7 @@ const MainDashboard = () => {
   };
 
   const handleViewAwaitingFix = () => {
-    navigate("/red-card-alerts", {
+    navigate("/qa/alerts", {
       state: {
         title: "Awaiting Fix Queue",
         bugs: awaitingFixList, // Sirf Awaiting Fix status waale bugs
@@ -230,7 +230,7 @@ const MainDashboard = () => {
   };
 
   const handleViewVerification = () => {
-    navigate("/verification", {
+    navigate("/qa/verify-task", {
       state: {
         title: "Verification Report",
         bugs: filteredData.filter(
@@ -255,7 +255,7 @@ const MainDashboard = () => {
 
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           <button
-            onClick={() => navigate("/report-bug-form")}
+            onClick={() => navigate("/qa/report-bug")}
             className="
   group flex items-center gap-2 
   bg-blue-600 hover:bg-rose-600 

@@ -81,7 +81,7 @@ const Dashboard = () => {
                 <p className="text-slate-400 text-sm mt-1 font-medium">Prioritized tasks for your current session</p>
               </div>
               <button
-                onClick={() => navigate("/kanban-board")}
+                onClick={() => navigate("/board")}
                 className="group/btn flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-blue-600 bg-blue-50 px-5 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white transition-all"
               >
                 Board View <ArrowUpRight size={14} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
@@ -107,7 +107,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <button onClick={() => navigate(`/kanban-board`)} className="p-3 rounded-full hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-all">
+                  <button onClick={() => navigate(`/board`)} className="p-3 rounded-full hover:bg-blue-50 text-slate-300 hover:text-blue-600 transition-all">
                     <ChevronRight size={24} />
                   </button>
                 </div>
@@ -155,7 +155,7 @@ const Dashboard = () => {
 
              <div className="flex justify-between items-center mb-8 relative z-10">
                 <h2 className="text-xl font-black tracking-tight">Active Projects</h2>
-                <button onClick={() => navigate("/projects")} className="text-[10px] font-black text-blue-400 tracking-[0.2em] uppercase">Browse</button>
+                <button onClick={() => navigate("/my-projects")} className="text-[10px] font-black text-blue-400 tracking-[0.2em] uppercase">Browse</button>
              </div>
 
              <div className="space-y-8 relative z-10">

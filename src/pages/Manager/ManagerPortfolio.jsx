@@ -160,7 +160,7 @@ const ManagerPortfolio = () => {
                     <MiniStat label="Done" val={p.done} color="text-emerald-500" />
                 </div>
                 <button 
-                  onClick={() => navigate(`/project-detail-view`, { state: { project: p } })}
+                  onClick={() => navigate(`/manager/details`, { state: { project: p } })}
                   className="bg-slate-50 text-[10px] font-black text-slate-600 px-4 py-2 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1 group/btn"
                 >
                     DETAILS 

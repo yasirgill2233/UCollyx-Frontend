@@ -142,7 +142,7 @@ const ProjectsPage = () => {
         {getCurrentDirectory().map((item) => (
           <div 
             key={item.id}
-            onDoubleClick={() => item.type === 'folder' ? setCurrentPath([...currentPath, item]) : navigate(`/ide/${item.id}`, { state: { folderData: item } })}
+            onDoubleClick={() => item.type === 'folder' ? setCurrentPath([...currentPath, item]) : navigate(`/dev/ide/${item.id}`, { state: { folderData: item } })}
             onContextMenu={(e) => {
                 e.preventDefault();
                 setContextMenu({ x: e.pageX, y: e.pageY, item });
@@ -180,7 +180,7 @@ const ProjectsPage = () => {
              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest truncate">{contextMenu.item.name}</p>
           </div>
           <button 
-            onClick={() => navigate(`/ide/${contextMenu.item.id}`, { state: { folderData: contextMenu.item } })}
+            onClick={() => navigate(`/dev/ide/${contextMenu.item.id}`, { state: { folderData: contextMenu.item } })}
             className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2.5 transition-colors"
           >
             <Terminal size={15} /> Open in UCollyx IDE

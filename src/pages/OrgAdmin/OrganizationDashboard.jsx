@@ -97,7 +97,7 @@ const OrganizationDashboard = () => {
               </div>
             </div>
           </div>
-          <button onClick={()=>navigate('/user-management')} className="mt-12 text-xs font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group/btn">
+          <button onClick={()=>navigate('/org-admin/users')} className="mt-12 text-xs font-black text-indigo-600 hover:text-indigo-700 flex items-center gap-2 group/btn">
             Manage Users <span className="group-hover:translate-x-1 transition-transform">→</span>
           </button>
         </div>
@@ -127,7 +127,7 @@ const OrganizationDashboard = () => {
               </div>
             ))}
           </div>
-          <button onClick={()=>navigate('/admin-projects-view')} className="mt-12 text-xs font-black text-indigo-600 flex items-center gap-2">
+          <button onClick={()=>navigate('/org-admin/projects')} className="mt-12 text-xs font-black text-indigo-600 flex items-center gap-2">
             View Projects <span>→</span>
           </button>
         </div>

@@ -113,9 +113,9 @@ const KanbanBoard = () => {
   return (
     <div className="pt-6 bg-[#F8FAFC] min-h-screen font-sans">
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex gap-6 overflow-x-auto px-6 pb-10 h-[calc(100vh-100px)]">
+        <div className="flex gap-4 overflow-x-auto px-2 pb-10 h-[calc(100vh-64px)]">
           {data?.columns && Object.values(data.columns).map((column) => (
-            <div key={column.id} className="bg-slate-100/50 rounded-[32px] p-4 flex flex-col min-w-[320px] max-w-[320px] h-full border border-slate-200/50">
+            <div key={column.id} className="bg-slate-100/50 rounded-lg p-4 flex flex-col w-[20%] h-full border border-slate-200/50">
               <div className="flex justify-between items-center mb-5 px-2">
                 <div className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full ${column.id === 'backlog' ? 'bg-slate-400' : 'bg-blue-400'}`} />

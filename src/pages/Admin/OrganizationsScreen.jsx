@@ -437,7 +437,7 @@ const OrganizationsScreen = () => {
             <div className="p-6 border-t border-slate-100 bg-slate-50/30 flex gap-4">
               <button
                 onClick={() =>
-                  navigate(`/members-and-roles/${selectedOrg.id}`, {
+                  navigate(`/super-admin/roles/${selectedOrg.id}`, {
                     state: {
                       orgName: selectedOrg.name,
                       adminEmail: selectedOrg.email,

@@ -101,7 +101,7 @@ const onDragEnd = (result) => {
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {Object.values(data.columns).map((column) => (
-            <div key={column.id} className="bg-gray-50/50 rounded-2xl p-4 flex flex-col min-h-[75vh] border border-gray-100/50">
+            <div key={column.id} className="bg-gray-100 rounded-2xl p-4 flex flex-col min-h-[75vh] border border-gray-100/50">
               <div className="flex justify-between items-center mb-5 px-1">
                 <h3 className="font-bold text-slate-800 text-sm tracking-tight">{column.title}</h3>
                 <span className="bg-white border border-gray-200 text-gray-500 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">

@@ -37,9 +37,9 @@ const ProjectTasksView = () => {
       {/* HEADER SECTION */}
       <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-30 shadow-sm">
         <div className="flex items-center gap-6">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg active:scale-95">
+          {/* <button className="bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg active:scale-95">
             <Plus size={20} /> Add New Task
-          </button>
+          </button> */}
           
           <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
             <button 
@@ -142,17 +142,7 @@ const ProjectTasksView = () => {
               </table>
             </div>
           ) : (
-            /* --- KANBAN BOARD PLACEHOLDER --- */
             <KanbanBoard/>
-            // <div className="h-full flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-[32px] animate-in zoom-in-95 duration-300">
-            //   <div className="p-6 bg-blue-50 rounded-full text-blue-600 mb-4">
-            //     <Layout size={48} />
-            //   </div>
-            //   <h2 className="text-2xl font-black text-slate-800 italic">Kanban Board Mode</h2>
-            //   <p className="text-slate-400 font-bold mt-2 text-center max-w-sm">
-            //     Kanban layout is ready to be active. Please provide the design image to populate the columns (To-Do, In-Progress, Done).
-            //   </p>
-            // </div>
           )}
         </div>
 

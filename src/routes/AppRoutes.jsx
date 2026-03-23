@@ -24,7 +24,6 @@ import TeamActivity from "../pages/Manager/TeamActivity/TeamActivity";
 import ProjectTasksView from "../pages/Manager/Tasks/ProjectTasksView";
 import MainDashboard from "../pages/QualityAssurance/MainDashboard";
 import RedCardsAlerts from "../pages/QualityAssurance/RedCardAlerts";
-import AlertDetailsSidebar from "../pages/QualityAssurance/AlertDetailsSidebar";
 import ReportBugForm from "../pages/QualityAssurance/ReportBugForm";
 import VerificationPage from "../pages/QualityAssurance/VerificationPage";
 import OrganizationDashboard from "../pages/OrgAdmin/OrganizationDashboard";
@@ -33,60 +32,92 @@ import UsersManagement from "../pages/OrgAdmin/UserManagement";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import OrganizationsScreen from "../pages/Admin/OrganizationsScreen";
 import MembersAndRoles from "../pages/Admin/MembersAndRoles";
+import PageLoader from "../components/ui/PageLoader";
+import { Suspense, lazy } from "react";
+
+// const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 
 function AppRoutes() {
   return (
+      <Suspense fallback={<PageLoader />}>
       <Routes>
+        {/* --- PUBLIC / AUTH ROUTES --- */}
+        <Route path="/">
+          <Route index element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="verify" element={<Verify />} />
+          <Route path="workspace-selection" element={<WorkspaceSelection />} />
+          <Route path="workspace-setup" element={<WorkspaceSetup />} />
+          <Route path="join-workspace" element={<JoinWorkspaceFlow />} />
+          <Route path="request-successful" element={<RequestSuccessful />} />
+          <Route path="sign-out" element={<SignOutModal />} />
+          <Route path="signed-out-success" element={<SignedOutSuccess />} />
+        </Route>
 
-        {/* Authentication/Authorization */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify" element={<Verify />} />
-        <Route path="/workspace-selection" element={<WorkspaceSelection />} />
-        <Route path="/workspace-setup" element={<WorkspaceSetup />} />
-        <Route path="/join-workspace" element={<JoinWorkspaceFlow />} />
-        <Route path="/request-successful" element={<RequestSuccessful />} />
-        <Route path="/sign-out" element={<SignOutModal />} />
-        <Route path="/signed-out-success" element={<SignedOutSuccess />} />
+        {/* --- PROTECTED APP ROUTES (Inside Layout) --- */}
+        <Route element={<Main />}>
 
-        {/* Developer */}
-        <Route path="/" element={<Main />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="/ide/:projectId" element={<IDEBody />} />
-          <Route path="/ide" element={<IDEBody />} />
-          <Route path="my-projects" element={<MyProject />} />
-          <Route path="issues" element={<IssuesDashboard />} />
-          <Route path="projects" element={<ProjectsPage />} />
-          <Route path="dev-chat" element={<DevChat />} />
-          <Route path="kanban-board" element={<KanbanBoard />} />
-          <Route path="meetings" element={<MeetingsPage />} />
+          {/* Developer Group */}
+          <Route path="dev">
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="my-projects" element={<MyProject />} />
+            <Route path="issues" element={<IssuesDashboard />} />
+            <Route path="board" element={<KanbanBoard />} />
+            <Route path="ide/:projectId?" element={<IDEBody />} />
+            <Route path="chat" element={<DevChat />} />
+            <Route path="projects-dir" element={<ProjectsPage />} />
+            <Route path="meetings" element={<MeetingsPage />} />
+          </Route>
 
-          {/* Manager */}
-          <Route path="manager-portfolio" element={<ManagerPortfolio />} />
-          <Route path="team-activity" element={<TeamActivity />} />
-          <Route path="project-tasks-view" element={<ProjectTasksView />} />
-          <Route path="project-detail-view" element={<ProjectDetailView />} />
+          {/* Manager Group */}
+          <Route path="manager">
+            <Route path="portfolio" element={<ManagerPortfolio />} />
+            <Route path="activity" element={<TeamActivity />} />
+            <Route path="tasks" element={<ProjectTasksView />} />
+            <Route path="details" element={<ProjectDetailView />} />
 
-          {/* Quality Assurance */}
-          <Route path="main-dashboard" element={<MainDashboard />} />
-          <Route path="red-card-alerts" element={<RedCardsAlerts />} />
-          <Route path="report-bug-form" element={<ReportBugForm />} />
-          <Route path="verification" element={<VerificationPage />} />
+            <Route path="ide/:projectId?" element={<IDEBody />} />
+            <Route path="chat" element={<DevChat />} />
+            <Route path="projects-dir" element={<ProjectsPage />} />
 
-          {/* Org Admin */}
-          <Route path="org-dashboard" element={<OrganizationDashboard />} />
-          <Route path="admin-projects-view" element={<AdminProjectsView />} />
-          <Route path="user-management" element={<UsersManagement />} />
+            <Route path="meetings" element={<MeetingsPage />} />
+          </Route>
 
-          {/* Super Admin */}
-          <Route path="admin-dashboard" element={<AdminDashboard />} />
-          <Route path="orgs-screen" element={<OrganizationsScreen />} />
-          <Route path="members-and-roles" element={<MembersAndRoles />} />
-          <Route path="members-and-roles/:orgId" element={<MembersAndRoles />} />
+          {/* QA Group */}
+          <Route path="qa">
+            <Route path="dashboard" element={<MainDashboard />} />
+            <Route path="alerts" element={<RedCardsAlerts />} />
+            <Route path="report-bug" element={<ReportBugForm />} />
+            <Route path="verify-task" element={<VerificationPage />} />
+
+            <Route path="board" element={<KanbanBoard />} />
+            <Route path="chat" element={<DevChat />} />
+            <Route path="projects-dir" element={<ProjectsPage />} />
+
+            <Route path="meetings" element={<MeetingsPage />} />
+          </Route>
+
+          {/* Organization Admin Group */}
+          <Route path="org-admin">
+            <Route path="dashboard" element={<OrganizationDashboard />} />
+            <Route path="projects" element={<AdminProjectsView />} />
+            <Route path="users" element={<UsersManagement />} />
+          </Route>
+
+          {/* Super Admin Group */}
+          <Route path="super-admin">
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="orgs" element={<OrganizationsScreen />} />
+            <Route path="roles" element={<MembersAndRoles />} />
+            <Route path="roles/:orgId" element={<MembersAndRoles />} />
+          </Route>
 
         </Route>
+
+        {/* 404 - Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </Suspense>
   );
 }
 

@@ -1,26 +1,56 @@
 import React, { useState } from "react";
-import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
   const navigate = useNavigate();
 
-  const handleLogin = () => {
+  const handleLogin = (e) => {
+    e.preventDefault(); // Page refresh rokne ke liye
+    
+    if (!email || !password) return;
 
-    // login logic (API call etc)
+    setIsLoading(true);
 
-    navigate("/dashboard"); // redirect after login
+    // Simulation for login (1 second wait)
+    setTimeout(() => {
+      const userEmail = email.toLowerCase();
+
+      // --- DYNAMIC REDIRECT LOGIC ---
+      if (userEmail.includes("dev")) {
+        navigate("/dev/dashboard");
+      } else if (userEmail.includes("manager")) {
+        navigate("/manager/portfolio");
+      } else if (userEmail.includes("qa")) {
+        navigate("/qa/dashboard");
+      } else if (userEmail.includes("orgadmin")) {
+        navigate("/org-admin/dashboard");
+        } else if (userEmail.includes("superadmin")) {
+        navigate("/super-admin/dashboard");
+      } else {
+        // Default Developer Dashboard
+        navigate("/");
+      }
+      
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
     <div className="flex justify-center items-center h-screen bg-white shadow-2xl">
-      <div className="flex flex-col w-[30%] h-[75%] border border-b-default rounded-2xl p-8 gap-8 items-center bg-white">
+      <div className="flex flex-col w-[30%] h-fit border border-b-default rounded-2xl p-8 gap-8 items-center bg-white shadow-sm">
         
-        <div className="w-full h-[120px] flex flex-col items-center justify-center gap-2 mt-12">
-          <div className=" bg-indigo-600 p-4 rounded-xl mb-2"><LogIn size={20} className="text-white" /></div>
+        <div className="w-full h-[120px] flex flex-col items-center justify-center gap-2 mt-4">
+          <div className="bg-indigo-600 p-4 rounded-xl mb-2">
+            <LogIn size={20} className="text-white" />
+          </div>
           <p className="text-2xl font-bold text-default-text">Welcome back to UCollyx</p>
-          <p className="text-default-text">Sign in to your account</p>
+          <p className="text-default-text text-gray-500">Sign in to your account</p>
         </div>
 
         {/* Email Field */}
@@ -31,9 +61,12 @@ export default function Login() {
               <Mail size={20} className="text-gray-400" />
             </div>
             <input 
-              type="text" 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="rounded-lg border border-b-default p-4 pl-12 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500" 
               placeholder="Enter Email Address"
+              required
             />
           </div>
         </div>
@@ -47,8 +80,11 @@ export default function Login() {
             </div>
             <input 
               type={showPassword ? "text" : "password"} 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="rounded-lg border border-b-default p-4 pl-12 pr-12 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500" 
               placeholder="Enter Password"
+              required
             />
             <button 
               type="button"
@@ -60,16 +96,34 @@ export default function Login() {
           </div>
         </div>
         
-        <button className="rounded-lg bg-primary-500 text-white p-4 w-full hover:bg-primary-700 transition-colors hover:cursor-pointer" onClick={handleLogin}>Sign In</button>
+        {/* Sign In Button with Loading functionality */}
+        <button 
+          className="rounded-lg bg-indigo-600 text-white p-4 w-full hover:bg-indigo-700 transition-colors hover:cursor-pointer flex justify-center items-center gap-2 disabled:opacity-50" 
+          onClick={handleLogin}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              Signing in...
+            </>
+          ) : (
+            "Sign In"
+          )}
+        </button>
         
         <hr className="border-b-default w-full"/>
         
-        <div>
+        <div className="text-sm">
           <span>Dont have an account? </span>
-          <span onClick={()=>navigate('/register')} className="text-primary-500 hover:text-primary-700 hover:cursor-pointer">Create One</span>
+          <span 
+            onClick={() => navigate('/register')} 
+            className="text-indigo-600 hover:text-indigo-800 hover:cursor-pointer font-semibold"
+          >
+            Create One
+          </span>
         </div>
       </div>
     </div>
   );
 }
-
