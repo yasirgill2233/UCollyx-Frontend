@@ -110,7 +110,7 @@ const MeetingsPage = () => {
                 meeting={meeting} 
                 onJoin={() => meeting.status === 'Live' && setActiveModal('join')} 
                />
-            )) : <p className="text-slate-400 text-sm italic">No upcoming meetings found...</p>}
+            )) : <div className="p-8 text-center text-slate-400 text-sm w-full h-[9vh] rounded-lg shadow-sm flex justify-center items-center">No upcoming meetings found</div>}
           </div>
         </section>
 
