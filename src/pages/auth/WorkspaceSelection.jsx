@@ -11,19 +11,10 @@ export default function WorkspaceSelection() {
     useEffect(() => {
     const checkUserWorkspaces = async () => {
         try {
-            const res = await API.get('/workspace/my-workspaces');
+            const res = await API.get('/workspace/workspaces');
             const list = res.data.data;
-            console.log(list)
-
-            // if (list.length === 1) {
-            //     // Agar sirf 1 workspace hai, auto-redirect to dashboard
-            //     // navigate(`/${list[0].slug}/dashboard`);
-            //     navigate("/workspace-selection");
-            // } else if (list.length > 1) {
-            //     // Agar 1 se zyada hain, to list state mein save karein (Select mode)
-            //     setWorkspaces(list);
-            // }
-            // Agar 0 hain, to screen ruk kar options dikhayegi (Create/Join)
+            setWorkspaces(list);
+        
         } catch (err) {
             console.error("Workspace fetch failed", err);
         } finally {

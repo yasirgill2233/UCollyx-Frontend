@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import VideoCallModal from "./Video/VideoCallModadl";
+import JitsiVideoCall from "./Video/JitsiVideoCall";
 import {
   Hash,
   MessageSquare,
@@ -13,6 +15,7 @@ import {
   BellIcon,
   MoreHorizontal,
   Smile,
+  Calendar,
 } from "lucide-react";
 import EmojiPicker from "emoji-picker-react"; // Library Import
 // Components Imports
@@ -23,6 +26,8 @@ import GlobalSearchModal from "./GlobalSearchModal";
 import NotificationPopover from "./NotificationPopOver";
 import UserProfileSidebar from "./UserProfileSidebar";
 import AddMemberModal from "./AddMemberModal";
+import ScheduleMeetingModal from "./Video/ScheduleMeetingModal";
+import MyVideoCall from "./Video/MyVideoCall";
 
 const DevChat = () => {
   // 1. States for Data Handling
@@ -32,6 +37,48 @@ const DevChat = () => {
   });
   const [inputText, setInputText] = useState("");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  // 1. State for Schedule Modal
+const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+
+// 2. Schedule Handler
+// const handleScheduleMeeting = (meeting) => {
+//   const meetingMessage = {
+//     id: Date.now(),
+//     user: "System",
+//     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+//     isMe: false,
+//     type: "meeting_card", // Naya message type
+//     meetingDetails: meeting,
+//     text: `Scheduled a meeting: ${meeting.title}`
+//   };
+
+//   setChatData((prev) => ({
+//     ...prev,
+//     [activeChat.name]: [...(prev[activeChat.name] || []), meetingMessage],
+//   }));
+// };
+
+const handleScheduleMeeting = () => {
+  const callMessage = {
+    id: Date.now(),
+    user: "Yasir", // Current Logged in User
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    text: "Started a video call",
+    type: "call", // Unique type for styling
+    isMe: true,
+  };
+
+  // 1. Chat list mein add karein
+  setChatData((prev) => ({
+    ...prev,
+    [activeChat.name]: [...(prev[activeChat.name] || []), callMessage],
+  }));
+
+  // 2. Local modal open karein
+  setIsVideoModalOpen(true);
+};
 
   const [channels, setChannels] = useState([
     "AI Project",
@@ -488,26 +535,34 @@ const DevChat = () => {
                 >
                   {msg.user[0]}
                 </div>
-                <div className={`flex flex-col ${msg.isMe ? "items-end" : ""}`}>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="font-black text-[13px] text-slate-800">
-                      {msg.user}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                      {msg.time}
-                    </span>
-                    {/* {msg.isTeacher && <span className="text-[9px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-black uppercase border border-blue-100">Mentor</span>} */}
-                  </div>
-                  <div
-                    className={`px-5 py-2 text-[14px] leading-relaxed max-w-lg shadow-sm ${
-                      msg.isMe
-                        ? "bg-white text-slate-600 rounded shadow-blue-100"
-                        : "bg-white text-slate-600 border border-slate-100 rounded-tl-none"
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
+               {/* Messages List Loop ke andar logic */}
+<div className={`px-5 py-3 text-[14px] leading-relaxed max-w-lg shadow-sm rounded-2xl ${
+  msg.isMe ? "bg-white text-slate-600 shadow-blue-100" : "bg-white text-slate-600 border border-slate-100"
+}`}>
+  {msg.type === "call" ? (
+    // CALL CARD UI
+    <div className="flex flex-col gap-3 min-w-[240px]">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-indigo-200">
+          <Video size={18} className="text-white" />
+        </div>
+        <div>
+          <p className="font-bold text-slate-800 text-sm">Video Meeting</p>
+          <p className="text-[11px] text-slate-400">Started by {msg.user}</p>
+        </div>
+      </div>
+      <button 
+        onClick={() => setIsVideoModalOpen(true)}
+        className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
+      >
+        Join Meeting <Plus size={14} strokeWidth={3} />
+      </button>
+    </div>
+  ) : (
+    // NORMAL TEXT
+    msg.text
+  )}
+</div>
               </div>
             ))
           ) : (
@@ -600,8 +655,17 @@ const DevChat = () => {
                 />
                 <Video
                   className="cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => setIsVideoModalOpen(true)}
                   size={19}
                 />
+                {/* Chota Arrow for Scheduling */}
+  <div 
+    className="cursor-pointer hover:text-blue-600 text-slate-400 transition-all p-0.5 rounded hover:bg-slate-200"
+    onClick={() => setIsScheduleModalOpen(true)}
+    title="Schedule a meeting"
+  >
+    <Plus size={12} strokeWidth={3} />
+  </div>
               </div>
               <button
                 onClick={handleSendMessage}
@@ -612,6 +676,7 @@ const DevChat = () => {
             </div>
           </div>
         </div>
+        {/* <MyVideoCall /> */}
       </div>
 
       {/* Modals & Sidebars */}
@@ -658,8 +723,30 @@ const DevChat = () => {
         onAdd={handleAddMember}
         existingMembers={chatData[activeChat.name] || []}
       />
+      {/* <VideoCallModal 
+  isOpen={isVideoModalOpen} 
+  onClose={() => setIsVideoModalOpen(false)} 
+  userName={activeChat.name}
+  roomId="test-room-123"
+/> */}
+{/* Replace old modal with this */}
+<JitsiVideoCall 
+  isOpen={isVideoModalOpen} 
+  onClose={() => setIsVideoModalOpen(false)} 
+  roomName={activeChat.name} // Channel name as room ID
+  userName="Yasir" // Current user
+/>
+
+<ScheduleMeetingModal 
+  isOpen={isScheduleModalOpen} 
+  onClose={() => setIsScheduleModalOpen(false)} 
+  onSchedule={handleScheduleMeeting}
+  roomName={activeChat.name} // Channel name as room ID
+  userName="Yasir" // Current user
+/>
     </div>
   );
 };
 
+// handleScheduleMeeting
 export default DevChat;

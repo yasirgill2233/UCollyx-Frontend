@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { 
   LayoutGrid, Folder, Bug, ClipboardList, Code2, 
   MessageSquare, Video, FolderCheck, ShieldAlert, 
@@ -10,68 +10,80 @@ import {
 const Sidebar = () => {
   const location = useLocation();
   const path = location.pathname;
+  const { workspaceSlug } = useParams();
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userRole = user?.role;
+
+  console.log("Console from Sidebar:",userRole, workspaceSlug)
+  
 
   // 1. Define Groups for each Role
   const navGroups = {
     dev: [
-      { icon: LayoutGrid, path: '/dev/dashboard', label: 'Overview' },
-      { icon: Folder, path: '/dev/my-projects', label: 'Projects' },
-      { icon: Bug, path: '/dev/issues', label: 'Issues' },
-      { icon: ClipboardList, path: '/dev/board', label: 'Kanban' },
-      { icon: Code2, path: '/dev/ide', label: 'IDE' },
-      { icon: MessageSquare, path: '/dev/chat', label: 'Chat' },
-      { icon: FolderClock, path: '/dev/projects-dir', label: 'Directories' },
-      { icon: Video, path: '/dev/meetings', label: 'Meetings' },
+      { icon: LayoutGrid, path: `/dev/dashboard`, label: 'Overview' },
+      { icon: Folder, path: `/dev/my-projects`, label: 'Projects' },
+      { icon: Bug, path: `/dev/issues`, label: 'Issues' },
+      { icon: ClipboardList, path: `/dev/board`, label: 'Kanban' },
+      { icon: Code2, path: `/dev/ide`, label: 'IDE' },
+      { icon: MessageSquare, path: `/dev/chat`, label: 'Chat' },
+      { icon: FolderClock, path: `/dev/projects-dir`, label: 'Directories' },
+      { icon: Video, path: `/dev/meetings`, label: 'Meetings' },
     ],
     manager: [
-      { icon: Briefcase, path: '/manager/portfolio', label: 'Portfolio' },
-      { icon: BarChart3, path: '/manager/activity', label: 'Team Activity' },
-      { icon: ClipboardList, path: '/manager/tasks', label: 'Project Tasks' },
-      // { icon: Folder, path: '/manager/details', label: 'Project Details' },
+      { icon: Briefcase, path: `/manager/portfolio`, label: 'Portfolio' },
+      { icon: BarChart3, path: `/manager/activity`, label: 'Team Activity' },
+      { icon: ClipboardList, path: `/manager/tasks`, label: 'Project Tasks' },
+      // { icon: Folder, path: `/manager/details`, label: 'Project Details' },
 
-      { icon: Code2, path: '/manager/ide', label: 'IDE' },
-      { icon: MessageSquare, path: '/manager/chat', label: 'Chat' },
-      { icon: FolderClock, path: '/manager/projects-dir', label: 'Directories' },
+      { icon: Code2, path: `/manager/ide`, label: 'IDE' },
+      { icon: MessageSquare, path: `/manager/chat`, label: 'Chat' },
+      { icon: FolderClock, path: `/manager/projects-dir`, label: 'Directories' },
 
-      { icon: Video, path: '/manager/meetings', label: 'Meetings' },
+      { icon: Video, path: `/manager/meetings`, label: 'Meetings' },
     ],
     qa: [
-      { icon: LayoutGrid, path: '/qa/dashboard', label: 'QA Dashboard' },
-      { icon: ShieldAlert, path: '/qa/alerts', label: 'Red Alerts' },
-      { icon: Bug, path: '/qa/report-bug', label: 'Report Bug' },
-      { icon: FolderCheck, path: '/qa/verify-task', label: 'Verification' },
+      { icon: LayoutGrid, path: `/qa/dashboard`, label: 'QA Dashboard' },
+      { icon: ShieldAlert, path: `/qa/alerts`, label: 'Red Alerts' },
+      { icon: Bug, path: `/qa/report-bug`, label: 'Report Bug' },
+      { icon: FolderCheck, path: `/qa/verify-task`, label: 'Verification' },
 
-      { icon: ClipboardList, path: '/qa/board', label: 'Kanban' },
-      { icon: MessageSquare, path: '/qa/chat', label: 'Chat' },
+      { icon: ClipboardList, path: `/qa/board`, label: 'Kanban' },
+      { icon: MessageSquare, path: `/qa/chat`, label: 'Chat' },
 
-      { icon: Video, path: '/qa/meetings', label: 'Meetings' },
+      { icon: Video, path: `/qa/meetings`, label: 'Meetings' },
     ],
     orgadmin: [
-      { icon: LayoutGrid, path: '/org-admin/dashboard', label: 'Admin Panel' },
-      { icon: Folder, path: '/org-admin/projects', label: 'Projects' },
-      { icon: Users, path: '/org-admin/users', label: 'Users' },
+      { icon: LayoutGrid, path: `/org-admin/dashboard`, label: 'Admin Panel' },
+      { icon: Folder, path: `/org-admin/projects`, label: 'Projects' },
+      { icon: Users, path: `/org-admin/users`, label: 'Users' },
+      { icon: MessageSquare, path: `/org-admin/chat`, label: 'Chat' },
+      { icon: Video, path: `/org-admin/meetings`, label: 'Meetings' },
     ],
     superadmin: [
-      { icon: LayoutGrid, path: '/super-admin/dashboard', label: 'Admin Panel' },
-      { icon: Building, path: '/super-admin/orgs', label: 'Organizations' },
-      { icon: Users, path: '/super-admin/roles', label: 'Members' },
+      { icon: LayoutGrid, path: `/super-admin/dashboard`, label: 'Admin Panel' },
+      { icon: Building, path: `/super-admin/orgs`, label: 'Organizations' },
+      { icon: Users, path: `/super-admin/roles`, label: 'Members' },
     ]
   };
 
   // 2. Logic to detect current role from URL
-  let currentNavItems = navGroups.dev; // Default items
+  let currentNavItems = navGroups.dev; // Default
 
-  if (path.startsWith('/manager')) {
+  // Behtar tareeqa: Direct userRole check karein
+  if (userRole === 'manager') {
     currentNavItems = navGroups.manager;
-  } else if (path.startsWith('/qa')) {
+  } else if (userRole === 'qa') {
     currentNavItems = navGroups.qa;
-  } else if (path.startsWith('/org-admin')) {
+  } else if (userRole === 'org_admin') { // Make sure underscore is correct
     currentNavItems = navGroups.orgadmin;
-  } else if (path.startsWith('/super-admin')) {
+  } else if (userRole === 'super_admin') {
     currentNavItems = navGroups.superadmin;
-  } else {
+  } else if (userRole === 'dev'){
     currentNavItems = navGroups.dev;
   }
+
+  if (!user) return null;
 
   return (
     <aside className="w-16 h-screen bg-white border-r border-gray-200 flex flex-col items-center py-6 gap-2 sticky top-0">

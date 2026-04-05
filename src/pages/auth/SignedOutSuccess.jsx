@@ -22,7 +22,7 @@ const SignedOutSuccess = () => {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6 animate-in fade-in duration-700">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#f0f2f5] p-6 animate-in fade-in duration-700">
       <div className="bg-green-50 w-16 h-16 rounded-2xl flex items-center justify-center mb-8">
         <div className="bg-green-500 rounded-full p-1">
           <Check size={24} className="text-white" />

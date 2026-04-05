@@ -25,10 +25,10 @@ export default function JoinWorkspaceFlow() {
   useEffect(()=>{
     const checkUserWorkspaces = async () => {
         try {
-            const res = await API.get('/workspace/my-workspaces');
+            const res = await API.get('/workspace/workspaces');
             const list = res.data.data;
             setWorkspaces(list);
-            console.log(list)
+            // console.log(list)
 
             // if (list.length === 1) {
             //     // navigate(`/${list[0].slug}/dashboard`);
@@ -113,8 +113,8 @@ export default function JoinWorkspaceFlow() {
   // ];
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4 font-sans">
-      <div className="bg-white rounded-md shadow-xl w-full max-w-[480px] p-8 border border-gray-100 min-h-[550px] flex flex-col justify-between">
+    <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4 font-sans">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-[480px] p-8 border border-gray-100 min-h-[550px] flex flex-col justify-between">
         {/* --- SCREEN 2: JOIN FORM (INVITE & BROWSE TABS) --- */}
 
         <div className="animate-in slide-in-from-right duration-300 h-full flex flex-col">

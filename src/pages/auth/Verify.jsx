@@ -102,8 +102,8 @@ export default function Verify() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-white shadow-2xl">
-      <div className="flex flex-col w-[30%] h-[65%] border border-b-default rounded-2xl p-8 gap-12 items-center bg-white">
+    <div className="flex justify-center items-center h-screen bg-[#f0f2f5]">
+      <div className="flex flex-col w-[30%] h-[65%] border border-b-default rounded-2xl shadow-2xl p-8 gap-12 items-center bg-white">
         {/* Stepper */}
         <div className="flex items-center w-full max-w-md mb-12 mt-4">
           <div className="flex items-center w-full">

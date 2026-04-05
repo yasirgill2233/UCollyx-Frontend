@@ -6,8 +6,8 @@ export default function RequestSuccessful() {
   const navigate = useNavigate(); // Hook initialize karein
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4 font-sans">
-      <div className="bg-white rounded-md shadow-xl w-full max-w-[480px] p-8 border border-gray-100 min-h-[550px] flex flex-col justify-between">
+    <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4 font-sans">
+      <div className="bg-white rounded-md shadow-2xl w-full max-w-[480px] p-8 border border-gray-100 min-h-[550px] flex flex-col justify-between">
 
       
           <div className="animate-in zoom-in fade-in duration-500 flex flex-col items-center text-center h-full">

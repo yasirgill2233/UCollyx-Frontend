@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 const SignOutModal = () => {
   const navigate = useNavigate();
   return (
-    <div className="flex justify-center items-center min-h-screen bg-white">
+    <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5]">
       <div className="bg-white rounded-lg w-full max-w-[30%] p-8 border border-b-default animate-in zoom-in duration-300">
         
         {/* Door Icon Header */}

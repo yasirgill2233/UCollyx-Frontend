@@ -3,6 +3,7 @@ import { Search, Bell, ChevronDown, LogOut, Key, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -10,6 +11,10 @@ const Header = () => {
     // Logout logic yahan ayegi (e.g. clearing token)
     navigate('/sign-out');
   };
+
+
+  // Agar user nahi hai to Header hide kar dein
+  if (!user) return null;
 
   return (
     <header className="h-16 border-b border-gray-200 flex items-center justify-between px-8 bg-white relative">

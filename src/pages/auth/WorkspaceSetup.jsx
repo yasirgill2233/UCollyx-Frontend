@@ -106,9 +106,36 @@ export default function WorkspaceSetup() {
     }
   };
 
+  const handleSendInvites = async () => {
+    // Sirf wo emails lein jo khali nahi hain
+    const validEmails = emails.filter((email) => email.trim() !== "");
+    
+    if (validEmails.length === 0) {
+        // Agar koi email nahi dala to direct dashboard par le jayein
+        return navigate(`/${slug}/dashboard`);
+    }
+
+    setIsLoading(true);
+    try {
+        await API.post("/workspace/invite-members", {
+            workspaceSlug: slug, // Workspace ki pehchan ke liye
+            emails: validEmails,
+            inviterName: JSON.parse(localStorage.getItem("user")).full_name
+        });
+
+        alert("Invitations sent successfully!");
+        navigate(`/${slug}/dashboard`); // Dashboard par redirect karein
+    } catch (err) {
+        alert("Workspace created, but failed to send some invites.");
+        navigate(`/${slug}/dashboard`);
+    } finally {
+        setIsLoading(false);
+    }
+};
+
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white rounded-md shadow-xl w-full max-w-[31%] overflow-hidden border border-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4">
+      <div className="bg-white rounded-md shadow-2xl w-full max-w-[31%] overflow-hidden border border-gray-100">
         {/* Tab Header */}
         <div className="flex border-b border-gray-100">
           <div
@@ -283,63 +310,69 @@ export default function WorkspaceSetup() {
             </div>
           ) : (
             /* STEP 2: Invite Team */
-            <div className="flex flex-col items-center animate-in slide-in-from-right duration-500">
-              <span className="text-4xl mb-6">👋</span>
-              <h2 className="text-2xl font-bold text-gray-800">
-                Invite your team
-              </h2>
-              <p className="text-gray-500 text-sm mt-1 mb-8">
-                Add team members to{" "}
-                <span className="text-blue-600 font-bold">devsloop</span>
-              </p>
+            /* STEP 2: Invite Team */
+<div className="flex flex-col items-center animate-in slide-in-from-right duration-500">
+    <span className="text-4xl mb-6">👋</span>
+    <h2 className="text-2xl font-bold text-gray-800">Invite your team</h2>
+    <p className="text-gray-500 text-sm mt-1 mb-8">
+        Add team members to <span className="text-indigo-600 font-bold">{name || "Workspace"}</span>
+    </p>
 
-              <div className="w-full space-y-3 mb-6">
-                {emails.map((email, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="email"
-                      placeholder={`teammate${index + 1}@company.com`}
-                      className="flex-1 border border-gray-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                    />
+    <div className="w-full space-y-3 mb-6">
+        {emails.map((email, index) => (
+            <div key={index} className="flex gap-2">
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                        const newEmails = [...emails];
+                        newEmails[index] = e.target.value;
+                        setEmails(newEmails);
+                    }}
+                    placeholder={`teammate${index + 1}@company.com`}
+                    className="flex-1 border border-gray-200 rounded-md p-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                />
+                {emails.length > 1 && (
                     <button
-                      onClick={() => removeEmailField(index)}
-                      className="p-3 border border-red-100 bg-red-50 text-red-500 rounded-md hover:bg-red-100 transition-all"
+                        onClick={() => removeEmailField(index)}
+                        className="p-3 border border-red-100 bg-red-50 text-red-500 rounded-md hover:bg-red-100 transition-all"
                     >
-                      <X size={20} />
+                        <X size={20} />
                     </button>
-                  </div>
-                ))}
-                <button
-                  onClick={addEmailField}
-                  className="w-full py-3 border-2 border-dashed border-gray-200 rounded-md text-gray-500 font-medium flex items-center justify-center gap-2 hover:border-blue-300 hover:text-blue-500 transition-all"
-                >
-                  <Plus size={18} /> Add another email
-                </button>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-md flex gap-3 mb-8">
-                <span className="text-lg">💡</span>
-                <p className="text-[12px] text-blue-700 leading-tight">
-                  Invites will be sent after workspace is created. Team members
-                  can also join later via invite link.
-                </p>
-              </div>
-
-              <div className="flex gap-4 w-full">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex-1 py-3 border border-gray-200 rounded-md font-semibold text-gray-500 flex items-center justify-center gap-2"
-                >
-                  <ArrowLeft size={18} /> Back
-                </button>
-                <button className="flex-[1.5] py-3 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">
-                  Create Workspace
-                </button>
-              </div>
-              <button className="mt-6 text-sm text-blue-500 font-medium hover:underline">
-                Skip for now
-              </button>
+                )}
             </div>
+        ))}
+        <button
+            onClick={addEmailField}
+            className="w-full py-3 border-2 border-dashed border-gray-200 rounded-md text-gray-500 font-medium flex items-center justify-center gap-2 hover:border-indigo-300 hover:text-indigo-500 transition-all"
+        >
+            <Plus size={18} /> Add another email
+        </button>
+    </div>
+
+    <div className="flex gap-4 w-full">
+        <button
+            onClick={() => setStep(1)}
+            className="flex-1 py-3 border border-gray-200 rounded-md font-semibold text-gray-500 flex items-center justify-center gap-2 hover:bg-gray-50"
+        >
+            <ArrowLeft size={18} /> Back
+        </button>
+        <button 
+            onClick={handleSendInvites} // Ab ye final create trigger karega
+            disabled={isLoading}
+            className="flex-[1.5] py-3 bg-indigo-600 text-white rounded-md font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
+        >
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : "Finish & Create"}
+        </button>
+    </div>
+    
+    <button 
+        onClick={handleSendInvites} // Skip logic bhi same hi hoga but empty emails ke sath
+        className="mt-6 text-sm text-indigo-500 font-medium hover:underline"
+    >
+        Skip for now
+    </button>
+</div>
           )}
         </div>
       </div>
