@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const TeamManagementModal = ({
   activeModal,
@@ -11,9 +11,8 @@ const TeamManagementModal = ({
   handleAddMember,
   handleRoleChange,
   removeMember,
-  handleSaveChanges
+  handleSaveChanges,
 }) => {
-  
   if (activeModal !== "team") return null;
 
   return (
@@ -45,13 +44,13 @@ const TeamManagementModal = ({
               className="w-full border border-slate-100 rounded-2xl px-5 py-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-200 transition-all bg-slate-50/50 font-bold text-slate-600 appearance-none cursor-pointer"
             >
               <option value="">Choose a member from list...</option>
-              {allUsers.map((user) => (
+              {allUsers?.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.name} ({user.email})
+                  {user.full_name} ({user.email}){" "}
+                  {/* FIX: user.name -> user.full_name */}
                 </option>
               ))}
             </select>
-            {/* Custom Arrow for select */}
             <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
               ↓
             </div>
@@ -66,7 +65,7 @@ const TeamManagementModal = ({
 
         {/* MEMBERS LIST (Dynamic) */}
         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 mb-10 custom-scrollbar">
-          {projectTeam.length > 0 ? (
+          {projectTeam && projectTeam.length > 0 ? (
             projectTeam.map((member) => (
               <div
                 key={member.id}
@@ -74,17 +73,21 @@ const TeamManagementModal = ({
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-xs border border-indigo-100 italic uppercase">
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                    {/* SAFE ACCESS: optional chaining and fallback to full_name */}
+                    {member?.full_name
+                      ? member.full_name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                      : "??"}
                   </div>
                   <div>
                     <p className="text-sm font-black text-slate-800">
-                      {member.name}
+                      {member?.full_name || "Unknown User"}{" "}
+                      {/* FIX: member.name -> member.full_name */}
                     </p>
                     <p className="text-[11px] font-bold text-slate-400">
-                      {member.email}
+                      {member?.email || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -111,7 +114,9 @@ const TeamManagementModal = ({
             ))
           ) : (
             <div className="text-center py-10 border-2 border-dashed border-slate-100 rounded-3xl">
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">No members added yet</p>
+              <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
+                No members added yet
+              </p>
             </div>
           )}
         </div>

@@ -9,15 +9,16 @@ const ProjectSidebar = ({
   setActiveModal, 
   setSelectedProjectId, 
   setSelectedProject,
-  projects // Taake hum hamesha latest data filter kar sakein
+  projects 
 }) => {
   
-  // Hamesha latest data nikalne ke liye (Sidebar sync fix)
+  // Hamesha latest data filter karein projects list se
   const currentProject = projects.find(p => p.id === selectedProjectForSidebar?.id);
 
   if (!selectedProjectForSidebar || !currentProject) return null;
 
-  const channelName = `# ${currentProject.name.toLowerCase().replace(/\s+/g, "-")}`;
+  // Channel name logic using backend project name
+  const channelName = `# ${currentProject.name?.toLowerCase().replace(/\s+/g, "-") || "project"}`;
 
   return (
     <div className="fixed inset-0 z-[150] flex justify-end">
@@ -36,7 +37,7 @@ const ProjectSidebar = ({
               {currentProject.name}
             </h2>
             <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-tighter">
-              {currentProject.code}
+              {currentProject.project_code || currentProject.code}
             </p>
           </div>
           <button
@@ -72,28 +73,34 @@ const ProjectSidebar = ({
             <div className="space-y-8">
               <div className="flex justify-between items-center py-4 border-b border-slate-50">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</span>
-                <span className="bg-emerald-50 text-emerald-600 text-[10px] font-black px-3 py-1 rounded-lg border border-emerald-100 uppercase tracking-tighter italic">
+                <span className={`text-[10px] font-black px-3 py-1 rounded-lg border uppercase tracking-tighter italic ${
+                  currentProject.status === "ACTIVE" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                }`}>
                   {currentProject.status}
                 </span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-slate-50">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Manager</span>
-                <span className="text-sm font-bold text-slate-800">{currentProject.manager || "Unassigned"}</span>
+                <span className="text-sm font-bold text-slate-800">
+                  {currentProject.manager?.full_name || "Unassigned"}
+                </span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Created</span>
-                <span className="text-sm font-bold text-slate-800">{currentProject.date}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Created On</span>
+                <span className="text-sm font-bold text-slate-800">
+                  {new Date(currentProject.createdAt).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex justify-between items-center py-4 border-b border-slate-50">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Members</span>
-                <span className="text-sm font-bold text-slate-800">{currentProject.members?.length || 0}</span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Team Size</span>
+                <span className="text-sm font-bold text-slate-800">{currentProject.members?.length || 0} Members</span>
               </div>
 
               <div className="flex gap-3 pt-10">
                 <button
                   onClick={() => {
+                    setSelectedProject(currentProject);
                     setActiveModal("team");
-                    setSelectedProjectId(currentProject.id);
                   }}
                   className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all"
                 >
@@ -101,8 +108,8 @@ const ProjectSidebar = ({
                 </button>
                 <button
                   onClick={() => {
-                    setActiveModal("archive");
                     setSelectedProject(currentProject);
+                    setActiveModal("archive");
                   }}
                   className="flex-1 border border-slate-100 py-4 rounded-2xl font-black text-[10px] text-slate-400 uppercase tracking-widest hover:bg-rose-50 hover:text-rose-500 transition-all"
                 >
@@ -121,39 +128,34 @@ const ProjectSidebar = ({
                 </span>
                 <button
                   onClick={() => {
-                    setSelectedProjectId(currentProject.id);
+                    setSelectedProject(currentProject);
                     setActiveModal("team");
                   }}
                   className="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-blue-700 transition-all"
                 >
-                  + Add Member
+                  + Edit Team
                 </button>
               </div>
 
               <div className="space-y-3">
-                {currentProject.members?.map((memberId) => {
-                  const user = allUsers.find((u) => u.id === memberId);
-                  const isManager = user?.name === currentProject.manager;
-
-                  return (
-                    <div key={memberId} className="flex items-center justify-between p-4 border border-slate-50 rounded-2xl bg-white hover:border-indigo-100 transition-all group">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-[10px] border border-indigo-100 uppercase italic">
-                          {user?.name.split(" ").map((n) => n[0]).join("") || "?"}
-                        </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-800">{user?.name || "Unknown User"}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase italic">{user?.email}</p>
-                        </div>
+                {currentProject.members?.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-4 border border-slate-50 rounded-2xl bg-white hover:border-indigo-100 transition-all group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 font-black text-[10px] border border-indigo-100 uppercase italic">
+                        {member.full_name?.split(" ").map(n => n[0]).join("") || "?"}
                       </div>
-                      <span className={`text-[9px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-tighter ${
-                        isManager ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
-                      }`}>
-                        {isManager ? "Manager" : "Member"}
-                      </span>
+                      <div>
+                        <p className="text-sm font-black text-slate-800">{member.full_name}</p>
+                        <p className="text-[10px] font-bold text-slate-400 lowercase">{member.email}</p>
+                      </div>
                     </div>
-                  );
-                })}
+                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-tighter ${
+                      member.ProjectMember?.role === "Manager" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                    }`}>
+                      {member.ProjectMember?.role || "Member"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -166,7 +168,7 @@ const ProjectSidebar = ({
                 <div>
                   <p className="text-sm font-black text-slate-800 italic tracking-tighter">{channelName}</p>
                   <p className="text-[10px] font-bold text-slate-400">
-                    1 message . {currentProject.members?.length} members
+                    Active Channel . {currentProject.members?.length} members
                   </p>
                 </div>
               </div>

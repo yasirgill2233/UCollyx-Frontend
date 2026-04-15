@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
 import InviteModal from './InviteModal';
 
+import Modal from '../../components/ui/Modal';
+
 const OrganizationDashboard = () => {
   // Dynamic Data based on your uploaded screen
   const stats = {
@@ -30,8 +32,8 @@ const OrganizationDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-12 font-sans text-left selection:bg-indigo-100">
-      
       {/* --- Workspace Header --- */}
+      <Modal/>
       <div className="mx-auto mb-12 flex justify-between items-end">
         <div>
           <nav className="flex items-center gap-2 text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-3">

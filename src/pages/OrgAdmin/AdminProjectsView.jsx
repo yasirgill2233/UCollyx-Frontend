@@ -3,81 +3,182 @@ import ProjectSidebar from "./ProjectSidebar";
 import CreateProjectModal from "./CreateProjectModal";
 import TeamManagementModal from "./TeamManagementModal";
 import ArchiveProjectModal from "./ArchiveProjectModal";
+import API from "../../api/axios";
+import toast from "react-hot-toast";
 
 const AdminProjectsView = () => {
-  // --- States ---
+  // --- Data States ---
+  const [projects, setProjects] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    noManager: 0,
+    archived: 0,
+  });
+
+  // --- UI States ---
   const [activeFilter, setActiveFilter] = useState("All Projects");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeModal, setActiveModal] = useState(null); // 'create', 'team', 'archive'
+  const [activeModal, setActiveModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
-
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedProjectForSidebar, setSelectedProjectForSidebar] =
     useState(null);
-  const [activeTab, setActiveTab] = useState("Overview"); // 'Overview', 'Team', 'Channel'
-
-  // --- Data State ---
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Platform Redesign",
-      code: "proj_234Kdd34",
-      tag: "# platform-redesign",
-      status: "ACTIVE",
-      manager: "Sarah Khan",
-      members: [1, 5],
-      date: "Feb 03, 2026",
-    },
-    {
-      id: 2,
-      name: "E-Commerce Checkout",
-      code: "proj_234Kdd34",
-      tag: "# e-commerce-checkout",
-      status: "PAUSED",
-      manager: "Sarah Khan",
-      members: [1, 3, 4, 5],
-      date: "Feb 03, 2026",
-    },
-    {
-      id: 3,
-      name: "Backend Infrastructure",
-      code: "proj_234Kdd34",
-      tag: "# backend-infrastructure",
-      status: "ACTIVE",
-      manager: null,
-      members: [1, 2, 3, 4, 5],
-      date: "Feb 03, 2026",
-    },
-    {
-      id: 4,
-      name: "Platform Redesign",
-      code: "proj_234Kdd34",
-      tag: "# platform-redesign",
-      status: "ARCHIVED",
-      manager: "Sarah Khan",
-      members: [1, 2, 3],
-      date: "Feb 03, 2026",
-    },
-  ]);
-
-  // --- Mock Data: All Users in Organization (Dropdown ke liye) ---
-  const allUsers = [
-    { id: 1, name: "Sarah Khan", email: "sarah@acme.com", avatar: "SK" },
-    { id: 2, name: "Mike Chen", email: "mike@acme.com", avatar: "MC" },
-    { id: 3, name: "Alex Rivera", email: "alex@acme.com", avatar: "AR" },
-    { id: 4, name: "Zain Ahmed", email: "zain@acme.com", avatar: "ZA" },
-    { id: 5, name: "Dania Javeed", email: "dania@acme.com", avatar: "DJ" },
-  ];
-
-  const currentProject = projects.find(
-    (p) => p.id === selectedProjectForSidebar?.id,
-  );
+  const [activeTab, setActiveTab] = useState("Overview");
   const [selectedUserId, setSelectedUserId] = useState("");
+  const [projectTeam, setProjectTeam] = useState([]);
+
+  const [newProject, setNewProject] = useState({
+    name: "",
+    description: "",
+    status: "ACTIVE",
+    managerId: "",
+  });
+
+  // --- 1. Fetch Projects & Users (Parallel) ---
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [projectRes, userRes] = await Promise.all([
+        API.get("/projects/get"),
+        API.get("/users/all"),
+      ]);
+
+      console.log(projectRes, userRes);
+
+      if (projectRes.data.success) {
+        setProjects(projectRes.data.projects);
+        setStats(projectRes.data.stats); // Backend se aane wale stats
+      }
+      if (userRes.data.success) {
+        setAllUsers(userRes.data.users);
+      }
+    } catch (err) {
+      console.error("Data fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // --- 2. Create Project Logic ---
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        name: newProject.name,
+        description: newProject.description,
+        status: newProject.status,
+        manager_id: newProject.managerId || 1,
+      };
+
+      const res = await API.post("/projects/create", payload);
+
+      if (res.data.success) {
+        await fetchData(); // Refresh list
+        setSelectedProjectId(res.data.data.id);
+        setNewProject({
+          name: "",
+          description: "",
+          status: "ACTIVE",
+          managerId: "",
+        });
+        setActiveModal("team"); // Team modal par move karein
+      }
+    } catch (err) {
+      alert("Error creating project: " + err.response?.data?.message);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    console.log("Check role in team:", projectTeam);
+    try {
+      // selectedProject wo hai jis par click kar ke modal khula tha
+      const projectId = selectedProject.id;
+
+      console.log("Selected Project:", projectId);
+
+      const res = await API.post(`/projects/${projectId}/team`, {
+        members: projectTeam.map((m) => ({
+          id: m.id,
+          role: m.role,
+        })), // projectTeam mein {id, full_name, role} objects hain
+      });
+
+      if (res.data.success) {
+        // alert("Team saved successfully!");
+        const audio = new Audio("/sounds/short_bongo.mp3");
+        audio.volume = 0.5;
+        audio.play().catch((e) => console.log("Sound blocked"));
+        toast.success("Team saved successfully!", {
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
+        setActiveModal(null);
+        fetchData(); // Table refresh karein taake members count update ho jaye
+      }
+    } catch (err) {
+      console.error("Error saving team:", err);
+      // alert("Failed to save team changes.");
+      const audio = new Audio("/sounds/short_bongo.mp3");
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log("Sound blocked"));
+      toast.error("Failed to save team changes.");
+    }
+  };
+
+  // --- 4. Archive Project ---
+  const handleArchiveProject = async (projectId) => {
+    try {
+      await API.patch(`/projects/${projectId}/archive`);
+      await fetchData();
+      setActiveModal(null);
+    } catch (err) {
+      console.error("Archive error:", err);
+    }
+  };
+
+  // --- Helpers for Display ---
+  const currentProject = projects.find((p) => p.id === selectedProjectId);
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      // 1. Search Logic (Name ya Project Code)
+      const matchesSearch =
+        p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.project_code &&
+          p.project_code.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (p.code && p.code.toLowerCase().includes(searchQuery.toLowerCase()));
+
+      // 2. Status normalization (Backend se hamesha "ACTIVE" ya "ARCHIVED" aata hai)
+      const status = p.status?.toUpperCase();
+
+      if (activeFilter === "Active") {
+        return matchesSearch && status === "ACTIVE";
+      }
+      if (activeFilter === "Archived") {
+        return matchesSearch && status === "ARCHIVED";
+      }
+      if (activeFilter === "No Manager") {
+        // Check karein manager object empty hai ya manager_id null hai
+        return matchesSearch && !p.manager && !p.manager_id;
+      }
+
+      return matchesSearch;
+    });
+  }, [searchQuery, activeFilter, projects]);
 
   // --- Team Management State ---
   const [memberSearch, setMemberSearch] = useState("");
-  const [projectTeam, setProjectTeam] = useState([]);
 
   // --- Helper: Render Avatar Group ---
   const renderAvatarGroup = (memberIds = []) => {
@@ -108,87 +209,43 @@ const AdminProjectsView = () => {
     );
   };
 
-  // 1. Initial State ko ID base par rakhein
-  const [newProject, setNewProject] = useState({
-    name: "",
-    description: "",
-    status: "ACTIVE",
-    managerId: "", // manager string ki jagah managerId
-  });
-
-  const handleCreateSubmit = (e) => {
-    e.preventDefault();
-
-    // 1. Pehle check karein ke manager select hua hai ya nahi
-    // Agar dropdown mein ID save ho rahi hai, toh user object find karein
-    const selectedManager = allUsers.find(
-      (u) =>
-        u.name === newProject.manager || u.id === parseInt(newProject.manager),
-    );
-
-    const newId = Date.now();
-    const projectToAdd = {
-      ...newProject,
-      id: newId,
-      // Manager ka naam string mein save karein taake table render kar sakay
-      manager: selectedManager ? selectedManager.name : null,
-      code: `proj_${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-      tag: `#${newProject.name.toLowerCase().replace(/\s+/g, "-")}`,
-      // Manager ko automatically members list mein add kar dein
-      members: selectedManager ? [selectedManager.id] : [],
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-      }),
-    };
-
-    setProjects([projectToAdd, ...projects]);
-    setSelectedProjectId(newId);
-
-    // Team modal ke liye manager ko initialize karein
-    if (selectedManager) {
-      setProjectTeam([{ ...selectedManager, role: "Project Manager" }]);
-    } else {
-      setProjectTeam([]);
-    }
-
-    setNewProject({ name: "", description: "", status: "ACTIVE", manager: "" });
-    setActiveModal("team");
-  };
-
   const handleAddMember = () => {
-    if (!selectedUserId || !selectedProjectId) return;
-    const userId = parseInt(selectedUserId);
-
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id === selectedProjectId) {
-          if (p.members.includes(userId)) return p;
-          return { ...p, members: [...p.members, userId] };
-        }
-        return p;
-      }),
-    );
-
-    // 1. Check if member already in the current modal list
-    if (projectTeam.find((m) => m.id === userId)) {
-      alert("This member is already added to the team.");
+    // 1. Basic Validation
+    if (!selectedUserId) {
+      alert("Please select a user first");
       return;
     }
 
-    // 2. Find user from allUsers
+    const userId = parseInt(selectedUserId);
+
+    // 2. Check karein ke member pehle se list (projectTeam) mein hai ya nahi
+    const isAlreadyAdded = projectTeam.find((m) => m.id === userId);
+    if (isAlreadyAdded) {
+      alert("This member is already added to the team.");
+      setSelectedUserId(""); // Dropdown reset karein
+      return;
+    }
+
+    // 3. allUsers mein se wo user object dhoondein
     const user = allUsers.find((u) => u.id === userId);
 
     if (user) {
+      // 4. Naya member object banayein (backend keys ke mutabiq)
       const newMember = {
-        ...user,
-        role: "Developer", // Default role
+        id: user.id,
+        full_name: user.full_name, // 'name' ki bajaye 'full_name' use karein
+        email: user.email,
+        role: "Member", // Default role
       };
-      // 3. Update local modal state
+
+      // 5. Sirf modal ki local state update karein
       setProjectTeam((prev) => [...prev, newMember]);
+
+      // 6. Dropdown reset karein
+      setSelectedUserId("");
+    } else {
+      console.error("User not found in allUsers list");
     }
-    setSelectedUserId("");
   };
 
   const removeMember = (userId) => {
@@ -206,49 +263,26 @@ const AdminProjectsView = () => {
     setProjectTeam((prev) =>
       prev.map((m) => {
         if (newRole === "Manager") {
-          // Agar naya role Manager hai, toh baaqi sab ko Member kar do
           return m.id === memberId
             ? { ...m, role: "Manager" }
             : { ...m, role: "Member" };
         } else {
-          // Agar normal Member select kiya hai toh sirf ussi ko update karo
           return m.id === memberId ? { ...m, role: "Member" } : m;
         }
       }),
     );
   };
 
-  const handleSaveChanges = () => {
-    // 1. Team list mein se Manager ka naam dhoondein
-    const managerObj = projectTeam.find((m) => m.role === "Manager");
-
-    setProjects((prevProjects) =>
-      prevProjects.map((proj) => {
-        if (proj.id === selectedProjectId) {
-          return {
-            ...proj,
-            manager: managerObj ? managerObj.name : null, // Table mein naam update hoga
-            members: projectTeam.map((m) => m.id), // Members ki IDs list update hogi
-          };
-        }
-        return proj;
-      }),
-    );
-
-    // 2. Modal aur Dropdown close karein
-    setActiveModal(null);
-    setOpenDropdownId(null);
-  };
-
   useEffect(() => {
     if (activeModal === "team" && selectedProjectId) {
-      const currentProj = projects.find((p) => p.id === selectedProjectId);
+      const currentProj = projects?.find((p) => p.id === selectedProjectId);
       if (currentProj) {
         const initialTeam = currentProj.members.map((id) => {
-          const user = allUsers.find((u) => u.id === id);
+          const user = allUsers?.find((u) => u.id === id);
           return {
             ...user,
-            role: user.name === currentProj.manager ? "Manager" : "Member",
+            role:
+              user?.full_name === currentProj?.manager ? "Manager" : "Member",
           };
         });
         setProjectTeam(initialTeam);
@@ -261,31 +295,6 @@ const AdminProjectsView = () => {
     const { name, value } = e.target;
     setNewProject((prev) => ({ ...prev, [name]: value }));
   };
-
-  // --- Filtering Logic ---
-  const filteredProjects = useMemo(() => {
-    return projects.filter((p) => {
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.tag.toLowerCase().includes(searchQuery.toLowerCase());
-      if (activeFilter === "Active")
-        return matchesSearch && p.status === "ACTIVE";
-      if (activeFilter === "Archived")
-        return matchesSearch && p.status === "ARCHIVED";
-      if (activeFilter === "No Manager") return matchesSearch && !p.manager;
-      return matchesSearch;
-    });
-  }, [searchQuery, activeFilter, projects]);
-
-  const stats = useMemo(
-    () => ({
-      total: projects.length,
-      active: projects.filter((p) => p.status === "ACTIVE").length,
-      noManager: projects.filter((p) => p.manager === null).length,
-      archived: projects.filter((p) => p.status === "ARCHIVED").length,
-    }),
-    [projects],
-  );
 
   return (
     <div className="min-h-screen bg-white p-12 text-left font-sans relative selection:bg-indigo-100">
@@ -359,7 +368,6 @@ const AdminProjectsView = () => {
         ))}
       </div>
 
-      {/* --- PROJECTS TABLE --- */}
       <div className="border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm bg-white">
         <table className="w-full text-left">
           <thead className="bg-slate-50/50 border-b border-slate-100">
@@ -384,53 +392,67 @@ const AdminProjectsView = () => {
           </thead>
           <tbody className="divide-y divide-slate-50">
             {filteredProjects.map((project) => (
-              <tr className="hover:bg-slate-50/30 group">
+              <tr key={project?.id} className="hover:bg-slate-50/30 group">
+                {/* 1. Project Name & Code */}
                 <td
                   onClick={() => {
                     setSelectedProjectForSidebar(project);
                     setActiveTab("Overview");
                   }}
-                  key={project.id}
                   className="px-8 py-6 hover:cursor-pointer"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 italic">
-                      P
+                      {project?.name
+                        ? project.name.charAt(0).toUpperCase()
+                        : "P"}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800">
-                        {project.name}
+                        {project?.name || "Untitled Project"}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] text-slate-400 font-medium">
-                          {project.code}
+                          {project?.project_code || project?.code || "N/A"}
                         </span>
                         <span className="text-[9px] bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded font-bold">
-                          {project.tag}
+                          #
+                          {project?.name?.toLowerCase().replace(/\s+/g, "-") ||
+                            "proj"}
                         </span>
                       </div>
                     </div>
                   </div>
                 </td>
+
+                {/* 2. Status */}
                 <td className="px-8 py-6 text-center">
                   <span
-                    className={`text-[9px] font-black px-3 py-1 rounded-full border ${project.status === "ACTIVE" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : project.status === "PAUSED" ? "bg-orange-50 text-orange-600 border-orange-100" : "bg-slate-100 text-slate-500 border-slate-200"}`}
+                    className={`text-[9px] font-black px-3 py-1 rounded-full border ${
+                      project.status === "ACTIVE"
+                        ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                        : project.status === "ARCHIVED"
+                          ? "bg-rose-50 text-rose-600 border-rose-100"
+                          : "bg-slate-100 text-slate-500 border-slate-200"
+                    }`}
                   >
-                    {project.status}
+                    {project.status || "UNKNOWN"}
                   </span>
                 </td>
+
+                {/* 3. Manager */}
                 <td className="px-8 py-6">
-                  {project.manager ? (
+                  {project?.manager?.full_name ? (
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 bg-indigo-100 rounded-full border border-indigo-200 flex items-center justify-center text-[10px] font-bold text-indigo-600 italic">
-                        {project.manager
+                        {project.manager.full_name
                           .split(" ")
                           .map((n) => n[0])
                           .join("")
                           .toUpperCase()}
                       </div>
                       <span className="text-sm font-bold text-slate-700">
-                        {project.manager}
+                        {project.manager.full_name}
                       </span>
                     </div>
                   ) : (
@@ -439,12 +461,30 @@ const AdminProjectsView = () => {
                     </span>
                   )}
                 </td>
+
+                {/* 4. Members */}
                 <td className="px-8 py-6 text-center">
-                  {renderAvatarGroup(project.members)}
+                  {/* Render only if members exist */}
+                  {project.members && project.members.length > 0 ? (
+                    renderAvatarGroup(project.members.map((m) => m.id || m))
+                  ) : (
+                    <span className="text-[10px] text-slate-300 font-bold italic">
+                      No Team
+                    </span>
+                  )}
                 </td>
+
+                {/* 5. Date */}
                 <td className="px-8 py-6 text-sm font-bold text-slate-500">
-                  {project.date}
+                  {project.createdAt
+                    ? new Date(project.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
+                    : "N/A"}
                 </td>
+
                 <td className="px-8 py-6 text-right relative">
                   <button
                     onClick={() =>
@@ -457,21 +497,27 @@ const AdminProjectsView = () => {
                     ⋮
                   </button>
                   {openDropdownId === project.id && (
-                    <div className="absolute right-12 top-10 bg-white border border-slate-100 shadow-xl rounded-xl py-2 z-10 w-44 text-left animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute right-12 top-1 bg-white border border-slate-100 shadow-xl rounded-xl py-2 z-50 w-44 text-left">
                       <button
                         onClick={() => {
-                          setSelectedProjectId(project.id);
+                          setSelectedProject(project);
+                          const initialTeam = project.members.map((member) => ({
+                            ...member,
+                            role: member.ProjectMember?.project_role,
+                          }));
+
+                          setProjectTeam(initialTeam);
                           setActiveModal("team");
-                          setOpenDropdownId(null); // Ye line add karein
+                          setOpenDropdownId(null);
                         }}
-                        className="..."
+                        className="w-full px-4 py-2 text-[11px] font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2"
                       >
                         👥 Manage Team
                       </button>
                       <button
                         onClick={() => {
-                          setActiveModal("archive");
                           setSelectedProject(project);
+                          setActiveModal("archive");
                           setOpenDropdownId(null);
                         }}
                         className="w-full px-4 py-2 text-[11px] font-black text-rose-500 hover:bg-rose-50 flex items-center gap-2"
@@ -519,14 +565,13 @@ const AdminProjectsView = () => {
             />
           )}
 
-          {/* 3. Archive Modal (Image 9) */}
+          {/* Archive Modal Call */}
           {activeModal === "archive" && (
             <ArchiveProjectModal
               activeModal={activeModal}
               setActiveModal={setActiveModal}
               selectedProject={selectedProject}
-              projects={projects}
-              setProjects={setProjects}
+              fetchData={fetchData} // Ye function API se projects dobara load karega
               setSelectedProjectForSidebar={setSelectedProjectForSidebar}
             />
           )}

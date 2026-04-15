@@ -74,25 +74,31 @@ const CreateProjectModal = ({
               </select>
             </div>
 
+
             {/* Manager Selection (Dynamic) */}
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                Assign Manager
-              </label>
-              <select
-                name="manager"
-                value={newProject.manager}
-                onChange={handleInputChange}
-                className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none bg-slate-50 cursor-pointer font-bold text-slate-700"
-              >
-                <option value="">Select Manager...</option>
-                {allUsers.map((user) => (
-                  <option key={user.id} value={user.name}>
-                    {user.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+<div className="space-y-2">
+  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+    Assign Manager
+  </label>
+  <select
+    name="manager_id" // Backend foreign key ke mutabiq name rakhein
+    value={newProject.manager_id || ""} // ID use karein string name ki bajaye
+    onChange={handleInputChange}
+    className="w-full border border-slate-200 rounded-xl p-3.5 text-sm focus:border-blue-500 outline-none bg-slate-50 cursor-pointer font-bold text-slate-700"
+    
+  >
+    <option value="">Select Manager...</option>
+    {allUsers && allUsers.length > 0 ? (
+      allUsers.map((user) => (
+        <option key={user.id} value={user.id}>
+          {user.full_name} {/* Yahan 'full_name' use karein */}
+        </option>
+      ))
+    ) : (
+      <option disabled>Loading users...</option>
+    )}
+  </select>
+</div>
           </div>
 
           <div className="flex items-center gap-3 pt-2">
