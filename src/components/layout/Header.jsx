@@ -9,6 +9,7 @@ const Header = () => {
 
   const handleLogout = () => {
     // Logout logic yahan ayegi (e.g. clearing token)
+    localStorage.clear();
     navigate('/sign-out');
   };
 

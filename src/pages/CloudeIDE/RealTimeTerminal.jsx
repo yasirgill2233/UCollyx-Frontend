@@ -31,7 +31,7 @@ const RealtimeTerminal = () => {
     xtermRef.current = term;
 
     // 2. Initialize Socket Connection
-    socketRef.current = io('http://localhost:5000'); // Backend URL
+    socketRef.current = io('http://localhost:4001'); // Backend URL
 
     // Backend se data receive kar ke terminal pe dikhana
     socketRef.current.on('terminal:data', (data) => {

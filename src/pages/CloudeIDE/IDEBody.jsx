@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Editor } from "@monaco-editor/react";
 
-import { FileIcon, defaultStyles } from 'react-file-icon';
+import { FileIcon, defaultStyles } from "react-file-icon";
 
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
@@ -32,6 +32,23 @@ import { io } from "socket.io-client";
 import TerminalComponent from "./TerminalComponent";
 import axios from "axios";
 
+// 1. AI API Function (Keep only this one)
+const getAISuggestion = async (codeSnippet) => {
+  try {
+    const res = await axios.post("http://localhost:11434/api/generate", {
+      model: "deepseek-coder:1.3b",
+      // model: "codellama:7b",
+      prompt: `Instruction: Provide ONLY the code completion. No explanations, no markdown, no greetings. only code suggestion
+      Context: \n ${codeSnippet}`,
+      stream: false,
+    });
+    return res.data.response;
+  } catch (error) {
+    console.error("Ollama connection error:", error);
+    return "";
+  }
+};
+
 const IDEBody = () => {
   const location = useLocation();
   const [showExplorer, setShowExplorer] = useState(true);
@@ -39,7 +56,61 @@ const IDEBody = () => {
   const [openTabs, setOpenTabs] = useState(["index.js"]);
   const [activeTab, setActiveTab] = useState("index.js");
 
-  const [saveTimeout, setSaveTimeout] = useState(null);// File path track karne ke liye
+  const [aiInput, setAiInput] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+    {
+      role: "ai",
+      text: "I can help you refactor your components or explain complex logic. How can I help you today?",
+    },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  // 2. Monaco Editor Configuration
+  const handleEditorDidMount = (editor, monaco) => {
+    console.log("✅ Monaco Editor Load Ho Gaya!");
+
+    monaco.languages.registerInlineCompletionsProvider("javascript", {
+      provideInlineCompletions: async (model, position) => {
+        console.log("⌨️ Typing detected, checking for suggestions...");
+
+        const codeBefore = model.getValueInRange({
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column,
+        });
+
+        // Local console check
+        console.log("📄 Context captured:", codeBefore.slice(-20));
+
+        try {
+          const suggestion = await getAISuggestion(codeBefore);
+          console.log("🤖 AI Response Received:", suggestion);
+
+          return {
+            items: [
+              {
+                insertText: suggestion,
+                range: new monaco.Range(
+                  position.lineNumber,
+                  position.column,
+                  position.lineNumber,
+                  position.column,
+                ),
+              },
+            ],
+          };
+        } catch (err) {
+          console.error("❌ API Call Failed:", err);
+          return { items: [] };
+        }
+      },
+    });
+  };
+
+  const [suggestion, setSuggestion] = useState("");
+
+  const [saveTimeout, setSaveTimeout] = useState(null); // File path track karne ke liye
 
   const [menuPos, setMenuPos] = useState({
     x: 0,
@@ -84,6 +155,34 @@ const IDEBody = () => {
     setMenuPos({ x: e.pageX, y: e.pageY, visible: true, targetId: itemId });
   };
 
+  const handleAISend = async () => {
+    if (!aiInput.trim()) return;
+
+    const userMessage = { role: "user", text: aiInput };
+    setChatHistory((prev) => [...prev, userMessage]);
+    setAiInput("");
+    setIsTyping(true);
+
+    try {
+      const res = await axios.post("http://localhost:11434/api/generate", {
+        // model: "codellama:7b", // ya "deepseek-coder"
+        model: "deepseek-coder:1.3b",
+        prompt: aiInput,
+        stream: false,
+      });
+
+      const aiMessage = { role: "ai", text: res.data.response };
+      setChatHistory((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      setChatHistory((prev) => [
+        ...prev,
+        { role: "ai", text: "Error: Ollama se connect nahi ho pa raha." },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   // Menu band karne ke liye
   const closeMenu = () => setMenuPos({ ...menuPos, visible: false });
 
@@ -113,97 +212,57 @@ const IDEBody = () => {
     return "plaintext";
   };
 
-  // const handleEditorChange = (value) => {
-  //   setFileContents((prev) => ({
-  //     ...prev,
-  //     [activeTab]: value,
-  //   }));
-  // };
-
-  // --- Tab Logic ---
-  // const openFile = (fileName) => {
-  //   if (!openTabs.includes(fileName)) {
-  //     setOpenTabs([...openTabs, fileName]);
-  //   }
-  //   setActiveTab(fileName);
-  // };
-
-
-  // Editor ka content change handle karne ke liye
-
   const handleEditorChange = (value) => {
-  // 1. Foran local state update karein taake typing lag na kare
-  setFileContents(prev => ({
-    ...prev,
-    [activeTab]: value
-  }));
+    // 1. Foran local state update karein taake typing lag na kare
+    setFileContents((prev) => ({
+      ...prev,
+      [activeTab]: value,
+    }));
 
-  // 2. Agar pehle se koi timer chal raha hai, to usay khatam karein
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-
-  // 3. Naya timer shuru karein (1 second baad save hoga)
-  const newTimeout = setTimeout(async () => {
-    if (activeFilePath) {
-      try {
-        await axios.post('http://localhost:4001/api/files/save', {
-          path: activeFilePath,
-          content: value
-        });
-        console.log("💾 Auto-saved successfully!");
-      } catch (err) {
-        console.error("❌ Auto-save failed:", err);
-      }
+    // 2. Agar pehle se koi timer chal raha hai, to usay khatam karein
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
     }
-  }, 1000);
 
-  setSaveTimeout(newTimeout);
-};
+    // 3. Naya timer shuru karein (1 second baad save hoga)
+    const newTimeout = setTimeout(async () => {
+      if (activeFilePath) {
+        try {
+          await axios.post("http://localhost:4001/api/files/save", {
+            path: activeFilePath,
+            content: value,
+          });
+          console.log("💾 Auto-saved successfully!");
+        } catch (err) {
+          console.error("❌ Auto-save failed:", err);
+        }
+      }
+    }, 1000);
 
+    setSaveTimeout(newTimeout);
+  };
 
   const deleteItem = async (path) => {
-  if (window.confirm("Are you sure you want to delete this?")) {
-    await axios.post('http://localhost:4001/api/files/delete', { path });
-    refreshTree();
-  }
-};
-
-  // const openFile = async (filePath, fileName) => {
-  //   try {
-  //     // Check agar tab pehle se open hai ya nahi
-  //     if (!openTabs.includes(fileName)) {
-  //       const response = await axios.post(
-  //         "http://localhost:4001/api/files/content",
-  //         { filePath },
-  //       );
-
-  //       setFileContents((prev) => ({
-  //         ...prev,
-  //         [fileName]: response.data.content, // Content ko state mein save karein
-  //       }));
-  //       setOpenTabs([...openTabs, fileName]);
-  //     }
-
-  //     setActiveFilePath(filePath); // Backend par save karne ke liye path zaroori hai
-  //     setActiveTab(fileName);
-  //   } catch (error) {
-  //     console.error("Could not open file:", error);
-  //   }
-  // };
+    if (window.confirm("Are you sure you want to delete this?")) {
+      await axios.post("http://localhost:4001/api/files/delete", { path });
+      refreshTree();
+    }
+  };
 
   const openFile = async (path, name) => {
     setActiveTab(name);
     setActiveFilePath(path); // Ye line zaroori hai!
-    
+
     // Aapka purana file loading logic...
     try {
-        const res = await axios.post('http://localhost:4001/api/files/content', { path });
-        setFileContents(prev => ({ ...prev, [name]: res.data.content }));
+      const res = await axios.post("http://localhost:4001/api/files/content", {
+        path,
+      });
+      setFileContents((prev) => ({ ...prev, [name]: res.data.content }));
     } catch (err) {
-        console.error("Error loading file content");
+      console.error("Error loading file content");
     }
-};
+  };
 
   const closeTab = (e, fileName) => {
     e.stopPropagation();
@@ -216,58 +275,31 @@ const IDEBody = () => {
     }
   };
 
-  // --- Item Creation Logic ---
-  // const addItem = (parentId, type) => {
-  //   const name = prompt(`Enter ${type} name:`);
-  //   if (!name) return;
-
-  //   const newItem = {
-  //     id: Math.random().toString(36).substr(2, 9),
-  //     name: name,
-  //     type: type,
-  //     children: type === 'folder' ? [] : undefined
-  //   };
-
-  //   const updateTree = (nodes) => {
-  //     return nodes.map(node => {
-  //       if (node.id === parentId) return { ...node, children: [...(node.children || []), newItem] };
-  //       if (node.children) return { ...node, children: updateTree(node.children) };
-  //       return node;
-  //     });
-  //   };
-
-  //   if (parentId === 'root') {
-  //     setProjectData({ ...projectData, children: [...projectData.children, newItem] });
-  //   } else {
-  //     setProjectData({ ...projectData, children: updateTree(projectData.children) });
-  //   }
-  // };
-
   // 2. Naya File ya Folder create karne ki API
   const addItem = async (parentId, type) => {
-  const name = prompt(`Enter ${type} name (e.g., test.js or myFolder):`);
-  if (!name) return;
+    const name = prompt(`Enter ${type} name (e.g., test.js or myFolder):`);
+    if (!name) return;
 
-  try {
-    // Agar parentId null hai (yani kisi specific folder pe right click nahi kiya), 
-    // to backend default rootDir use karega. 
-    // Filhal hum assume kar rahe hain ke projectData.id hamara root path hai.
-    const parentPath = parentId || projectData.id;
+    try {
+      const parentPath = parentId || projectData.id;
 
-    const response = await axios.post('http://localhost:4001/api/files/create', {
-      parentPath: parentPath,
-      name: name,
-      type: type
-    });
+      const response = await axios.post(
+        "http://localhost:4001/api/files/create",
+        {
+          parentPath: parentPath,
+          name: name,
+          type: type,
+        },
+      );
 
-    if (response.data.success) {
-      refreshTree(); // List refresh karein taake naya item nazar aaye
+      if (response.data.success) {
+        refreshTree(); // List refresh karein taake naya item nazar aaye
+      }
+    } catch (err) {
+      console.error("Error creating item:", err);
+      alert("Failed to create " + type);
     }
-  } catch (err) {
-    console.error("Error creating item:", err);
-    alert("Failed to create " + type);
-  }
-};
+  };
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
@@ -390,30 +422,29 @@ const IDEBody = () => {
         {/* Code Editor Body */}
         <div className="flex-1 overflow-auto font-mono text-[13px] leading-relaxed bg-[#09090b]">
           {activeTab ? (
-            // <div className="flex">
-            //   <div className="w-10 text-zinc-700 text-right pr-4 border-r border-zinc-800/30 mr-4 select-none">
-            //     {Array.from({length: 15}).map((_, i) => <div key={i}>{i+1}</div>)}
-            //   </div>
-            //   <pre className="text-zinc-300">
-            //     <code>
-            //       <span className="text-purple-400 italic">import</span> {'{ useState }'} <span className="text-purple-400">from</span> <span className="text-emerald-400">"react"</span>;<br/>
-            //       <span className="text-zinc-600">// Currently editing: {activeTab}</span><br/>
-            //       <span className="text-blue-400 italic">const</span> <span className="text-yellow-200">MainComponent</span> = () ={'>'} {'{'}<br/>
-            //       &nbsp;&nbsp;<span className="text-blue-400 italic">return</span> <span className="text-emerald-400">"Building with UCollyx"</span>;<br/>
-            //       {'}'}
-            //     </code>
-            //   </pre>
-            // </div>
             <Editor
               height="100%"
               theme="vs-dark"
               language={getLanguage(activeTab)}
               value={fileContents[activeTab]}
               onChange={handleEditorChange}
+              onMount={handleEditorDidMount} // Ye zaroori hai!
               options={{
                 fontSize: 14,
+                num_predict: 50,
                 fontFamily: "JetBrains Mono, Fira Code, monospace",
                 minimap: { enabled: true },
+                inlineSuggest: {
+                  enabled: true,
+                  mode: "prefix",
+                  showToolbar: "always",
+                },
+                // suggestOnTriggerCharacters: true,
+                // quickSuggestions: {
+                //   other: true,
+                //   comments: true,
+                //   strings: true,
+                // },
                 padding: { top: 20 },
                 smoothScrolling: true,
                 cursorSmoothCaretAnimation: "on",
@@ -431,29 +462,6 @@ const IDEBody = () => {
         </div>
 
         {/* Bottom Terminal Section */}
-        {/* <div className="h-40 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
-          <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TerminalIcon size={12} className="text-zinc-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Terminal</span>
-            </div>
-            <div className="flex gap-4 text-[10px] font-bold text-zinc-600">
-              <span className="text-blue-500 cursor-pointer">Output</span>
-              <span className="cursor-pointer">Debug Console</span>
-            </div>
-          </div>
-          <div className="p-4 font-mono text-xs text-zinc-400">
-            <div className="flex gap-2">
-              <span className="text-emerald-500 font-bold">➜</span> 
-              <span className="text-blue-400 font-bold">~/ucollyx-dev</span>
-              <span className="text-zinc-200">npm start</span>
-            </div>
-            <div className="mt-2 text-zinc-500 leading-tight">
-              [v-1.0.4] Compiled successfully in 842ms<br/>
-              Local: <span className="text-blue-400 underline cursor-pointer">http://localhost:3000</span>
-            </div>
-          </div>
-        </div> */}
         <div className="h-60 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
           <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -472,28 +480,41 @@ const IDEBody = () => {
       </section>
 
       {/* --- Right Panels --- */}
-      {rightPanel === "AI" && <AIPanel onClose={() => setRightPanel(null)} />}
-      {/* {rightPanel === "Context" && (
-        <ContextPanel onClose={() => setRightPanel(null)} />
-      )} */}
-      {/* Ye kisi bhi panel ka hissa nahi hai, bas body ke end par hai */}
+      {/* {rightPanel === "AI" && <AIPanel onClose={() => setRightPanel(null)} />} */}
+
+      {rightPanel === "AI" && (
+        <AIPanel
+          onClose={() => setRightPanel(null)}
+          chatHistory={chatHistory}
+          aiInput={aiInput}
+          setAiInput={setAiInput}
+          handleAISend={handleAISend}
+          isTyping={isTyping}
+        />
+      )}
       {menuPos.visible && (
-        <div 
+        <div
           className="fixed z-50 bg-[#121214]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-lg py-1 w-44 animate-in fade-in zoom-in duration-150"
           style={{ top: menuPos.y, left: menuPos.x }}
           onMouseLeave={closeMenu}
         >
-          <button 
-            onClick={() => { addItem(menuPos.targetId, 'file'); closeMenu(); }}
+          <button
+            onClick={() => {
+              addItem(menuPos.targetId, "file");
+              closeMenu();
+            }}
             className="w-full flex items-center gap-3 px-3 py-2 text-xs text-zinc-300 hover:bg-blue-600 hover:text-white transition-colors"
           >
             <FilePlus size={14} /> New File
           </button>
-          
+
           {/* ... baqi buttons ... */}
-          
-          <button 
-            onClick={() => { deleteItem(menuPos.targetId); closeMenu(); }}
+
+          <button
+            onClick={() => {
+              deleteItem(menuPos.targetId);
+              closeMenu();
+            }}
             className="w-full flex items-center gap-3 px-3 py-2 text-xs text-red-400 hover:bg-red-600 hover:text-white transition-colors"
           >
             <X size={14} /> Delete
@@ -504,85 +525,20 @@ const IDEBody = () => {
   );
 };
 
-// --- Recursive Tree Component ---
-// const FileTreeItem = ({ item, depth, onAdd, isActive, onFileClick }) => {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const isFolder = item.type === "folder";
-
-//   return (
-//     <div className="select-none">
-//       <div
-//         onClick={() => {
-//           if (isFolder) {
-//             setIsOpen(!isOpen);
-//           } else {
-//             // Backend path aur file name dono bhej rahe hain
-//             onFileClick(item.id, item.name);
-//           }
-//         }}
-//         style={{ paddingLeft: `${depth * 12}px` }}
-//         className={`flex items-center justify-between py-1.5 px-2 cursor-pointer rounded-md group ${isActive ? "bg-blue-500/10 text-blue-400" : "hover:bg-zinc-800/40 text-zinc-400"}`}
-//       >
-//         <div className="flex items-center gap-2 truncate">
-//           {isFolder ? (
-//             isOpen ? (
-//               <ChevronDown size={12} />
-//             ) : (
-//               <ChevronRight size={12} />
-//             )
-//           ) : (
-//             <div className="w-3" />
-//           )}
-//           {isFolder ? <Folder size={14} /> : <FileCode size={14} />}
-//           <span className="text-[12px] truncate">{item.name}</span>
-//         </div>
-
-//         {/* Hover buttons for Create File/Folder */}
-//         {isFolder && (
-//           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-//             <FilePlus
-//               size={12}
-//               onClick={(e) => {
-//                 e.stopPropagation();
-//                 onAdd(item.id, "file");
-//               }}
-//             />
-//             <FolderPlus
-//               size={12}
-//               onClick={(e) => {
-//                 e.stopPropagation();
-//                 onAdd(item.id, "folder");
-//               }}
-//             />
-//           </div>
-//         )}
-//       </div>
-
-//       {isFolder && isOpen && item.children && (
-//         <div className="border-l border-zinc-800/40 ml-4">
-//           {item.children.map((child) => (
-//             <FileTreeItem
-//               key={child.id}
-//               item={child}
-//               depth={depth + 1}
-//               onAdd={onAdd}
-//               isActive={isActive}
-//               onFileClick={onFileClick}
-//             />
-//           ))}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-const FileTreeItem = ({ item, depth, onAdd, isActive, onFileClick, handleContextMenu }) => {
+const FileTreeItem = ({
+  item,
+  depth,
+  onAdd,
+  isActive,
+  onFileClick,
+  handleContextMenu,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const isFolder = item.type === "folder";
 
   // --- AAPKA FUNCTION YAHA LINK HO GYA ---
   const getFileIcon = (fileName) => {
-    const ext = fileName.split('.').pop().toLowerCase();
+    const ext = fileName.split(".").pop().toLowerCase();
     return (
       <div className="w-3 h-3 flex-shrink-0">
         <FileIcon extension={ext} {...defaultStyles[ext]} />
@@ -603,18 +559,26 @@ const FileTreeItem = ({ item, depth, onAdd, isActive, onFileClick, handleContext
         onContextMenu={(e) => handleContextMenu(e, item.id)}
         style={{ paddingLeft: `${depth * 12}px` }}
         className={`flex items-center justify-between py-1.5 px-2 cursor-pointer rounded-md group transition-all ${
-          isActive ? "bg-blue-500/10 text-blue-400" : "hover:bg-zinc-800/40 text-zinc-400"
+          isActive
+            ? "bg-blue-500/10 text-blue-400"
+            : "hover:bg-zinc-800/40 text-zinc-400"
         }`}
       >
         <div className="flex items-center gap-2 truncate">
           {/* Chevron logic */}
           <div className="w-4 flex items-center justify-center">
-            {isFolder && (isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
+            {isFolder &&
+              (isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />)}
           </div>
 
           {/* ICON LINKAGE HERE */}
           {isFolder ? (
-            <Folder size={14} className={isOpen ? "text-blue-500 fill-blue-500/10" : "text-zinc-500"} />
+            <Folder
+              size={14}
+              className={
+                isOpen ? "text-blue-500 fill-blue-500/10" : "text-zinc-500"
+              }
+            />
           ) : (
             // Humne aapka function yahan call kar diya
             getFileIcon(item.name)
@@ -626,10 +590,20 @@ const FileTreeItem = ({ item, depth, onAdd, isActive, onFileClick, handleContext
         {/* Hover buttons for folders */}
         {isFolder && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); onAdd(item.id, "file"); }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(item.id, "file");
+              }}
+            >
               <FilePlus size={12} className="hover:text-white" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); onAdd(item.id, "folder"); }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdd(item.id, "folder");
+              }}
+            >
               <FolderPlus size={12} className="hover:text-white" />
             </button>
           </div>
@@ -657,39 +631,128 @@ const FileTreeItem = ({ item, depth, onAdd, isActive, onFileClick, handleContext
 };
 
 // --- AI Assistant Panel ---
-const AIPanel = ({ onClose }) => (
-  <aside className="w-80 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300">
-    <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
-      <div className="flex items-center gap-2">
-        <Brain size={18} className="text-blue-500" />
-        <span className="text-[10px] font-black uppercase tracking-widest">
-          Assistant
-        </span>
+// const AIPanel = ({ onClose }) => (
+//   <aside className="w-80 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300">
+//     <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
+//       <div className="flex items-center gap-2">
+//         <Brain size={18} className="text-blue-500" />
+//         <span className="text-[10px] font-black uppercase tracking-widest">
+//           Assistant
+//         </span>
+//       </div>
+//       <X
+//         size={18}
+//         className="cursor-pointer text-zinc-600 hover:text-white"
+//         onClick={onClose}
+//       />
+//     </div>
+//     <div className="flex-1 p-6 flex flex-col justify-end">
+//       <div className="space-y-4 mb-4">
+//         <div className="bg-zinc-800/40 p-3 rounded-lg border border-zinc-700/30 text-xs leading-relaxed">
+//           I can help you refactor your components or explain complex logic.
+//         </div>
+//       </div>
+//       <div className="relative">
+//         <textarea
+//           className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs outline-none focus:border-blue-500/50 resize-none h-24"
+//           placeholder="Ask anything..."
+//         />
+//         <button className="absolute right-3 bottom-3 bg-blue-600 p-1.5 rounded-lg hover:bg-blue-500">
+//           <Send size={14} />
+//         </button>
+//       </div>
+//     </div>
+//   </aside>
+// );
+
+const AIPanel = ({
+  onClose,
+  chatHistory,
+  aiInput,
+  setAiInput,
+  handleAISend,
+  isTyping,
+}) => {
+  // Auto-scroll logic
+  const chatEndRef = React.useRef(null);
+  React.useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+  return (
+    <aside className="w-80 flex-shrink-0 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300">
+      <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
+        <div className="flex items-center gap-2">
+          <Brain size={18} className="text-blue-500" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
+            Assistant
+          </span>
+        </div>
+        <X
+          size={18}
+          className="cursor-pointer text-zinc-600 hover:text-white"
+          onClick={onClose}
+        />
       </div>
-      <X
-        size={18}
-        className="cursor-pointer text-zinc-600 hover:text-white"
-        onClick={onClose}
-      />
-    </div>
-    <div className="flex-1 p-6 flex flex-col justify-end">
-      <div className="space-y-4 mb-4">
-        <div className="bg-zinc-800/40 p-3 rounded-lg border border-zinc-700/30 text-xs leading-relaxed">
-          I can help you refactor your components or explain complex logic.
+
+      {/* Chat Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        {chatHistory.map((msg, index) => (
+          <div
+            key={index}
+            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`max-w-[90%] p-3 rounded-xl text-xs leading-relaxed ${
+                msg.role === "user"
+                  ? "bg-blue-600 text-white rounded-br-none"
+                  : "bg-zinc-800/60 text-zinc-300 border border-zinc-700/30 rounded-bl-none"
+              }`}
+            >
+              {msg.text}
+            </div>
+          </div>
+        ))}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="bg-zinc-800/60 p-3 rounded-xl rounded-bl-none border border-zinc-700/30">
+              <div className="flex gap-1">
+                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-75"></span>
+                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-150"></span>
+              </div>
+            </div>
+          </div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 border-t border-zinc-800 bg-zinc-900/20">
+        <div className="relative">
+          <textarea
+            value={aiInput}
+            onChange={(e) => setAiInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleAISend();
+              }
+            }}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-xs text-zinc-300 outline-none focus:border-blue-500/50 resize-none h-20"
+            placeholder="Ask anything..."
+          />
+          <button
+            onClick={handleAISend}
+            className="absolute right-2 bottom-2 bg-blue-600 p-1.5 rounded-lg hover:bg-blue-500 transition-colors text-white"
+          >
+            <Send size={14} />
+          </button>
         </div>
       </div>
-      <div className="relative">
-        <textarea
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs outline-none focus:border-blue-500/50 resize-none h-24"
-          placeholder="Ask anything..."
-        />
-        <button className="absolute right-3 bottom-3 bg-blue-600 p-1.5 rounded-lg hover:bg-blue-500">
-          <Send size={14} />
-        </button>
-      </div>
-    </div>
-  </aside>
-);
+    </aside>
+  );
+};
 
 // --- Context Panel ---
 const ContextPanel = ({ onClose }) => (
