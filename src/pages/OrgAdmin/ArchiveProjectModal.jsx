@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import API from "../../api/axios"; // Apna axios instance import karein
+import toast from 'react-hot-toast';
 
 const ArchiveProjectModal = ({ 
   activeModal, 
@@ -31,7 +32,11 @@ const ArchiveProjectModal = ({
       }
     } catch (err) {
       console.error("Archive Error:", err);
-      alert("Project archive karne mein masla hua: " + (err.response?.data?.message || err.message));
+      // alert("Project archive karne mein masla hua: " + (err.response?.data?.message || err.message));
+      const audio = new Audio("/sounds/short_bongo.mp3");
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log("Sound blocked"));
+      toast.error("Failed to archive project");
     } finally {
       setLoading(false);
     }

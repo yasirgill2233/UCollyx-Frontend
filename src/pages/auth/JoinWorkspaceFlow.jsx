@@ -14,6 +14,7 @@ import {
 import { useNavigate } from "react-router";
 import RequestSuccessful from "./RequestSuccessful";
 import API from "../../api/axios";
+import toast from "react-hot-toast";
 
 export default function JoinWorkspaceFlow() {
   // selection, join-form, request-sent
@@ -70,7 +71,12 @@ export default function JoinWorkspaceFlow() {
     setLoading(true);
     try {
       if (tab === "invite") {
-        if (!inviteCode) return alert("Please enter a code");
+        if (!inviteCode) {
+          const audio = new Audio("/sounds/short_bongo.mp3");
+          audio.volume = 0.5;
+          audio.play().catch((e) => console.log("Sound blocked"));
+          return toast.error("Please enter an invite code!");
+        }
 
         const res = await API.post("/workspace/join", {
           role: role,
@@ -79,10 +85,25 @@ export default function JoinWorkspaceFlow() {
         });
 
         // Agar code sahi hai, to seedha dashboard par bhej dein
-        alert("Success! Welcome to the workspace.");
+        // alert("Success! Welcome to the workspace.");
+        const audio = new Audio("/sounds/short_bongo.mp3");
+        audio.volume = 0.5;
+        audio.play().catch((e) => console.log("Sound blocked"));
+        toast.success("Success! Welcome to the workspace.", {
+          style: {
+            borderRadius: "10px",
+            background: "#333",
+            color: "#fff",
+          },
+        });
         navigate("/"); // Hamari login wali redirection logic dashboard par le jayegi
       } else {
-        if (!selectedWorkspace) return alert("Please select a workspace");
+        if (!selectedWorkspace) {
+          const audio = new Audio("/sounds/short_bongo.mp3");
+          audio.volume = 0.5;
+          audio.play().catch((e) => console.log("Sound blocked"));
+          return toast.error("Please select a workspace!");
+        }
 
         console.log(selectedWorkspace);
         await API.post("/workspace/join", {
@@ -94,7 +115,11 @@ export default function JoinWorkspaceFlow() {
         navigate("/request-successful"); // Request sent screen
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong");
+      // alert(err.response?.data?.message || "Something went wrong");
+      const audio = new Audio("/sounds/short_bongo.mp3");
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log("Sound blocked"));
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -189,7 +214,7 @@ export default function JoinWorkspaceFlow() {
 
             <button
               onClick={() =>
-                role ? setStep("join-method") : alert("Please select a role")
+                role ? setStep("join-method") : toast.error("Please select a role")
               }
               className="w-full mt-10 bg-blue-700 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-800 transition-all flex items-center justify-center gap-3 shadow-xl active:scale-[0.98]"
             >

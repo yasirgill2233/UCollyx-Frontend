@@ -31,6 +31,7 @@ import "xterm/css/xterm.css";
 import { io } from "socket.io-client";
 import TerminalComponent from "./TerminalComponent";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 // 1. AI API Function (Keep only this one)
 const getAISuggestion = async (codeSnippet) => {
@@ -297,7 +298,11 @@ const IDEBody = () => {
       }
     } catch (err) {
       console.error("Error creating item:", err);
-      alert("Failed to create " + type);
+      // alert("Failed to create " + type);
+      const audio = new Audio("/sounds/short_bongo.mp3");
+            audio.volume = 0.5;
+            audio.play().catch((e) => console.log("Sound blocked"));
+            toast.error("Failed to create " + type);
     }
   };
 
