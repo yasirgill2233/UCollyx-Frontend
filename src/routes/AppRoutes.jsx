@@ -38,6 +38,8 @@ import SetPassword from "../pages/auth/SetPassword";
 import JoinWorkspace from "../pages/auth/JoinWorkspace";
 import SelectWorkspace from "../pages/auth/SelectWorkspace";
 import ProtectedRoute from "./ProtectedRoute";
+import AccessDenied from "../pages/auth/AccessDenied";
+import AwaitingRole from "../pages/auth/AwaitingRole";
 
 // const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 
@@ -78,14 +80,30 @@ function AppRoutes() {
             }
           />
           <Route
-            path="request-successful"
+            path="request-pending"
             element={
               <ProtectedRoute>
                 <RequestSuccessful />
               </ProtectedRoute>
             }
           />
+           <Route
+            path="request-rejected"
+            element={
+              <ProtectedRoute>
+                <AccessDenied />
+              </ProtectedRoute>
+            }
+          />
           <Route
+            path="awaiting-role"
+            element={
+              <ProtectedRoute>
+                <AwaitingRole />
+              </ProtectedRoute>
+            }
+          />
+           <Route
             path="sign-out"
             element={
               <ProtectedRoute>

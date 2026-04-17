@@ -75,58 +75,67 @@ export default function Login() {
   // };
 
   const handlePostLoginRedirect = async (user) => {
-
     if (user.role === "super_admin") {
-    console.log("Super Admin identified, skipping workspace fetch.");
-    localStorage.setItem("user", JSON.stringify(user));
-    navigate("/super-admin/dashboard");
-    return;
-  }
-  try {
-    const res = await API.get("/workspace/my-workspaces");
-    const workspaces = res.data.workspaces || [];
-    const count = res.data.count || 0;
+      console.log("Super Admin identified, skipping workspace fetch.");
+      localStorage.setItem("user", JSON.stringify(user));
+      navigate("/super-admin/dashboard");
+      return;
+    }
+    try {
+      const res = await API.get("/workspace/my-workspaces");
+      const workspaces = res.data.workspaces || [];
+      const count = res.data.count || 0;
 
-    // 1. Pehle check karein ke workspaces hain bhi ya nahi (Safety Check)
-    if (count > 0 && workspaces.length > 0) {
-      // Agar workspace hai, to uska role nikaal kar user object update karein
-      const userRole = workspaces[0].role;
-      const updatedUser = { ...user, role: userRole };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      console.log("Found Role:", userRole);
-      playWorkspaceSound();
-
-      // 2. Ab Redirection logic
-      // if (count === 0) {
-      if (count === 1) {
-        if (userRole === "dev") {
-          navigate(`/dev/dashboard`);
-        } else if (userRole === "qa") {
-          navigate(`/qa/dashboard`);
-        } else if (userRole === "manager") {
-          navigate(`/manager/portfolio`);
-        } else if (userRole === "org_admin") {
-          navigate(`/org-admin/dashboard`);
+      if (user.requestStatus === "pending") {
+          navigate("/request-pending");
+        } else if (user.requestStatus === "rejected") {
+          navigate("/request-rejected");
         } else {
-          navigate(`/super-admin/dashboard`);
+           if (count > 0 && workspaces.length > 0) {
+        // Agar workspace hai, to uska role nikaal kar user object update karein
+        const userRole = workspaces[0].role;
+        const updatedUser = { ...user, role: userRole };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        console.log("Found Role:", userRole);
+        playWorkspaceSound();
+
+        // 2. Ab Redirection logic
+        // if (count === 0) {
+
+        if (count === 1) {
+          if (userRole === "dev") {
+            navigate(`/dev/dashboard`);
+          } else if (userRole === "qa") {
+            navigate(`/qa/dashboard`);
+          } else if (userRole === "manager") {
+            navigate(`/manager/portfolio`);
+          } else if (userRole === "org_admin") {
+            navigate(`/org-admin/dashboard`);
+          } else if (userRole === "member") {
+            navigate(`/awaiting-role`);
+          } else {
+            navigate(`/super-admin/dashboard`);
+          }
+        } else {
+          // Multiple workspaces case
+          navigate("/select-workspace", { state: { workspaces } });
         }
       } else {
-        // Multiple workspaces case
-        navigate("/select-workspace", { state: { workspaces } });
+        // 3. Agar koi workspace nahi hai (count === 0)
+        console.log("No workspaces found");
+        localStorage.setItem("user", JSON.stringify(user)); // Basic user save karein
+        navigate("/workspace-selection");
       }
-    } else {
-      // 3. Agar koi workspace nahi hai (count === 0)
-      console.log("No workspaces found");
-      localStorage.setItem("user", JSON.stringify(user)); // Basic user save karein
-      navigate("/workspace-selection");
-    }
+        }
 
-  } catch (err) {
-    console.error("Redirect Error:", err);
-    navigate("/login");
-  }
-};
+      // 1. Pehle check karein ke workspaces hain bhi ya nahi (Safety Check)
+     
+    } catch (err) {
+      console.error("Redirect Error:", err);
+      navigate("/login");
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -138,7 +147,7 @@ export default function Login() {
     try {
       const res = await API.post("/auth/login", { email, password });
 
-      console.log("Check role:", res.data.user.role);
+      console.log("Check role:", res.data.user);
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
