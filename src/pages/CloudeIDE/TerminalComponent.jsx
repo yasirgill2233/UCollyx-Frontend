@@ -1,57 +1,37 @@
-import React, { useEffect, useRef } from 'react';
-import { Terminal as XTerm } from 'xterm';
-import { FitAddon } from 'xterm-addon-fit';
-import 'xterm/css/xterm.css';
-import { io } from 'socket.io-client';
+import React, { useEffect, useRef } from "react";
+import { Terminal as XTerm } from "xterm";
+import { FitAddon } from "xterm-addon-fit";
+import "xterm/css/xterm.css";
 
-const TerminalComponent = () => {
+const TerminalComponent = ({ socket }) => {
   const terminalRef = useRef(null);
-  const xtermRef = useRef(null);
-  const socketRef = useRef(null);
+  const termInstance = useRef(null);
 
   useEffect(() => {
-    // 1. Socket Connection (Backend URL use karein)
-    socketRef.current = io('http://localhost:4001'); 
-
-    // 2. XTerm Initialize
-    const term = new XTerm({
-      cursorBlink: true,
-      theme: {
-        background: '#09090b', // Match IDE background
-        foreground: '#e4e4e7',
-        cursor: '#3b82f6',
-      },
-      fontSize: 13,
-      fontFamily: 'JetBrains Mono, Menlo, monospace',
-    });
-
+    const term = new XTerm({});
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
     fitAddon.fit();
+    termInstance.current = term;
 
-    xtermRef.current = term;
-
-    // 3. Listen for Backend Data
-    socketRef.current.on('terminal:data', (data) => {
+    const handleData = (data) => {
       term.write(data);
-    });
+    };
+    socket.on("terminal:data", handleData);
 
-    // 4. Send Data to Backend
-    term.onData((data) => {
-      socketRef.current.emit('terminal:write', data);
-    });
-
-    // Handle Resize
-    const handleResize = () => fitAddon.fit();
-    window.addEventListener('resize', handleResize);
+    const handleInput = (data) => {
+      socket.emit("terminal:write", data);
+    };
+    const inputDisposable = term.onData(handleInput);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      socket.off("terminal:data", handleData); 
+      inputDisposable.dispose();
       term.dispose();
-      socketRef.current.disconnect();
+      termInstance.current = null;
     };
-  }, []);
+  }, [socket]);
 
   return <div ref={terminalRef} className="h-full w-full" />;
 };

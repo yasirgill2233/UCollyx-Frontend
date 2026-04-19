@@ -6,6 +6,8 @@ import {
   Monitor, Layout, Code2
 } from 'lucide-react';
 
+import API from "../../api/axios";
+
 const ProjectsPage = () => {
   const navigate = useNavigate();
   
@@ -61,6 +63,27 @@ const ProjectsPage = () => {
     window.addEventListener('click', closeMenu);
     return () => window.removeEventListener('click', closeMenu);
   }, []);
+
+
+  // ProjectsPage.jsx ke andar:
+
+const [projects, setProjects] = useState([]); // State update
+
+useEffect(() => {
+    const fetchMyProjects = async () => {
+        try {
+            // API call: Backend se wahi projects aayenge jo is user se linked hain
+            const res = await API.get("/projects/my-projects"); 
+            setProjects(res.data.data);
+        } catch (err) {
+            console.error("Error fetching projects:", err);
+        }
+    };
+    fetchMyProjects();
+}, []);
+
+console.log("My Projects:", projects); // Debugging ke liye console log
+
 
   // Handle Item Creation
   const handleCreate = (e) => {
@@ -138,7 +161,7 @@ const ProjectsPage = () => {
       </div>
 
       {/* Main Grid View */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-8">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-8">
         {getCurrentDirectory().map((item) => (
           <div 
             key={item.id}
@@ -168,7 +191,29 @@ const ProjectsPage = () => {
             </div>
           </div>
         ))}
+      </div> */}
+
+      {/* Main Grid View */}
+<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-12 gap-8">
+  {projects.map((project) => (
+    <div 
+      key={project.id}
+      onDoubleClick={() => navigate(`/dev/ide/${project.slug}`)}
+      className="group cursor-pointer text-center relative"
+    >
+      <div className="flex flex-col items-center">
+        <div className="relative mb-3">
+          <div className="bg-white border-2 border-slate-100 rounded-xl p-5 shadow-sm group-hover:shadow-xl group-hover:border-blue-400 transition-all">
+             <Folder size={44} className="text-blue-500" />
+          </div>
+        </div>
+        <span className="text-xs font-extrabold text-slate-700 truncate w-full px-2">
+          {project.name}
+        </span>
       </div>
+    </div>
+  ))}
+</div>
 
       {/* Custom Context Menu (Right Click) */}
       {contextMenu && (
