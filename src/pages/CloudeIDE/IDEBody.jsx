@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Plus,
   ChevronDown,
@@ -25,12 +25,8 @@ import {
 } from "lucide-react";
 import { Editor } from "@monaco-editor/react";
 
-import { FileIcon, defaultStyles } from "react-file-icon";
-
 import AIPanel from "./IDE/AIPanel";
 
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 
 import socket from "../../context/SocketContext";
@@ -57,8 +53,12 @@ const getAISuggestion = async (codeSnippet) => {
 
 const IDEBody = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const param = useParams();
   console.log("Route Params:", param);
+
+  const slug = localStorage.getItem("slug");
+
   const [showExplorer, setShowExplorer] = useState(true);
   const [rightPanel, setRightPanel] = useState("AI");
   const [openTabs, setOpenTabs] = useState([]);
@@ -116,19 +116,15 @@ const IDEBody = () => {
   };
 
   const loadProject = async (id) => {
-    setActiveProjectId(id); // Pehle ID set karo
-    await refreshTree(id); // Phir us ID ke liye tree load karo
+    setActiveProjectId(id ? id : null);
+    await refreshTree(id ? id : "No Project");
   };
 
-  // Inside IDEBody.jsx
   useEffect(() => {
-    // Jab project active ho, tabhi socket init karo
     if (activeProjectId) {
       socket.emit("terminal:init", activeProjectId);
     }
 
-    // Cleanup: Jab bhi activeProjectId change hoga,
-    // ye cleanup run hoga aur purana terminal band kar dega.
     return () => {
       socket.emit("terminal:close");
     };
@@ -150,37 +146,20 @@ const IDEBody = () => {
   const [projectData, setProjectData] = useState(
     location.state?.folderData || {
       id: "root",
-      name: "UCollyx_Project",
+      name: "Opened Project",
       type: "folder",
       children: [],
     },
   );
 
-  // IDEBody.jsx
-useEffect(() => {
-  socket.on("file-tree-update", (data) => {
-    console.log("📢 File system changed, refreshing tree...",data);
-    console.log("File system changed, refreshing...");
-    // Yahan dobara API call karo jo File Tree fetch karti hai
-    refreshTree(data.path); 
-  });
+  useEffect(() => {
+    socket.on("file-tree-update", (data) => {
+      console.log("📢 File system changed, refreshing tree...", data);
+      refreshTree(slug);
+    });
 
-  return () => socket.off("file-tree-update");
-}, []);
-
-  // useEffect(() => {
-  //   const loadInitialTree = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "http://localhost:4001/api/files/tree",
-  //       );
-  //       setProjectData(response.data);
-  //     } catch (error) {
-  //       console.error("Error loading file tree:", error);
-  //     }
-  //   };
-  //   loadInitialTree();
-  // }, []);
+    return () => socket.off("file-tree-update");
+  }, []);
 
   const handleContextMenu = (e, itemId) => {
     e.preventDefault();
@@ -217,17 +196,10 @@ useEffect(() => {
 
   const closeMenu = () => setMenuPos({ ...menuPos, visible: false });
 
-  // const refreshTree = async () => {
-  //   const res = await axios.get("http://localhost:4001/api/files/tree");
-  //   setProjectData(res.data);
-  // };
-
-  // 1. Refresh Tree ko update karo taake woh specific project ka data laye
   const refreshTree = async (projectId) => {
     try {
-      // API call mein projectID bhejo taake backend wahi folder search kare
       const res = await axios.get(
-        `http://localhost:4001/api/files/tree?projectId=${projectId}`,
+        `http://localhost:4002/api/files/tree?projectId=${projectId}`,
       );
 
       console.log("Tree refreshed with data:", res.data);
@@ -238,8 +210,10 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    loadProject(param.projectId);
-  }, []);
+    // localStorage.setItem("activeProjectId", param?.projectId);
+    // loadProject(param?.projectId);
+    loadProject(slug);
+  }, [slug]);
 
   const [fileContents, setFileContents] = useState({});
 
@@ -268,7 +242,7 @@ useEffect(() => {
     const newTimeout = setTimeout(async () => {
       if (activeFilePath) {
         try {
-          await axios.post("http://localhost:4001/api/files/save", {
+          await axios.post("http://localhost:4002/api/files/save", {
             path: activeFilePath,
             content: value,
           });
@@ -284,7 +258,7 @@ useEffect(() => {
 
   const deleteItem = async (path) => {
     if (window.confirm("Are you sure you want to delete this?")) {
-      await axios.post("http://localhost:4001/api/files/delete", { path });
+      await axios.post("http://localhost:4002/api/files/delete", { path });
       refreshTree();
     }
   };
@@ -299,7 +273,7 @@ useEffect(() => {
 
     // Aapka purana file loading logic...
     try {
-      const res = await axios.post("http://localhost:4001/api/files/content", {
+      const res = await axios.post("http://localhost:4002/api/files/content", {
         path,
       });
       setFileContents((prev) => ({ ...prev, [name]: res.data.content }));
@@ -320,37 +294,73 @@ useEffect(() => {
   };
 
   // 2. Naya File ya Folder create karne ki API
+  // const addItem = async (parentId, type) => {
+  //   const name = prompt(`Enter ${type} name (e.g., test.js or myFolder):`);
+  //   if (!name) return;
+
+  //   try {
+  //     const parentPath = parentId || projectData.id;
+
+  //     const response = await axios.post(
+  //       "http://localhost:4002/api/files/create",
+  //       {
+  //         projectId: activeProjectId,
+  //         parentPath: parentPath,
+  //         name: name,
+  //         type: type,
+  //       },
+  //     );
+
+  //     if (response.data.success) {
+  //       // refreshTree(param.projectId); // List refresh karein taake naya item nazar aaye
+  //       refreshTree(slug);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error creating item:", err);
+  //     // alert("Failed to create " + type);
+  //     const audio = new Audio("/sounds/short_bongo.mp3");
+  //     audio.volume = 0.5;
+  //     audio.play().catch((e) => console.log("Sound blocked"));
+  //     toast.error("Failed to create " + type);
+  //   }
+  // };
+
+  // IDEBody.jsx mein update
   const addItem = async (parentId, type) => {
-    const name = prompt(`Enter ${type} name (e.g., test.js or myFolder):`);
+    const name = prompt(`Enter ${type} name:`);
     if (!name) return;
 
     try {
-      const parentPath = parentId || projectData.id;
+      //   // Agar parentId 'root' hai toh project ka path use karo, warna wahi folder path
+      const targetPath = parentId;
+      // alert(`Hi, ${parentId}, ${targetPath}`);
+      
+      console.log("Hey There",targetPath, parentId)
 
-      const response = await axios.post(
-        "http://localhost:4001/api/files/create",
-        {
-          projectId: activeProjectId,
-          parentPath: parentPath,
-          name: name,
-          type: type,
-        },
-      );
-
-      if (response.data.success) {
-        refreshTree(param.projectId); // List refresh karein taake naya item nazar aaye
-      }
+      await axios.post("http://localhost:4002/api/files/create", {
+        // projectId: activeProjectId,
+        parentPath: targetPath,
+        name: name,
+        type: type,
+      });
+      refreshTree(slug)
+      // refreshTree call ho jayega socket event se
     } catch (err) {
-      console.error("Error creating item:", err);
-      // alert("Failed to create " + type);
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
       toast.error("Failed to create " + type);
     }
   };
 
-  
+  const [expandedFolders, setExpandedFolders] = useState({});
+
+  const toggleFolder = (id) => {
+    // alert(id)
+    setExpandedFolders((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  // console.log(expandedFolders)
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
@@ -365,33 +375,61 @@ useEffect(() => {
             <div className="flex items-center justify-between">
               <div className="px-4 py-1.5 text-[12px] font-semibold text-zinc-300 flex items-center gap-1.5 cursor-pointer hover:text-white">
                 <ChevronDown size={14} />
-                {projectData?.name.toUpperCase().split('-').join(' ').replace(/[0-9]/g, '')}
+                {projectData?.name
+                  .toUpperCase()
+                  .split("-")
+                  .join(" ")
+                  .replace(/[0-9]/g, "")}
               </div>
 
               <div className="flex px-4 gap-3 text-zinc-500">
                 <FilePlus
                   size={14}
                   className="cursor-pointer hover:text-zinc-200"
-                  onClick={() => addItem("root", "file")}
+                  onClick={() => addItem(slug, "file")}
                 />
                 <FolderPlus
                   size={14}
                   className="cursor-pointer hover:text-zinc-200"
-                  onClick={() => addItem("root", "folder")}
+                  onClick={() => addItem(slug, "folder")}
                 />
               </div>
             </div>
 
             <div className="mt-1">
-              {projectData.children?.map((child) => (
-                <FileTreeItem
-                  key={child.id}
-                  item={child}
-                  depth={1}
-                  isActive={activeTab === child.name}
-                  onFileClick={openFile}
-                />
-              ))}
+              {activeProjectId ? (
+                projectData.children?.map((child) => (
+                  // <FileTreeItem
+                  //   key={child.id}
+                  //   item={child}
+                  //   depth={1}
+                  //   isActive={activeTab === child.name}
+                  //   onFileClick={openFile}
+                  // />
+                  <FileTreeItem
+                    key={child.id}
+                    item={child}
+                    depth={1}
+                    isActive={activeTab === child.name}
+                    onFileClick={openFile}
+                    onAdd={addItem}
+                    handleContextMenu={handleContextMenu}
+                    expandedFolders={expandedFolders} // Yahan pass kiya
+                    toggleFolder={toggleFolder} // Yahan pass kiya
+                  />
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-3 w-full p-4">
+                  <button
+                    onClick={() => {
+                      navigate("/dev/projects-dir");
+                    }}
+                    className="bg-blue-600 text-white font-medium px-4 py-1 w-full"
+                  >
+                    Open Project
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </aside>

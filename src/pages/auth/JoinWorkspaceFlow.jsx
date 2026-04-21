@@ -112,7 +112,7 @@ export default function JoinWorkspaceFlow() {
           type: "request",
         });
 
-        navigate("/request-successful"); // Request sent screen
+        navigate("/request-pending"); // Request sent screen
       }
     } catch (err) {
       // alert(err.response?.data?.message || "Something went wrong");

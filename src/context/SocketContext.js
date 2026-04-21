@@ -1,3 +1,3 @@
 import { io } from "socket.io-client";
-const socket = io("http://localhost:4001"); // Sirf ek baar
+const socket = io("http://localhost:4002"); // Sirf ek baar
 export default socket;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Terminal as XTerm } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
@@ -6,6 +6,23 @@ import "xterm/css/xterm.css";
 const TerminalComponent = ({ socket }) => {
   const terminalRef = useRef(null);
   const termInstance = useRef(null);
+
+  // Frontend (React)
+  const [isConnected, setIsConnected] = useState(false);
+
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     setIsConnected(true);
+  //     // Jab server restart ho kar wapis connect ho, terminal ko saaf kar do
+  //     term.clear();
+  //     term.write('Terminal reconnected to server...\r\n');
+  //   });
+
+  //   socket.on('disconnect', () => {
+  //     setIsConnected(false);
+  //     term.write('\r\n[Terminal Disconnected - Reconnecting...]\r\n');
+  //   });
+  // }, []);
 
   useEffect(() => {
     const term = new XTerm({});
@@ -25,8 +42,21 @@ const TerminalComponent = ({ socket }) => {
     };
     const inputDisposable = term.onData(handleInput);
 
+    // socket.on("connect", () => {
+    //   setIsConnected(true);
+    //   // Jab server restart ho kar wapis connect ho, terminal ko saaf kar do
+    //   term.clear();
+    //   term.write("Terminal reconnected to server...\r\n");
+    //   socket.on("terminal:data", handleData);
+    // });
+
+    // socket.on("disconnect", () => {
+    //   setIsConnected(false);
+    //   term.write("\r\n[Terminal Disconnected - Reconnecting...]\r\n");
+    // });
+
     return () => {
-      socket.off("terminal:data", handleData); 
+      socket.off("terminal:data", handleData);
       inputDisposable.dispose();
       term.dispose();
       termInstance.current = null;

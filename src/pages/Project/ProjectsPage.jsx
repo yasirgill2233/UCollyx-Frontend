@@ -40,6 +40,11 @@ const ProjectsPage = () => {
     },
   ]);
 
+  const handleProjectClick = (slug) => {
+    localStorage.setItem("slug", slug);
+    navigate(`/dev/ide/${slug}`);
+  };
+
   // UI States
   const [currentPath, setCurrentPath] = useState([]); 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -198,7 +203,7 @@ console.log("My Projects:", projects); // Debugging ke liye console log
   {projects.map((project) => (
     <div 
       key={project.id}
-      onDoubleClick={() => navigate(`/dev/ide/${project.slug}`)}
+      onDoubleClick={() => handleProjectClick(project.slug)}
       className="group cursor-pointer text-center relative"
     >
       <div className="flex flex-col items-center">
