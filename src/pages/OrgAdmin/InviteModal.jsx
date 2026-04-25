@@ -25,14 +25,10 @@ function InviteModal({ onClose, onInvite }) {
             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
             onChange={(e) => setFormData({...formData, role: e.target.value})}
           >
-            <option value="Developer">Developer</option>
-            <option value="Manager">Manager</option>
+            <option value="dev">Developer</option>
+            <option value="manager">Manager</option>
+            <option value="qa">Quality Assurance</option>
           </select>
-          <input 
-            placeholder="Team Name" 
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500"
-            onChange={(e) => setFormData({...formData, team: e.target.value})}
-          />
         </div>
         <div className="p-6 bg-slate-50/50 flex gap-3">
           <button onClick={onClose} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl font-bold text-sm">Cancel</button>

@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
 import API from "../../api/axios"; // Apna axios instance import karein
-import toast from 'react-hot-toast';
 import { triggerToast } from '../../utils/toastHelper';
 
-const ArchiveProjectModal = ({ 
+const ActiveProjectModal = ({ 
   activeModal, 
   setActiveModal, 
   selectedProject, 
-  fetchData, // Main list ko refresh karne ke liye
+  fetchData,
   setSelectedProjectForSidebar 
 }) => {
   const [loading, setLoading] = useState(false);
 
-  if (activeModal !== "archive") return null;
+  if (activeModal !== "active") return null;
 
-  const handleArchive = async () => {
+  const handleActive = async () => {
     try {
       setLoading(true);
       // Real Backend API Call
-      const res = await API.patch(`/projects/${selectedProject.id}/archive`);
+      const res = await API.patch(`/projects/${selectedProject.id}/active`);
       
       if (res.data.success) {
         // Main component mein fetchData() call karke list refresh karein
@@ -57,7 +56,7 @@ const ArchiveProjectModal = ({
 
         <div className="flex flex-col gap-3">
           <button
-            onClick={handleArchive}
+            onClick={handleActive}
             disabled={loading}
             className={`w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95 ${
               loading ? "opacity-50 cursor-not-allowed" : "hover:bg-black"
@@ -79,4 +78,4 @@ const ArchiveProjectModal = ({
   );
 };
 
-export default ArchiveProjectModal;
+export default ActiveProjectModal;

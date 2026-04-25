@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Terminal as XTerm } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
@@ -7,25 +7,12 @@ const TerminalComponent = ({ socket }) => {
   const terminalRef = useRef(null);
   const termInstance = useRef(null);
 
-  // Frontend (React)
-  const [isConnected, setIsConnected] = useState(false);
-
-  // useEffect(() => {
-  //   socket.on('connect', () => {
-  //     setIsConnected(true);
-  //     // Jab server restart ho kar wapis connect ho, terminal ko saaf kar do
-  //     term.clear();
-  //     term.write('Terminal reconnected to server...\r\n');
-  //   });
-
-  //   socket.on('disconnect', () => {
-  //     setIsConnected(false);
-  //     term.write('\r\n[Terminal Disconnected - Reconnecting...]\r\n');
-  //   });
-  // }, []);
-
   useEffect(() => {
-    const term = new XTerm({});
+    const term = new XTerm({cursorBlink: true,
+  // Ye line terminal ko default browser selection karne deti hai
+  disableStdin: false, 
+  // Mouse events ko control karne ke liye
+  screenReaderMode: true});
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
     term.open(terminalRef.current);
@@ -41,19 +28,6 @@ const TerminalComponent = ({ socket }) => {
       socket.emit("terminal:write", data);
     };
     const inputDisposable = term.onData(handleInput);
-
-    // socket.on("connect", () => {
-    //   setIsConnected(true);
-    //   // Jab server restart ho kar wapis connect ho, terminal ko saaf kar do
-    //   term.clear();
-    //   term.write("Terminal reconnected to server...\r\n");
-    //   socket.on("terminal:data", handleData);
-    // });
-
-    // socket.on("disconnect", () => {
-    //   setIsConnected(false);
-    //   term.write("\r\n[Terminal Disconnected - Reconnecting...]\r\n");
-    // });
 
     return () => {
       socket.off("terminal:data", handleData);

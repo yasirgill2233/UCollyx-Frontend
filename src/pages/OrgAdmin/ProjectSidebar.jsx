@@ -12,25 +12,20 @@ const ProjectSidebar = ({
   projects 
 }) => {
   
-  // Hamesha latest data filter karein projects list se
   const currentProject = projects.find(p => p.id === selectedProjectForSidebar?.id);
 
   if (!selectedProjectForSidebar || !currentProject) return null;
 
-  // Channel name logic using backend project name
   const channelName = `# ${currentProject.name?.toLowerCase().replace(/\s+/g, "-") || "project"}`;
 
   return (
     <div className="fixed inset-0 z-[150] flex justify-end">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-slate-900/20 backdrop-blur-[2px]"
         onClick={() => setSelectedProjectForSidebar(null)}
       />
 
-      {/* Sidebar Content */}
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col">
-        {/* Header */}
         <div className="p-8 border-b border-slate-50 flex justify-between items-start">
           <div>
             <h2 className="text-xl font-black text-slate-900 tracking-tight">
@@ -48,7 +43,6 @@ const ProjectSidebar = ({
           </button>
         </div>
 
-        {/* Tabs Navigation */}
         <div className="flex px-8 gap-8 border-b border-slate-50">
           {["Overview", "Team", "Channel"].map((tab) => (
             <button
@@ -66,9 +60,7 @@ const ProjectSidebar = ({
           ))}
         </div>
 
-        {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-8">
-          {/* 1. OVERVIEW TAB */}
           {activeTab === "Overview" && (
             <div className="space-y-8">
               <div className="flex justify-between items-center py-4 border-b border-slate-50">
@@ -119,7 +111,6 @@ const ProjectSidebar = ({
             </div>
           )}
 
-          {/* 2. TEAM TAB */}
           {activeTab === "Team" && (
             <div className="space-y-4">
               <div className="flex justify-between items-center mb-6">
@@ -150,9 +141,9 @@ const ProjectSidebar = ({
                       </div>
                     </div>
                     <span className={`text-[9px] font-black px-2.5 py-1 rounded-lg border uppercase tracking-tighter ${
-                      member.ProjectMember?.role === "Manager" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
+                      member.ProjectMember?.project_role === "Manager" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-slate-50 text-slate-400 border-slate-100"
                     }`}>
-                      {member.ProjectMember?.role || "Member"}
+                      {member.ProjectMember?.project_role || "Member"}
                     </span>
                   </div>
                 ))}
@@ -160,7 +151,6 @@ const ProjectSidebar = ({
             </div>
           )}
 
-          {/* 3. CHANNEL TAB */}
           {activeTab === "Channel" && (
             <div className="h-full flex flex-col items-center justify-start pt-10">
               <div className="w-full p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 mb-6 flex items-center gap-4">

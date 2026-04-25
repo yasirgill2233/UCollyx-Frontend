@@ -133,10 +133,10 @@ export default function WorkspaceSetup() {
       });
 
       alert("Invitations sent successfully!");
-      navigate(`/${slug}/dashboard`); // Dashboard par redirect karein
+      navigate(`/`); // Dashboard par redirect karein
     } catch (err) {
       alert("Workspace created, but failed to send some invites.");
-      navigate(`/${slug}/dashboard`);
+      navigate(`/`);
     } finally {
       setIsLoading(false);
     }

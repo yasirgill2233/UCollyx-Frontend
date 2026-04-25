@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Search, Bell, ChevronDown, LogOut, Key, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import API from '../../api/axios';
 
 const Header = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Logout logic yahan ayegi (e.g. clearing token)
+  const handleLogout = async () => {
+    await API.get('users/signed-out')
     localStorage.clear();
     navigate('/sign-out');
   };

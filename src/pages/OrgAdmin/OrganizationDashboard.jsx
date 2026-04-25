@@ -119,7 +119,6 @@ const OrganizationDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-12 font-sans text-left selection:bg-indigo-100">
-      {/* --- Workspace Header --- */}
       <Modal />
       <div className="mx-auto mb-12 flex justify-between items-end">
         <div>
@@ -135,20 +134,9 @@ const OrganizationDashboard = () => {
             Overview of organization and key metrics
           </p>
         </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="px-5 py-2.5 bg-indigo-600 rounded-xl text-xs font-bold text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-          >
-            Invite Member
-          </button>
-        </div>
       </div>
 
-      {/* --- Main Dashboard Grid --- */}
       <div className="mx-auto grid grid-cols-2 gap-10">
-        {/* Card 1: Users Overview */}
         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all group">
           <div className="flex justify-between items-start mb-12">
             <div>
@@ -191,7 +179,6 @@ const OrganizationDashboard = () => {
               </span>
             </div>
 
-            {/* Visual Progress Section */}
             <div className="grid grid-cols-2 gap-12 pt-4">
           
               <div className="space-y-3">
@@ -282,7 +269,7 @@ const OrganizationDashboard = () => {
                     {row.label}
                   </span>
                   {row.tag && (
-                    <span className="bg-slate-900 text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest">
+                    <span onClick={()=>navigate('/org-admin/projects')} className="bg-slate-900 text-white text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest">
                       {row.tag}
                     </span>
                   )}
@@ -348,7 +335,6 @@ const OrganizationDashboard = () => {
           </button>
         </div>
 
-        {/* Card 4: Recent Actions Timeline */}
         <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
           <h3 className="text-lg font-black text-slate-800">Recent Actions</h3>
           <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1 mb-10">

@@ -5,6 +5,8 @@ import TeamManagementModal from "./TeamManagementModal";
 import ArchiveProjectModal from "./ArchiveProjectModal";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
+import ActiveProjectModal from "./ActiveProjectModal copy";
+import { triggerToast } from "../../utils/toastHelper";
 
 const AdminProjectsView = () => {
   // --- Data States ---
@@ -44,7 +46,7 @@ const AdminProjectsView = () => {
       setLoading(true);
       const [projectRes, userRes] = await Promise.all([
         API.get("/projects/get"),
-        API.get("/users/all"),
+        API.get("/users/proj"),
       ]);
 
       console.log(projectRes, userRes);
@@ -53,6 +55,9 @@ const AdminProjectsView = () => {
         setProjects(projectRes.data.projects);
         setStats(projectRes.data.stats); // Backend se aane wale stats
       }
+
+      console.log("Stats:", stats);
+
       if (userRes.data.success) {
         setAllUsers(userRes.data.users);
       }
@@ -62,6 +67,22 @@ const AdminProjectsView = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      const noManagerCount = projects.filter(
+        (project) =>
+          !project.members?.some(
+            (m) => m.ProjectMember?.project_role === "Manager",
+          ),
+      ).length;
+
+      setStats((prev) => ({
+        ...prev,
+        noManager: noManagerCount,
+      }));
+    }
+  }, [projects]);
 
   useEffect(() => {
     fetchData();
@@ -112,27 +133,13 @@ const AdminProjectsView = () => {
       });
 
       if (res.data.success) {
-        // alert("Team saved successfully!");
-        const audio = new Audio("/sounds/short_bongo.mp3");
-        audio.volume = 0.5;
-        audio.play().catch((e) => console.log("Sound blocked"));
-        toast.success("Team saved successfully!", {
-          style: {
-            borderRadius: "10px",
-            background: "#333",
-            color: "#fff",
-          },
-        });
+        triggerToast("Team saved successfully!",'success')
         setActiveModal(null);
         fetchData(); // Table refresh karein taake members count update ho jaye
       }
     } catch (err) {
       console.error("Error saving team:", err);
-      // alert("Failed to save team changes.");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.error("Failed to save team changes.");
+      triggerToast("Failed to save team changes.",'error')
     }
   };
 
@@ -146,6 +153,8 @@ const AdminProjectsView = () => {
       console.error("Archive error:", err);
     }
   };
+
+  console.log("All Users Are Here:", allUsers);
 
   // --- Helpers for Display ---
   const currentProject = projects.find((p) => p.id === selectedProjectId);
@@ -319,7 +328,7 @@ const AdminProjectsView = () => {
       {/* --- FILTERS & SEARCH --- */}
       <div className="flex justify-between items-center mb-10">
         <div className="flex gap-3">
-          {["All Projects", "Active", "Archived", "No Manager"].map((tab) => (
+          {["All Projects", "Active", "Archived"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveFilter(tab)}
@@ -440,26 +449,40 @@ const AdminProjectsView = () => {
                   </span>
                 </td>
 
-                {/* 3. Manager */}
                 <td className="px-8 py-6">
-                  {project?.manager?.full_name ? (
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-indigo-100 rounded-full border border-indigo-200 flex items-center justify-center text-[10px] font-bold text-indigo-600 italic">
-                        {project.manager.full_name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
+                  {(() => {
+                    const manager = project.members?.find(
+                      (m) => m.ProjectMember?.project_role === "Manager",
+                    );
+                    return (
+                      <div>
+                        {manager ? (
+                          <div
+                            key={manager.id}
+                            className="flex items-center gap-3"
+                          >
+                            <div className="w-8 h-8 bg-indigo-100 rounded-full border border-indigo-200 flex items-center justify-center text-[10px] font-bold text-indigo-600 italic">
+                              {manager.full_name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()}
+                            </div>
+                            <span className="text-sm font-bold text-slate-700">
+                              {manager.full_name}
+                              <p className="text-[10px] font-medium">
+                                {manager.email}
+                              </p>
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="bg-amber-50 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-lg border border-amber-200 uppercase tracking-tighter italic">
+                            No Manager
+                          </span>
+                        )}
                       </div>
-                      <span className="text-sm font-bold text-slate-700">
-                        {project.manager.full_name}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="bg-amber-50 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-lg border border-amber-200 uppercase tracking-tighter italic">
-                      No Manager
-                    </span>
-                  )}
+                    );
+                  })()}
                 </td>
 
                 {/* 4. Members */}
@@ -512,7 +535,17 @@ const AdminProjectsView = () => {
                         }}
                         className="w-full px-4 py-2 text-[11px] font-black text-slate-600 hover:bg-slate-50 flex items-center gap-2"
                       >
-                        👥 Manage Team
+                        Manage Team
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setActiveModal("active");
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full px-4 py-2 text-[11px] font-black text-slate-600 hover:bg-rose-50 flex items-center gap-2"
+                      >
+                        Active Project
                       </button>
                       <button
                         onClick={() => {
@@ -522,7 +555,7 @@ const AdminProjectsView = () => {
                         }}
                         className="w-full px-4 py-2 text-[11px] font-black text-rose-500 hover:bg-rose-50 flex items-center gap-2"
                       >
-                        📦 Archive Project
+                        Archive Project
                       </button>
                     </div>
                   )}
@@ -568,6 +601,16 @@ const AdminProjectsView = () => {
           {/* Archive Modal Call */}
           {activeModal === "archive" && (
             <ArchiveProjectModal
+              activeModal={activeModal}
+              setActiveModal={setActiveModal}
+              selectedProject={selectedProject}
+              fetchData={fetchData} // Ye function API se projects dobara load karega
+              setSelectedProjectForSidebar={setSelectedProjectForSidebar}
+            />
+          )}
+
+          {activeModal === "active" && (
+            <ActiveProjectModal
               activeModal={activeModal}
               setActiveModal={setActiveModal}
               selectedProject={selectedProject}

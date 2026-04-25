@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Gitgraph } from "@gitgraph/react";
 import {
   Plus,
   ChevronDown,
@@ -334,8 +335,8 @@ const IDEBody = () => {
       //   // Agar parentId 'root' hai toh project ka path use karo, warna wahi folder path
       const targetPath = parentId;
       // alert(`Hi, ${parentId}, ${targetPath}`);
-      
-      console.log("Hey There",targetPath, parentId)
+
+      console.log("Hey There", targetPath, parentId);
 
       await axios.post("http://localhost:4002/api/files/create", {
         // projectId: activeProjectId,
@@ -343,7 +344,7 @@ const IDEBody = () => {
         name: name,
         type: type,
       });
-      refreshTree(slug)
+      refreshTree(slug);
       // refreshTree call ho jayega socket event se
     } catch (err) {
       toast.error("Failed to create " + type);
@@ -361,6 +362,52 @@ const IDEBody = () => {
   };
 
   // console.log(expandedFolders)
+
+  // import { useEffect, useState } from 'react';
+
+  const GitGraphView = ({ projectId }) => {
+    const [commits, setCommits] = useState([]);
+
+    useEffect(() => {
+      fetch(`http://localhost:4002/api/git/graph/${projectId}`)
+        .then((res) => res.json())
+        .then((data) => setCommits(data));
+    }, [projectId]);
+
+    console.log("Commits:", commits);
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "400px",
+          overflow: "auto",
+          background: "rgba(255,255,255,0.1)",
+        }}
+      >
+        <Gitgraph>
+          {(gitgraph) => {
+            // Simulate git commands with Gitgraph API.
+            const master = gitgraph.branch("main");
+            master.commit("Initial commit");
+
+            const develop = master.branch("develop");
+            develop.commit("Add TypeScript");
+
+            const aFeature = develop.branch("a-feature");
+            aFeature
+              .commit("Make it work")
+              .commit("Make it right")
+              .commit("Make it fast");
+
+            develop.merge(aFeature);
+            develop.commit("Prepare v1");
+
+            master.merge(develop).tag("v1.0.0");
+          }}
+        </Gitgraph>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
@@ -399,13 +446,6 @@ const IDEBody = () => {
             <div className="mt-1">
               {activeProjectId ? (
                 projectData.children?.map((child) => (
-                  // <FileTreeItem
-                  //   key={child.id}
-                  //   item={child}
-                  //   depth={1}
-                  //   isActive={activeTab === child.name}
-                  //   onFileClick={openFile}
-                  // />
                   <FileTreeItem
                     key={child.id}
                     item={child}
@@ -561,7 +601,9 @@ const IDEBody = () => {
             </div>
           )}
         </div>
-
+        {/* <div>
+          <GitGraphView projectId={slug} />
+        </div> */}
         {/* Bottom Terminal Section */}
         <div className="h-60 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
           <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">

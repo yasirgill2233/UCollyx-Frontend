@@ -92,16 +92,12 @@ export default function Login() {
           navigate("/request-rejected");
         } else {
            if (count > 0 && workspaces.length > 0) {
-        // Agar workspace hai, to uska role nikaal kar user object update karein
         const userRole = workspaces[0].role;
         const updatedUser = { ...user, role: userRole };
         localStorage.setItem("user", JSON.stringify(updatedUser));
 
         console.log("Found Role:", userRole);
         playWorkspaceSound();
-
-        // 2. Ab Redirection logic
-        // if (count === 0) {
 
         if (count === 1) {
           if (userRole === "dev") {
@@ -118,18 +114,14 @@ export default function Login() {
             navigate(`/super-admin/dashboard`);
           }
         } else {
-          // Multiple workspaces case
           navigate("/select-workspace", { state: { workspaces } });
         }
       } else {
-        // 3. Agar koi workspace nahi hai (count === 0)
         console.log("No workspaces found");
-        localStorage.setItem("user", JSON.stringify(user)); // Basic user save karein
+        localStorage.setItem("user", JSON.stringify(user));
         navigate("/workspace-selection");
       }
         }
-
-      // 1. Pehle check karein ke workspaces hain bhi ya nahi (Safety Check)
      
     } catch (err) {
       console.error("Redirect Error:", err);
@@ -152,7 +144,6 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // Ab role-based redirect ke bajaye workspace-based redirect karein
       handlePostLoginRedirect(res.data.user);
     } catch (err) {
       const msg =
