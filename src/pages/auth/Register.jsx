@@ -3,6 +3,7 @@ import { Mail, Lock, Eye, EyeOff, User, UserRoundPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Fixed import
 import API from "../../api/axios";
 import toast from "react-hot-toast";
+import { triggerToast } from "../../utils/toastHelper";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -30,39 +31,25 @@ export default function Register() {
     
     // Basic Validation
     if (formData.password !== formData.confirmPassword) {
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      return toast.error("Passwords do not match");
+      return triggerToast("Passwords do not match","error");
     }
 
     setLoading(true);
     try {
-      // Backend route /auth/signup hai jo humne banaya tha
+
       const res = await API.post('/auth/register', {
         full_name: formData.full_name,
         email: formData.email,
         password: formData.password
       });
 
-      // alert("OTP sent to your email!");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.success("OTP sent to your email!", {
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
-      // Email verify-otp page par bhej rahe hain aur sath email bhi le ja rahe hain
+      triggerToast("OTP sent to your email!","success");
       navigate('/verify', { state: { email: formData.email } });
     } catch (err) {
       const audio = new Audio("/sounds/short_bongo.mp3");
       audio.volume = 0.5;
       audio.play().catch((e) => console.log("Sound blocked"));
-      toast.error(err.response?.data?.message || "Something went wrong");
+      triggerToast(err.response?.data?.message || "Something went wrong","error");
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Lock, ShieldCheck, Loader2 } from "lucide-react";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
+import { triggerToast } from "../../utils/toastHelper";
 
 export default function JoinWorkspace() {
   const [searchParams] = useSearchParams();
@@ -22,7 +23,7 @@ export default function JoinWorkspace() {
       const audio = new Audio("/sounds/short_bongo.mp3");
       audio.volume = 0.5;
       audio.play().catch((e) => console.log("Sound blocked"));
-      return toast.error("Passwords do not match")
+      return triggerToast("Passwords do not match","error")
     };
 
     setIsLoading(true);
@@ -35,24 +36,10 @@ export default function JoinWorkspace() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      // alert("Account created and Workspace joined!");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.success("Account created and Workspace joined!", {
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
+     triggerToast("Account created and Workspace joined!","success")
       navigate(`/`);
     } catch (err) {
-      // alert(err.response?.data?.message || "Something went wrong");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.error(err.response?.data?.message || "Something went wrong");
+      triggerToast(err.response?.data?.message || "Something went wrong","error")
     } finally {
       setIsLoading(false);
     }
@@ -69,12 +56,7 @@ export default function JoinWorkspace() {
           token,
         });
       } catch (err) {
-        console.log(err);
-        // alert("Invalid Link");
-        const audio = new Audio("/sounds/short_bongo.mp3");
-        audio.volume = 0.5;
-        audio.play().catch((e) => console.log("Sound blocked"));
-        toast.error("Invalid Link");
+        triggerToast(err?.response?.data?.message || "Invlid Link","error")
       } finally {
         setLoading(false);
       }

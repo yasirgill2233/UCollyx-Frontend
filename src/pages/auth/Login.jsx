@@ -27,53 +27,6 @@ export default function Login() {
     audio.play().catch((err) => console.log("Playback blocked:", err));
   };
 
-  // Helper function for post-login navigation logic
-  // const handlePostLoginRedirect = async (user) => {
-  //   try {
-  //     const res = await API.get("/workspace/my-workspaces");
-  //     const workspaces = res.data.workspaces || [];
-  //     const count = res.data.count || 0;
-  //     console.log("There", workspaces[0].role, res.data.count);
-
-  //     const updatedUser = { ...user, role: workspaces[0].role };
-  //     localStorage.setItem("user", JSON.stringify(updatedUser));
-
-  //     console.log(updatedUser);
-
-  //     playWorkspaceSound();
-
-  //     if (count === 0) {
-  //       navigate("/workspace-selection");
-  //     } else if (count === 1) {
-  //       // const ws = workspaces[0];
-  //       // if (user.role == "dev") {
-  //       //   navigate(`/dev/dashboard`);
-  //       // } else if (user.role == "qa") {
-  //       //   navigate(`/qa/dashboard`);
-  //       // } else if (user.role == "manager") {
-  //       //   navigate(`/manager/portfolio`);
-  //       // } else if (user.role == "org_admin") {
-  //       //   navigate(`/org-admin/dashboard`);
-  //       if (workspaces[0].role == "dev") {
-  //         navigate(`/dev/dashboard`);
-  //       } else if (workspaces[0].role == "qa") {
-  //         navigate(`/qa/dashboard`);
-  //       } else if (workspaces[0].role == "manager") {
-  //         navigate(`/manager/portfolio`);
-  //       } else if (workspaces[0].role == "org_admin") {
-  //         navigate(`/org-admin/dashboard`);
-  //       } else {
-  //         navigate(`/super-admin/dashboard`);
-  //       }
-  //     } else {
-  //       navigate("/select-workspace", { state: { workspaces } });
-  //     }
-  //   } catch (err) {
-  //     console.error("Redirect Error:", err);
-  //     navigate("/login");
-  //   }
-  // };
-
   const handlePostLoginRedirect = async (user) => {
     if (user.role === "super_admin") {
       console.log("Super Admin identified, skipping workspace fetch.");

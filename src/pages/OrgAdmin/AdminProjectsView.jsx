@@ -113,7 +113,7 @@ const AdminProjectsView = () => {
         setActiveModal("team"); // Team modal par move karein
       }
     } catch (err) {
-      alert("Error creating project: " + err.response?.data?.message);
+      triggerToast("Error creating project: " + err.response?.data?.message,"error");
     }
   };
 
@@ -221,7 +221,7 @@ const AdminProjectsView = () => {
   const handleAddMember = () => {
     // 1. Basic Validation
     if (!selectedUserId) {
-      alert("Please select a user first");
+      triggerToast("Please select a user first","error");
       return;
     }
 
@@ -230,7 +230,7 @@ const AdminProjectsView = () => {
     // 2. Check karein ke member pehle se list (projectTeam) mein hai ya nahi
     const isAlreadyAdded = projectTeam.find((m) => m.id === userId);
     if (isAlreadyAdded) {
-      alert("This member is already added to the team.");
+      triggerToast("This member is already added to the team.","error");
       setSelectedUserId(""); // Dropdown reset karein
       return;
     }

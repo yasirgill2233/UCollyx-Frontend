@@ -9,6 +9,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import { triggerToast } from "../../utils/toastHelper";
 
 const OrganizationsScreen = () => {
   // --- States ---
@@ -501,8 +502,7 @@ const CreateOrgModal = ({ onClose, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.adminEmail)
-      return alert("Please fill required fields");
+    if (!formData.name || !formData.adminEmail) return triggerToast("Please fill required fields","error")
     onSubmit(formData);
   };
 

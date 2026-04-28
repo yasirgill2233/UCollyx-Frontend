@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Lock, Eye, EyeOff, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
+import { triggerToast } from "../../utils/toastHelper";
 
 export default function SetPassword() {
   const [password, setPassword] = useState("");
@@ -30,10 +31,10 @@ export default function SetPassword() {
       // Token headers mein axios interceptor ke zariye khud chala jayega
       await API.post("/auth/update-password", { password });
 
-      alert("Password set successfully! Let's set up your workspace.");
+      triggerToast("Password set successfully! Let's set up your workspace.","success");
       navigate("/workspace-selection");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update password.");
+      triggerToast(err.response?.data?.message || "Failed to update password.","error");
     } finally {
       setIsLoading(false);
     }

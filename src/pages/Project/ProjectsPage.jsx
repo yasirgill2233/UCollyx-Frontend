@@ -155,14 +155,6 @@ console.log("My Projects:", projects); // Debugging ke liye console log
           </h1>
           <p className="text-sm text-slate-400 mt-1 font-medium">Manage your project files and sub-folders</p>
         </div>
-        <div className="flex gap-3">
-            <button onClick={() => { setNewItemType('file'); setIsModalOpen(true); }} className="bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl font-bold hover:bg-slate-50 flex items-center gap-2 transition-all">
-              <Code2 size={18} /> New File
-            </button>
-            <button onClick={() => { setNewItemType('folder'); setIsModalOpen(true); }} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-slate-800 shadow-xl shadow-slate-200 flex items-center gap-2 transition-all">
-              <Plus size={18} /> New Folder
-            </button>
-        </div>
       </div>
 
       {/* Main Grid View */}

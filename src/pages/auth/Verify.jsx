@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom"; // Email receive karne ke liye
 import API from "../../api/axios";
 import toast from "react-hot-toast";
+import { triggerToast } from "../../utils/toastHelper";
 
 export default function Verify() {
   const navigate = useNavigate();
@@ -33,38 +34,21 @@ export default function Verify() {
   const handleResend = async () => {
     setLoading(true);
     try {
-      // 1. Backend API Call
+
       await API.post("/auth/resend-otp", { email: email });
 
-      // 2. Clear OTP Inputs & Reset State
       setOtp(new Array(6).fill(""));
 
-      // 3. Reset Timer
       setTimeLeft(44);
       setIsTimerActive(true);
 
-      // 4. Auto-focus to the first input box
       if (inputRefs.current[0]) {
         inputRefs.current[0].focus();
       }
+      triggerToast("A new 6-digit code has been sent to your inbox.", "success");
 
-      // alert("A new 6-digit code has been sent to your inbox.");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.success("A new 6-digit code has been sent to your inbox.", {
-        style: {
-          borderRadius: "10px",
-          background: "#333",
-          color: "#fff",
-        },
-      });
     } catch (err) {
-      
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.error("Failed to resend OTP. Please try again.");
+      triggerToast("Failed to resend OTP. Please try again.","error");
     } finally {
       setLoading(false);
     }
@@ -94,11 +78,7 @@ export default function Verify() {
   const handleVerify = async () => {
     const fullOtp = otp.join("");
     if (fullOtp.length < 6) {
-      // return alert("Please enter all 6 digits.");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      return toast.error("Please enter all 6 digits.");
+      return triggerToast("Please enter all 6 digits.", "error");
     }
 
     setLoading(true);
@@ -108,23 +88,10 @@ export default function Verify() {
         code: fullOtp,
       });
 
-      // alert("Email verified successfully! Please login.");
-      const audio = new Audio("/sounds/short_bongo.mp3");
-            audio.volume = 0.5;
-            audio.play().catch((e) => console.log("Sound blocked"));
-            toast.success("Email verified successfully! Please login.", {
-              style: {
-                borderRadius: "10px",
-                background: "#333",
-                color: "#fff",
-              },
-            });
+      triggerToast("Email verified successfully! Please login.", "success");
       navigate("/"); // Login page par bhej dein
     } catch (err) {
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      toast.error(err.response?.data?.message || "Invalid OTP");
+      triggerToast(err.response?.data?.message || "Invalid OTP","error");
     } finally {
       setLoading(false);
     }

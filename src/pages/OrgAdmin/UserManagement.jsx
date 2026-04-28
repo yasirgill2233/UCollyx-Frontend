@@ -121,7 +121,7 @@ export default function UsersManagement() {
 
     if (validEmails.length === 0) {
 
-      alert('Please add at least one email')
+      triggerToast("Please add at least one email",'success')
       return
     }
 
@@ -133,9 +133,9 @@ export default function UsersManagement() {
         inviterName: JSON.parse(localStorage.getItem("user")).full_name,
       });
 
-      alert("Invitations sent successfully!");
+      triggerToast("Invitations sent successfully!",'success')
     } catch (err) {
-      alert(err.response.data.message);
+      triggerToast(err.response.data.message,'error');
     } finally {
       setIsLoading(false);
     }

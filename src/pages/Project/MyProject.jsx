@@ -92,10 +92,6 @@ const MyProject = () => {
             Manage and monitor your ongoing developments.
           </p>
         </div>
-
-        <button className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
-          <Plus size={18} /> New Project
-        </button>
       </div>
 
       {/* Stats Section with Gradients */}

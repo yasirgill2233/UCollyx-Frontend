@@ -71,15 +71,6 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Quick Stats or Actions on the right side */}
-          <div className="flex gap-4">
-            <div className="bg-white/80 p-4 rounded-lg border border-white/50 shadow-sm hover:shadow-md transition-all cursor-default">
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                Active Sprints
-              </p>
-              <p className="text-xl font-black text-slate-800">03</p>
-            </div>
-          </div>
         </div>
       </header>
       <div className="mx-auto grid grid-cols-12 gap-8">

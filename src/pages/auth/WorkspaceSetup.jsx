@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
+import { triggerToast } from "../../utils/toastHelper";
 
 // --- Helper: Slugify Function ---
 const slugify = (text) => {
@@ -77,7 +78,7 @@ export default function WorkspaceSetup() {
 
   // --- Final Submit Logic ---
   const handleCreateWorkspace = async () => {
-    if (!name || !slug) return alert("Workspace name and URL are required!");
+    if (!name || !slug) return triggerToast("Workspace name and URL are required!","error");
 
     setIsLoading(true);
     try {
@@ -109,7 +110,7 @@ export default function WorkspaceSetup() {
       // navigate(`/${res.data.data.slug}/dashboard`);
     } catch (err) {
       console.log(err);
-      alert(err.response?.data?.message || "Failed to create workspace");
+      triggerToast(err.response?.data?.message || "Failed to create workspace","error");
     } finally {
       setIsLoading(false);
     }
@@ -132,10 +133,10 @@ export default function WorkspaceSetup() {
         inviterName: JSON.parse(localStorage.getItem("user")).full_name,
       });
 
-      alert("Invitations sent successfully!");
+      triggerToast("Invitations sent successfully!","success");
       navigate(`/`); // Dashboard par redirect karein
     } catch (err) {
-      alert("Workspace created, but failed to send some invites.");
+      triggerToast(err.response.data.message || "Workspace created, but failed to send some invites.","error");
       navigate(`/`);
     } finally {
       setIsLoading(false);
