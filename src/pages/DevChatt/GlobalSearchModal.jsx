@@ -6,26 +6,41 @@ const GlobalSearchModal = ({ isOpen, onClose, channels, users, chatData, onSelec
 
   if (!isOpen) return null;
 
+  console.log("Search Modal Data:", { channels, users, chatData });
+
   // 1. Filter Channels
   const filteredChannels = channels.filter(ch => 
-    ch.toLowerCase().includes(query.toLowerCase())
+    ch.name.toLowerCase().includes(query.toLowerCase())
   );
+
+  console.log("Filtered Channels:", filteredChannels);
 
   // 2. Filter People
   const filteredUsers = users.filter(user => 
-    user.toLowerCase().includes(query.toLowerCase())
+    user.full_name.toLowerCase().includes(query.toLowerCase())
   );
+
+  console.log("Filtered Users:", filteredUsers);
 
   // 3. Filter MESSAGES (The "Wide" Search)
   const filteredMessages = [];
-  if (query.length > 1) { // Sirf tab search karein jab user kam az kam 2 characters likhe
+  if (query.length > 1) { 
     Object.keys(chatData).forEach(chatName => {
-      chatData[chatName].forEach(msg => {
-        if (msg.text.toLowerCase().includes(query.toLowerCase())) {
+      // Pata lagayein ke ye chat name channel ka hai ya user ka
+      const matchedChannel = channels.find(c => c.name === chatName);
+      const matchedUser = users.find(u => u.full_name === chatName);
+
+      const type = matchedChannel ? 'channel' : 'dm';
+      // Agar channel hai toh channel.id uthayen, agar dm hai toh user.id uthayen
+      const targetId = matchedChannel ? matchedChannel.id : (matchedUser ? matchedUser.id : null);
+
+      chatData[chatName]?.forEach(msg => {
+        if (msg.text && msg.text.toLowerCase().includes(query.toLowerCase())) {
           filteredMessages.push({
             ...msg,
             chatName: chatName,
-            type: channels.includes(chatName) ? 'channel' : 'dm'
+            type: type,
+            id: targetId // Sahi ID jis pr redirect hona ha
           });
         }
       });
@@ -72,7 +87,7 @@ const GlobalSearchModal = ({ isOpen, onClose, channels, users, chatData, onSelec
                     {filteredMessages.slice(0, 5).map((msg, i) => (
                       <div 
                         key={i}
-                        onClick={() => { onSelect(msg.chatName, msg.type); onClose(); }}
+                        onClick={() => { onSelect(msg.chatName, msg.type, msg.id); onClose(); }}
                         className="bg-white p-4 rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-md cursor-pointer transition-all group"
                       >
                         <div className="flex justify-between items-start mb-2">
@@ -100,8 +115,8 @@ const GlobalSearchModal = ({ isOpen, onClose, channels, users, chatData, onSelec
                   <div>
                     <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-2">Channels</h4>
                     {filteredChannels.map(ch => (
-                      <div key={ch} onClick={() => { onSelect(ch, 'channel'); onClose(); }} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-sm font-bold text-slate-700">
-                        <Hash size={14} className="text-blue-500" /> {ch}
+                      <div key={ch.id} onClick={() => { onSelect(ch.name, 'channel', ch.id); onClose(); }} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-sm font-bold text-slate-700">
+                        <Hash size={14} className="text-blue-500" /> {ch.name}
                       </div>
                     ))}
                   </div>
@@ -110,8 +125,8 @@ const GlobalSearchModal = ({ isOpen, onClose, channels, users, chatData, onSelec
                   <div>
                     <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 px-2">People</h4>
                     {filteredUsers.map(user => (
-                      <div key={user} onClick={() => { onSelect(user, 'dm'); onClose(); }} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-sm font-bold text-slate-700">
-                        <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[8px]">{user[0]}</div> {user}
+                      <div key={user.id} onClick={() => { onSelect(user.full_name, 'dm',user.id); onClose(); }} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 cursor-pointer text-sm font-bold text-slate-700">
+                        <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[8px]">{user.full_name[0]}</div> {user.full_name}
                       </div>
                     ))}
                   </div>

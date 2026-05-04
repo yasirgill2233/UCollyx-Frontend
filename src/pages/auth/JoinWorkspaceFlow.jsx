@@ -294,7 +294,7 @@ export default function JoinWorkspaceFlow() {
               <button
                 onClick={handleJoinAction}
                 disabled={loading}
-                className="..."
+                className="bg-blue-700 text-white flex justify-center gap-3 rounded-md items-center p-3 w-[50%]"
               >
                 {loading
                   ? "Processing..."

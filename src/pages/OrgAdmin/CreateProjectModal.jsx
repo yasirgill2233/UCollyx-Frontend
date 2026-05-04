@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const CreateProjectModal = ({
   activeModal,
@@ -8,6 +8,9 @@ const CreateProjectModal = ({
   handleCreateSubmit,
   allUsers,
 }) => {
+
+  const [createChannel, setCreateChannel] = useState(true);
+  
   if (activeModal !== "create") return null;
 
   return (
@@ -25,7 +28,7 @@ const CreateProjectModal = ({
           </button>
         </div>
 
-        <form onSubmit={handleCreateSubmit} className="space-y-6">
+        <form onSubmit={(e) => handleCreateSubmit(e, createChannel)} className="space-y-6">
           {/* Project Name */}
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -37,7 +40,6 @@ const CreateProjectModal = ({
               onChange={handleInputChange}
               placeholder="e.g. Mobile App Redesign"
               className="w-full border border-slate-200 rounded-xl p-3.5 text-sm font-bold text-slate-700 focus:border-blue-500 outline-none transition-all"
-              required
             />
           </div>
 
@@ -98,16 +100,18 @@ const CreateProjectModal = ({
             </div>
           </div>
 
+          {/* Auto-create channel Checkbox */}
           <div className="flex items-center gap-3 pt-2">
             <input
               type="checkbox"
               id="channel"
-              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-              defaultChecked
+              checked={createChannel}
+              onChange={(e) => setCreateChannel(e.target.checked)}
+              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
             />
             <label
               htmlFor="channel"
-              className="text-xs font-bold text-slate-500 italic"
+              className="text-xs font-bold text-slate-500 italic cursor-pointer select-none"
             >
               Auto-create Slack/Team channel for this project
             </label>

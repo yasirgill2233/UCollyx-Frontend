@@ -89,7 +89,7 @@ const AdminProjectsView = () => {
   }, []);
 
   // --- 2. Create Project Logic ---
-  const handleCreateSubmit = async (e) => {
+  const handleCreateSubmit = async (e, createChannel) => {
     e.preventDefault();
     try {
       const payload = {
@@ -97,6 +97,7 @@ const AdminProjectsView = () => {
         description: newProject.description,
         status: newProject.status,
         manager_id: newProject.managerId || 1,
+        createChannel: createChannel,
       };
 
       const res = await API.post("/projects/create", payload);
@@ -113,7 +114,20 @@ const AdminProjectsView = () => {
         setActiveModal("team"); // Team modal par move karein
       }
     } catch (err) {
-      triggerToast("Error creating project: " + err.response?.data?.message,"error");
+      // triggerToast("Error creating project: " + err.response?.data?.message,"error");
+      // Agar validation error (400) hai toh uske detailed messages pick karo
+    if (err.response && err.response.data && err.response.data.errors) {
+      const allErrors = err.response.data.errors
+        .map((errObj) => `${errObj.field}: ${errObj.message}`)
+        .join("\n");
+      
+      triggerToast(allErrors, "error");
+    } else {
+      triggerToast(
+        (err.response?.data?.message || err.message),
+        "error"
+      );
+    }
     }
   };
 

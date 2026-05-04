@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Search, UserPlus } from 'lucide-react';
+import API from '../../api/axios';
 
 const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,10 +13,30 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers = [] }) => {
     { id: 104, email:"alimurtaza@gmail.com", status:"Active", name: 'Ali Murtaza', role: 'Full Stack', color: 'bg-emerald-500' },
   ];
 
+
+  const [allUsers, setAllUsers] = useState([]);
+  
+    const fetchWorkspaceMembers = async () => {
+      try {
+        const res = await API.get('/workspace/members'); // Apna exact route use karein
+        console.log("Add Member:",res.data.data)
+        if (res.data.success) {
+          setAllUsers(res.data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err);
+      }
+    };
+    
+    useEffect(() => {
+      fetchWorkspaceMembers();
+    }, []);
+  
+
   // Filter: Sirf wo dikhao jo pehle se channel mein nahi hain aur search se match karein
-  const availableToAdd = allTeamMembers.filter(member => 
-    !existingMembers.some(em => em.name === member.name) &&
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const availableToAdd = allUsers.filter(member => 
+    !existingMembers.some(em => em.full_name === member.User.full_name) &&
+    member.User.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (!isOpen) return null;
@@ -47,17 +68,17 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers = [] }) => {
             {availableToAdd.length > 0 ? (
               availableToAdd.map((member) => (
                 <div 
-                  key={member.id}
+                  key={member.User.id}
                   onClick={() => { onAdd(member); onClose(); }}
                   className="flex items-center justify-between group cursor-pointer hover:bg-blue-50 p-2 rounded-xl transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-lg ${member.color} flex items-center justify-center text-white font-bold text-xs`}>
-                      {member.name[0]}
+                    <div className={`w-9 h-9 rounded-lg ${'bg-red-500'} flex items-center justify-center text-white font-bold text-xs`}>
+                      {member.User.full_name[0]}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-slate-800">{member.name}</h4>
-                      <p className="text-[10px] text-gray-400">{member.role}</p>
+                      <h4 className="text-sm font-bold text-slate-800">{member.User.full_name}</h4>
+                      <p className="text-[10px] text-gray-400">{member.User.role}</p>
                     </div>
                   </div>
                   <UserPlus size={16} className="text-blue-500 opacity-0 group-hover:opacity-100 transition-all" />

@@ -28,162 +28,234 @@ import UserProfileSidebar from "./UserProfileSidebar";
 import AddMemberModal from "./AddMemberModal";
 import ScheduleMeetingModal from "./Video/ScheduleMeetingModal";
 import MyVideoCall from "./Video/MyVideoCall";
+import API from "../../api/axios";
+import { triggerToast } from "../../utils/toastHelper";
 
 const DevChat = () => {
   // 1. States for Data Handling
-  const [activeChat, setActiveChat] = useState({
-    name: "AI Project",
-    type: "channel",
-  });
+  const [activeChat, setActiveChat] = useState({});
   const [inputText, setInputText] = useState("");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
+  const [chatMembers, setChatMembers] = useState([]);
+
+  const messagesEndRef = useRef(null);
+
+  console.log("Active Chat:", activeChat);
+
   // 1. State for Schedule Modal
-const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
-// 2. Schedule Handler
-// const handleScheduleMeeting = (meeting) => {
-//   const meetingMessage = {
-//     id: Date.now(),
-//     user: "System",
-//     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-//     isMe: false,
-//     type: "meeting_card", // Naya message type
-//     meetingDetails: meeting,
-//     text: `Scheduled a meeting: ${meeting.title}`
-//   };
+  // 2. Schedule Handler
+  // const handleScheduleMeeting = (meeting) => {
+  //   const meetingMessage = {
+  //     id: Date.now(),
+  //     user: "System",
+  //     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  //     isMe: false,
+  //     type: "meeting_card", // Naya message type
+  //     meetingDetails: meeting,
+  //     text: `Scheduled a meeting: ${meeting.title}`
+  //   };
 
-//   setChatData((prev) => ({
-//     ...prev,
-//     [activeChat.name]: [...(prev[activeChat.name] || []), meetingMessage],
-//   }));
-// };
+  //   setChatData((prev) => ({
+  //     ...prev,
+  //     [activeChat.name]: [...(prev[activeChat.name] || []), meetingMessage],
+  //   }));
+  // };
 
-const handleScheduleMeeting = () => {
-  const callMessage = {
-    id: Date.now(),
-    user: "Yasir", // Current Logged in User
-    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    text: "Started a video call",
-    type: "call", // Unique type for styling
-    isMe: true,
+  const handleScheduleMeeting = () => {
+    const callMessage = {
+      id: Date.now(),
+      user: "Yasir", // Current Logged in User
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      text: "Started a video call",
+      type: "call", // Unique type for styling
+      isMe: true,
+    };
+
+    // 1. Chat list mein add karein
+    setChatData((prev) => ({
+      ...prev,
+      [activeChat.id]: [...(prev[activeChat.id] || []), callMessage],
+    }));
+
+    // 2. Local modal open karein
+    setIsVideoModalOpen(true);
   };
 
-  // 1. Chat list mein add karein
-  setChatData((prev) => ({
-    ...prev,
-    [activeChat.name]: [...(prev[activeChat.name] || []), callMessage],
-  }));
+  const [channels, setChannels] = useState([]);
 
-  // 2. Local modal open karein
-  setIsVideoModalOpen(true);
-};
+  // 2. Channels fetch karne ka function
+  const fetchMyChannels = async () => {
+    try {
+      const res = await API.get("/channels/my-channels");
+      console.log("Channels:", res.data.data);
+      if (res.data.success) {
+        setChannels(res.data.data); // Pure objects ki array save hogi
 
-  const [channels, setChannels] = useState([
-    "AI Project",
-    "Alpha Project",
-    "General",
-    "Random",
-  ]);
-  const [dmUsers, setDmUsers] = useState(["Ahmed", "Faisal", "Zain"]);
+        // Agar koi channel pehle se active nahi hai toh pehle channel ko select kar lein
+        if (!activeChat && res.data.data.length > 0) {
+          setActiveChat({
+            name: res.data.data.name,
+            type: "channel",
+            id: res.data.data.id,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching channels:", err);
+    }
+  };
+
+  // 3. Page load par API call karein
+  useEffect(() => {
+    fetchMyChannels();
+  }, []);
+
+  const [dmUsers, setDmUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
 
   const [notifications, setNotifications] = useState([
-  {
-    id: 1,
-    type: 'mention',
-    text: 'Ahmed Khan mentioned you in #AI Project: "Check the new API docs"',
-    time: '2 min ago',
-    unread: true,
-    targetChat: 'AI Project',
-    chatType: 'channel'
-  },
-  {
-    id: 2,
-    type: 'dm',
-    text: 'Faisal Raza sent you a direct message',
-    time: '10 min ago',
-    unread: true,
-    targetChat: 'Faisal',
-    chatType: 'dm'
-  },
-  {
-    id: 3,
-    type: 'file',
-    text: 'Zeeshan Ali uploaded "Project_Final_v2.pdf" in #Alpha Project',
-    time: '45 min ago',
-    unread: true,
-    targetChat: 'Alpha Project',
-    chatType: 'channel'
-  },
-  {
-    id: 4,
-    type: 'channel',
-    text: '5 new messages in #General channel',
-    time: '1 hour ago',
-    unread: false,
-    targetChat: 'General',
-    chatType: 'channel'
-  },
-  {
-    id: 5,
-    type: 'thread',
-    text: 'Hamza replied to your thread in #Random',
-    time: '3 hours ago',
-    unread: true,
-    targetChat: 'Random',
-    chatType: 'channel'
-  },
-  {
-    id: 6,
-    type: 'join',
-    text: 'Sara Mir joined #Alpha Project',
-    time: '5 hours ago',
-    unread: false,
-    targetChat: 'Alpha Project',
-    chatType: 'channel'
-  },
-  {
-    id: 7,
-    type: 'reaction',
-    text: 'Bilal reacted with to your message in #AI Project',
-    time: 'Yesterday',
-    unread: false,
-    targetChat: 'AI Project',
-    chatType: 'channel'
-  }
-]);
+    {
+      id: 1,
+      type: "mention",
+      text: 'Ahmed Khan mentioned you in #AI Project: "Check the new API docs"',
+      time: "2 min ago",
+      unread: true,
+      targetChat: "AI Project",
+      chatType: "channel",
+    },
+    {
+      id: 2,
+      type: "dm",
+      text: "Faisal Raza sent you a direct message",
+      time: "10 min ago",
+      unread: true,
+      targetChat: "Faisal",
+      chatType: "dm",
+    },
+    {
+      id: 3,
+      type: "file",
+      text: 'Zeeshan Ali uploaded "Project_Final_v2.pdf" in #Alpha Project',
+      time: "45 min ago",
+      unread: true,
+      targetChat: "Alpha Project",
+      chatType: "channel",
+    },
+    {
+      id: 4,
+      type: "channel",
+      text: "5 new messages in #General channel",
+      time: "1 hour ago",
+      unread: false,
+      targetChat: "General",
+      chatType: "channel",
+    },
+    {
+      id: 5,
+      type: "thread",
+      text: "Hamza replied to your thread in #Random",
+      time: "3 hours ago",
+      unread: true,
+      targetChat: "Random",
+      chatType: "channel",
+    },
+    {
+      id: 6,
+      type: "join",
+      text: "Sara Mir joined #Alpha Project",
+      time: "5 hours ago",
+      unread: false,
+      targetChat: "Alpha Project",
+      chatType: "channel",
+    },
+    {
+      id: 7,
+      type: "reaction",
+      text: "Bilal reacted with to your message in #AI Project",
+      time: "Yesterday",
+      unread: false,
+      targetChat: "AI Project",
+      chatType: "channel",
+    },
+  ]);
 
-  // 2. Naya channel add karne ka function
-  const addNewChannel = (name) => {
-    if (!channels.includes(name)) {
-      setChannels([...channels, name]);
-      // Switch to new channel immediately
-      switchChat(name, "channel");
+  // 2. Backend se conversation users fetch karne ka function
+  const fetchConversations = async () => {
+    try {
+      const res = await API.get("/messages/conversations");
+      console.log("Conversations:", res.data.data);
+      if (res.data.success) {
+        setDmUsers(res.data.data); // Database se aaye hue active DM users update ho gaye
+      }
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
     }
   };
 
-  // 2. Naya DM add karne ka function
-  const startNewDM = (userName) => {
-    // Agar user pehle se list mein nahi hai to add karo
-    if (!dmUsers.includes(userName)) {
-      setDmUsers((prev) => [...prev, userName]);
+  // 3. Component mount hone par call karein
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  // 2. Naya channel add karne ka function
+  const addNewChannel = async (channelData) => {
+    try {
+      const payload = {
+        name: channelData.name,
+        description: channelData.description,
+        is_private: channelData.is_private,
+        type: channelData.is_private ? "private" : "public",
+      };
+
+      const res = await API.post("/channels/create", payload);
+
+      console.log("Channel Ceated Now:", res);
+
+      if (res.data.success) {
+        setChannels((prev) => [...prev, res.data.data.name]);
+        fetchMyChannels();
+        switchChat(res.data.data.name, "channel");
+      }
+      triggerToast(
+        "Channel '" + res.data.data.name + "' created successfully!",
+        "success",
+      );
+    } catch (err) {
+      triggerToast(
+        "Error creating channel: " +
+          (err.response?.data?.message || err.message),
+        "error",
+      );
     }
-    // Foran us user ki chat open karo
-    switchChat(userName, "dm");
+  };
+
+  const startNewDM = (user) => {
+    console.log("Check User DM List", user, dmUsers);
+    const isAlreadyAdded = dmUsers.some(
+      (existingUser) => existingUser.id === user.id,
+    );
+
+    if (!isAlreadyAdded) {
+      setDmUsers((prev) => [...prev, user]);
+    }
+    switchChat(user.full_name, "dm", user.id);
   };
 
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const emojiPickerRef = useRef(null);
 
-  // Jab emoji select ho to text mein add ho jaye
   const onEmojiClick = (emojiData) => {
     setInputText((prev) => prev + emojiData.emoji);
-    // Agar aap chahte hain ke emoji dalte hi picker band ho jaye:
     // setShowEmojiPicker(false);
   };
 
-  // Click outside to close picker
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -197,125 +269,78 @@ const handleScheduleMeeting = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Messages state grouped by chat name (to keep chats separate)
-  const [chatData, setChatData] = useState({
-    "AI Project": [
-      {
-        id: 1,
-        user: "Ahmed",
-        time: "10:35 AM",
-        text: "Good morning! let's discuss todays progress",
-        isMe: false,
-        status: "Active",
-        email: "ahmeddown@gmail.com",
-        phone: 923117963243,
-        startdate: "Jan 12, 2023",
-        role: "Developer",
-        color: "bg-blue-500",
-      },
-      {
-        id: 2,
-        user: "Faisal",
-        time: "10:38 AM",
-        text: "OK, I have updated the API documentation.",
-        isMe: false,
-        status: "InActive",
-        email: "faisal@gmail.com",
-        phone: null,
-        startdate: "",
-        role: "Mentor",
-        color: "bg-green-500",
-      },
-      {
-        id: 3,
-        user: "Yasir",
-        time: "10:40 AM",
-        text: "Yes, looking good. Check the latest commit.",
-        isMe: true,
-        status: "Active",
-        email: "yasir@gmail.com",
-        phone: 923342233243,
-        startdate: "Jan 12, 2025",
-        role: "Designer",
-        color: "bg-orange-500",
-      },
-    ],
-    Ahmed: [
-      {
-        id: 1,
-        user: "Ahmed",
-        time: "09:00 AM",
-        text: "Hey, did you check the new PR?",
-        isMe: false,
-        status: "Active",
-        email: "ahmeddown@gmail.com",
-        phone: 923117963243,
-        startdate: "Jan 12, 2023",
-        role: "Developer",
-        color: "bg-yellow-500",
-      },
-    ],
-    Faisal: [
-      {
-        id: 2,
-        user: "Faisal",
-        time: "09:00 AM",
-        text: "Hey, did you check the new PR?",
-        isMe: false,
-        status: "InActive",
-        email: "faisal@gmail.com",
-        phone: 923342563243,
-        startdate: "Feb 10, 2021",
-        role: "Developer",
-        color: "bg-lame-500",
-      },
-    ],
-    General: [
-      {
-        id: 4,
-        user: "System",
-        time: "Yesterday",
-        text: "Welcome to General Channel!",
-        isMe: false,
-        role: "Developer",
-        color: "bg-pink-500",
-      },
-      {
-        id: 5,
-        user: "Yasir",
-        time: "Yesterday",
-        text: "Welcome to General Channel!",
-        isMe: true,
-        role: "Developer",
-        color: "bg-purple-500",
-      },
-    ],
-  });
+  const [chatData, setChatData] = useState({});
 
-  // 2. Add Member Function
-  const handleAddMember = (memberObj) => {
-    console.log(memberObj);
-    if (memberObj) {
-      const newMember = {
-        id: memberObj.id,
-        user: memberObj.name,
-        role: memberObj.role,
-        status: memberObj.status,
-        color: memberObj.color,
-        email: memberObj.email,
-        text: "I am added",
-        phone: memberObj.phoner,
-        startdate: memberObj.startdate,
-        isMe: false,
-        time: "10:00 AM",
+  const handleAddMember = async (memberObj) => {
+    console.log("memberObj:", memberObj, activeChat.id);
+
+    if (!memberObj || !activeChat?.id) return;
+
+    try {
+      const payload = {
+        channelId: activeChat.id,
+        userId: memberObj.User.id,
+        role: "member",
       };
 
-      setChatData((prev) => ({
-        ...prev,
-        [activeChat.name]: [...(prev[activeChat.name] || []), newMember],
-      }));
+      const res = await API.post("/channels/add-member", payload);
+
+      console.log("Add Member Response", res);
+
+      if (res.data.success) {
+        const savedMember = res.data.data;
+
+        const newMember = {
+          id: savedMember.User.id,
+          user: savedMember.User.full_name,
+          role: savedMember.role_in_channel,
+          status: savedMember.User.status,
+          email: savedMember.User.email,
+          avatar_url: savedMember.User.avatar_url,
+          text: "I am added",
+          startdate: savedMember.createdAt,
+          isMe: false,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
+
+        setChatData((prev) => ({
+          ...prev,
+          [activeChat.id]: [...(prev[activeChat.id] || []), newMember],
+        }));
+
+        setChannelMembers((prev) => {
+          const isAlreadyAdded = prev.some((m) => m.id === newMember.id);
+          if (isAlreadyAdded) return prev;
+          return [
+            ...prev,
+            {
+              id: savedMember.User.id,
+              full_name: savedMember.User.full_name,
+              email: savedMember.User.email,
+              avatar_url: savedMember.User.avatar_url,
+              status: savedMember.User.status,
+              role: savedMember.role_in_channel,
+              isMe: true,
+            },
+          ];
+        });
+      }
+
+      triggerToast("Add Successfully", "success");
+    } catch (err) {
+      console.error("Error adding member:", err);
+      triggerToast(
+        err.response?.data?.message || "Failed to add member to channel",
+        "error",
+      );
     }
   };
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log("Logged in user:", user.id);
 
   // 2. States for UI/Modals
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false);
@@ -326,33 +351,128 @@ const handleScheduleMeeting = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  // 3. Handlers
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
+  const [channelMembers, setChannelMembers] = useState([]);
 
-    const newMessage = {
-      id: Date.now(),
-      user: "Yasir", // Assuming current user is Yasir
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      text: inputText,
-      isMe: true,
-      email: "yasir@dev.com",
-    };
+  const currentUserId = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user")).id
+    : null;
 
-    setChatData((prev) => ({
-      ...prev,
-      [activeChat.name]: [...(prev[activeChat.name] || []), newMessage],
-    }));
-    setInputText("");
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || !activeChat) return;
+
+    console.log("Active chat:", activeChat.id);
+
+    const currentInput = inputText.trim();
+    setInputText(""); // Local input ko foran empty kar dein taake UI fast lage
+
+    try {
+      const payload = {
+        text: currentInput,
+        type: activeChat.type, // 'channel' ya 'dm'
+        channelId: activeChat.type === "channel" ? activeChat.id : null,
+        receiverId: activeChat.type === "dm" ? activeChat.id : null,
+      };
+
+      // 1. API Call karein
+      const res = await API.post("/messages/send", payload);
+      console.log("Saved Message:", res.data.data.Sender);
+
+      if (res.data.success) {
+        const savedMsg = res.data.data;
+
+        // 2. Backend se aane wale data ke mutabiq frontend object banayein
+        const newMessage = {
+          id: savedMsg.id,
+          user: savedMsg.Sender?.full_name || "Yasir",
+          time: new Date(savedMsg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          text: savedMsg.content,
+          isMe: savedMsg.sender_id === currentUserId,
+          email: savedMsg.Sender?.email || "yasir@dev.com",
+          status: savedMsg.Sender?.status || "Active",
+          role: "Developer",
+          color: "bg-blue-500",
+          avatar_url: savedMsg.Sender?.avatar_url || null,
+        };
+
+        // 3. State update karein
+        setChatData((prev) => ({
+          ...prev,
+          [activeChat.name]: [...(prev[activeChat.name] || []), newMessage],
+        }));
+      }
+
+      triggerToast("Message sent!", "success");
+    } catch (err) {
+      console.error("Error sending message:", err);
+      // Agar api fail ho jaye toh input text ko wapas restore kar sakte hain user ke liye
+      setInputText(currentInput);
+      alert(err.response?.data?.message || "Failed to send message");
+    }
   };
 
-  const switchChat = (name, type) => {
-    setActiveChat({ name, type });
-    if (!chatData[name]) {
-      setChatData((prev) => ({ ...prev, [name]: [] }));
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const switchChat = async (name, type, id = null) => {
+    console.log("Check OnSelector Data:", name, type, id);
+
+    setActiveChat({ name, type, id });
+    setChatMembers([]);
+    // 2. Agar ID nahi hai, toh API call skip karein aur empty load karein
+    if (!id) {
+      if (!chatData[name]) {
+        setChatData((prev) => ({ ...prev, [name]: [] }));
+      }
+      return;
+    }
+
+    try {
+      setIsChatLoading(true);
+      let endpoint =
+        type === "channel" ? `/messages/channel/${id}` : `/messages/dm/${id}`;
+
+      const res = await API.get(endpoint);
+
+      console.log("Messages:", res.data.data);
+
+      if (res.data.success) {
+        // Backend se aye hue messages ko aapke existing format mein convert karein
+        const formattedMessages = (res.data.data.messages || res.data.data).map(
+          (msg) => ({
+            id: msg.id,
+            user: msg.Sender?.full_name || "Unknown",
+            time: new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            text: msg.content,
+            isMe: msg.sender_id === currentUserId, // Logged in check
+            status: msg.Sender?.status || "Active",
+            email: msg.Sender?.email || "",
+            role: "Developer",
+            color: "bg-blue-500", // Koi default color
+            avatar_url: msg.Sender?.avatar_url || null,
+          }),
+        );
+
+        // State update karein for this specific chat name
+        setChatData((prev) => ({
+          ...prev,
+          [name]: formattedMessages,
+        }));
+
+        // Agar channel hai toh members ko separate state mein save karein
+        if (type === "channel" && res.data.data.members) {
+          setChannelMembers(res.data.data.members);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching chat messages:", err);
+    } finally {
+      // Request complete hone par loading false kar dein
+      setIsChatLoading(false);
     }
   };
 
@@ -360,6 +480,12 @@ const handleScheduleMeeting = () => {
     setSelectedUser(userData);
     setIsProfileOpen(true);
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatData, activeChat]);
+
+  console.log("Chat Data:", chatData);
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
@@ -407,22 +533,30 @@ const handleScheduleMeeting = () => {
             <div className="space-y-1">
               {channels.map((ch) => (
                 <div
-                  key={ch}
-                  onClick={() => switchChat(ch, "channel")}
-                  className={`flex items-center justify-between group px-3 py-2 rounded-xl text-[13px] cursor-pointer transition-all ${activeChat.name === ch ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                  key={ch.id}
+                  onClick={() => switchChat(ch.name, "channel", ch.id)}
+                  className={`flex items-center justify-between group px-3 py-2 rounded-xl text-[13px] cursor-pointer transition-all ${activeChat.id === ch.id ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                 >
                   <div className="flex items-center gap-2.5">
                     <Hash
                       size={16}
                       className={
-                        activeChat.name === ch
+                        activeChat.id === ch.id
                           ? "text-blue-500"
                           : "text-slate-400"
                       }
                     />{" "}
-                    {ch}
+                    {ch?.name
+                      ?.substring(1)
+                      .split("-")
+                      .map(
+                        (word) =>
+                          word.charAt(0).toUpperCase() +
+                          word.slice(1).toLowerCase(),
+                      )
+                      .join(" ")}
                   </div>
-                  {activeChat.name === ch && (
+                  {activeChat.id === ch.id && (
                     <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
                   )}
                 </div>
@@ -443,19 +577,19 @@ const handleScheduleMeeting = () => {
               />
             </div>
             <div className="space-y-1">
-              {dmUsers.map((user) => (
+              {dmUsers.map((member) => (
                 <div
-                  key={user}
-                  onClick={() => switchChat(user, "dm")}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all cursor-pointer ${activeChat.name === user ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
+                  key={member.id}
+                  onClick={() => switchChat(member.full_name, "dm", member.id)}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all cursor-pointer ${activeChat.name === member.full_name ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                 >
                   <div className="relative">
                     <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600">
-                      {user[0]}
+                      {member?.full_name?.charAt(0)}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                   </div>
-                  <span className="font-semibold">{user}</span>
+                  <span className="font-semibold">{member.full_name}</span>
                 </div>
               ))}
             </div>
@@ -480,9 +614,11 @@ const handleScheduleMeeting = () => {
                 onClick={() => setIsMembersOpen(true)}
                 className="text-[11px] text-emerald-600 font-bold hover:cursor-pointer hover:text-emerald-700 transition-all flex items-center gap-1.5"
               >
-                {activeChat.type === "channel"
-                  ? `${chatData[activeChat.name]?.filter((user) => user.status === "Active").length} / ${chatData[activeChat.name]?.length || 0} Online`
-                  : ""}
+                {isChatLoading
+                  ? ""
+                  : activeChat?.type === "channel"
+                    ? `${channelMembers.filter((u) => u.status === "active" || u.status === "Online").length} / ${channelMembers.length} Online`
+                    : ""}
               </button>
             </div>
           </div>
@@ -514,59 +650,122 @@ const handleScheduleMeeting = () => {
 
         {/* Messages List */}
         <div className="flex-1 overflow-y-auto p-8 space-y-10 bg-[#f5f5f593]">
-          <div className="text-center relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-100"></div>
-            </div>
-            <span className="relative bg-[#fbfcfe00] px-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-              Today
-            </span>
-          </div>
-
-          {(chatData[activeChat.name] || []).length > 0 ? (
-            (chatData[activeChat.name] || []).map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-4 group ${msg.isMe ? "flex-row-reverse" : ""}`}
-              >
-                <div
-                  onClick={() => handleUserClick(msg)}
-                  className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center font-black text-xs shadow-sm cursor-pointer hover:scale-105 transition-transform ${msg.isMe ? "bg-blue-600 text-white" : "bg-slate-800 text-white"}`}
-                >
-                  {msg.user[0]}
-                </div>
-               {/* Messages List Loop ke andar logic */}
-<div className={`px-5 py-3 text-[14px] leading-relaxed max-w-lg shadow-sm rounded-2xl ${
-  msg.isMe ? "bg-white text-slate-600 shadow-blue-100" : "bg-white text-slate-600 border border-slate-100"
-}`}>
-  {msg.type === "call" ? (
-    // CALL CARD UI
-    <div className="flex flex-col gap-3 min-w-[240px]">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-indigo-200">
-          <Video size={18} className="text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-slate-800 text-sm">Video Meeting</p>
-          <p className="text-[11px] text-slate-400">Started by {msg.user}</p>
-        </div>
+          {isChatLoading ? (
+            /* SCENARIO 1: LOADING SKELETON (Flicker se bachata hai) */
+            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] animate-pulse">
+              {/* <div className="flex space-x-2">
+        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
-      <button 
-        onClick={() => setIsVideoModalOpen(true)}
-        className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
-      >
-        Join Meeting <Plus size={14} strokeWidth={3} />
-      </button>
-    </div>
-  ) : (
-    // NORMAL TEXT
-    msg.text
-  )}
-</div>
+      <span className="text-xs text-slate-400 font-bold mt-4 tracking-wider uppercase">Loading Chat...</span> */}
+            </div>
+          ) : (chatData[activeChat.name] || []).length > 0 ? (
+            /* SCENARIO 2: MESSAGES LIST (Data load ho gya) */
+            <>
+              <div className="text-center relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-100"></div>
+                </div>
+                <span className="relative bg-[#f5f5f593] px-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                  Today
+                </span>
               </div>
-            ))
+
+              {(chatData[activeChat.name] || []).map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex gap-4 group ${msg.isMe ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  {/* User Avatar */}
+                  <div
+                    onClick={() => handleUserClick(msg)}
+                    className={`w-10 h-10 rounded-2xl flex-shrink-0 flex items-center justify-center font-black text-xs shadow-sm cursor-pointer hover:scale-105 transition-transform ${
+                      msg.isMe
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-800 text-white"
+                    }`}
+                  >
+                    {msg.avatar_url ? (
+                      <img
+                        src={`http://localhost:4002${msg.avatar_url}`}
+                        alt="Avatar"
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      msg.user[0].toUpperCase()
+                    ) }
+                    {/* {msg.user ? msg.user[0].toUpperCase() : "U"} */}
+                  </div>
+
+                  {/* Message Content Container */}
+                  <div
+                    className={`flex flex-col max-w-lg ${msg.isMe ? "items-end" : "items-start"}`}
+                  >
+                    {/* User Name & Time (Meta info above bubble) */}
+                    <div className="flex items-center gap-2 mb-1 px-1">
+                      {!msg.isMe && (
+                        <span className="text-xs font-bold text-slate-700">
+                          {msg.user || "Unknown User"}
+                        </span>
+                      )}
+                      <span className="text-[10px] text-slate-400 font-medium">
+                        {msg.time}
+                      </span>
+                      {msg.isMe && (
+                        <span className="text-xs font-bold text-blue-600">
+                          You
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Chat Message Bubble */}
+                    <div
+                      className={`px-5 py-3 text-[14px] leading-relaxed shadow-sm rounded-2xl ${
+                        msg.isMe
+                          ? "bg-blue-50 text-slate-700 rounded-tr-none border border-blue-100/50"
+                          : "bg-white text-slate-600 rounded-tl-none border border-slate-100"
+                      }`}
+                    >
+                      {msg.type === "call" ? (
+                        <div className="flex flex-col gap-3 min-w-[240px]">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-indigo-200">
+                              <Video size={18} className="text-white" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-800 text-sm">
+                                Video Meeting
+                              </p>
+                              <p className="text-[11px] text-slate-400">
+                                Started by {msg.user}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setIsVideoModalOpen(true)}
+                            className="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2"
+                          >
+                            Join Meeting <Plus size={14} strokeWidth={3} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="whitespace-pre-wrap break-words">
+                            {msg.text}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500">
+            /* SCENARIO 3: NO MESSAGES AT ALL (Empty State) */
+            <div className="flex-1 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-500 min-h-[350px]">
               <div className="w-24 h-24 bg-blue-50/50 rounded-[32px] flex items-center justify-center mb-8 border border-blue-100/50">
                 <span className="text-5xl animate-bounce-subtle">👋</span>
               </div>
@@ -579,7 +778,6 @@ const handleScheduleMeeting = () => {
                 Send a message to get started
               </p>
 
-              {/* Optional: Quick Action Buttons */}
               <div className="mt-8 flex gap-3">
                 <button
                   onClick={() => setInputText("Hey there! 👋")}
@@ -659,13 +857,13 @@ const handleScheduleMeeting = () => {
                   size={19}
                 />
                 {/* Chota Arrow for Scheduling */}
-  <div 
-    className="cursor-pointer hover:text-blue-600 text-slate-400 transition-all p-0.5 rounded hover:bg-slate-200"
-    onClick={() => setIsScheduleModalOpen(true)}
-    title="Schedule a meeting"
-  >
-    <Plus size={12} strokeWidth={3} />
-  </div>
+                <div
+                  className="cursor-pointer hover:text-blue-600 text-slate-400 transition-all p-0.5 rounded hover:bg-slate-200"
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  title="Schedule a meeting"
+                >
+                  <Plus size={12} strokeWidth={3} />
+                </div>
               </div>
               <button
                 onClick={handleSendMessage}
@@ -694,7 +892,7 @@ const handleScheduleMeeting = () => {
         isOpen={isMembersOpen}
         onClose={() => setIsMembersOpen(false)}
         channelName={activeChat.name}
-        members={chatData[activeChat.name] || []}
+        members={channelMembers}
         onAddMember={() => setIsAddMemberModalOpen(true)}
       />
       <GlobalSearchModal
@@ -703,7 +901,7 @@ const handleScheduleMeeting = () => {
         channels={channels}
         users={dmUsers}
         chatData={chatData} // Poora data pass kar diya
-        onSelect={(name, type) => switchChat(name, type)}
+        onSelect={(name, type, id) => switchChat(name, type, id)}
       />
       <NotificationPopover
         isOpen={isNotifOpen}
@@ -729,21 +927,21 @@ const handleScheduleMeeting = () => {
   userName={activeChat.name}
   roomId="test-room-123"
 /> */}
-{/* Replace old modal with this */}
-<JitsiVideoCall 
-  isOpen={isVideoModalOpen} 
-  onClose={() => setIsVideoModalOpen(false)} 
-  roomName={activeChat.name} // Channel name as room ID
-  userName="Yasir" // Current user
-/>
+      {/* Replace old modal with this */}
+      <JitsiVideoCall
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+        roomName={activeChat.name} // Channel name as room ID
+        userName="Yasir" // Current user
+      />
 
-<ScheduleMeetingModal 
-  isOpen={isScheduleModalOpen} 
-  onClose={() => setIsScheduleModalOpen(false)} 
-  onSchedule={handleScheduleMeeting}
-  roomName={activeChat.name} // Channel name as room ID
-  userName="Yasir" // Current user
-/>
+      <ScheduleMeetingModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onSchedule={handleScheduleMeeting}
+        roomName={activeChat.name} // Channel name as room ID
+        userName="Yasir" // Current user
+      />
     </div>
   );
 };

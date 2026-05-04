@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Search } from 'lucide-react';
+import API from '../../api/axios';
 
 const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -12,9 +13,27 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
     { id: 4, name: 'Sara Ahmed', role: 'Designer', status: 'Online', color: 'bg-pink-500' },
   ];
 
+   const [allUsers, setAllUsers] = useState([]);
+
+  const fetchWorkspaceMembers = async () => {
+    try {
+      const res = await API.get('/workspace/members'); // Apna exact route use karein
+      console.log("Users:",res.data.data)
+      if (res.data.success) {
+        setAllUsers(res.data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
+  };
+  
+  useEffect(() => {
+    fetchWorkspaceMembers();
+  }, []);
+
   // Search filter logic
-  const filteredMembers = members.filter(member => 
-    member.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMembers = allUsers.filter(member => 
+    member.User.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (!isOpen) return null;
@@ -46,23 +65,23 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
             {filteredMembers.length > 0 ? (
               filteredMembers.map((member) => (
                 <div 
-                  key={member.id} 
+                  key={member.User.id} 
                   onClick={() => {
-                    onSelectUser(member.name);
+                    onSelectUser(member.User);
                     onClose();
                   }}
                   className="flex items-center justify-between group cursor-pointer hover:bg-blue-50/50 p-2.5 rounded-xl transition-all border border-transparent hover:border-blue-100"
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className={`w-10 h-10 rounded-xl ${member.color} flex items-center justify-center text-white font-bold shadow-sm transition-transform group-hover:scale-105`}>
-                        {member.name[0]}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-sm transition-transform group-hover:scale-105`}>
+                        {member.User.full_name}
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.status === 'Online' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.User.status === 'Online' ? 'bg-green-500' : 'bg-gray-300'}`} />
                     </div>
                     
                     <div>
-                      <h4 className="text-[13px] font-bold text-slate-800">{member.name}</h4>
+                      <h4 className="text-[13px] font-bold text-slate-800">{member.User.full_name}</h4>
                       <p className="text-[10px] text-gray-400 font-medium">
                         {member.role} • <span className={member.status === 'Online' ? 'text-green-500' : 'text-gray-400'}>{member.status}</span>
                       </p>

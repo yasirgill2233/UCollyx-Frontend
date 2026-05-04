@@ -4,9 +4,12 @@ import { X, Plus } from 'lucide-react';
 const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMember }) => {
   if (!isOpen) return null;
 
+
+  console.log("Members Data:", members, "Channel Name:", channelName);
+
   // Filter Online vs Offline (Assuming status property exists)
-  const onlineMembers = members.filter(m => m.status === 'Active');
-  const offlineMembers = members.filter(m => m.status !== 'Active');
+  const onlineMembers = members.filter(m => m.status === 'active');
+  const offlineMembers = members.filter(m => m.status !== 'active');
 
   return (
     <div className="fixed inset-y-0 right-0 w-72 bg-white border-l border-gray-100 shadow-2xl z-[200] animate-in slide-in-from-right duration-300">
@@ -44,13 +47,13 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                 <div key={i} className="flex items-center gap-3 px-2 group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-all">
                   <div className="relative">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs ${member.color || 'bg-slate-800'}`}>
-                      {member.name}
+                      {member.full_name[0]}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-800">{member.name}</span>
+                      <span className="text-sm font-bold text-slate-800">{member.full_name}</span>
                       {member.isMe && (
                         <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-md font-black uppercase">you</span>
                       )}
