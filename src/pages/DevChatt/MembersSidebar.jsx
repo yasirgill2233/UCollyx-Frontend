@@ -46,8 +46,17 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
               {onlineMembers.map((member, i) => (
                 <div key={i} className="flex items-center gap-3 px-2 group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-all">
                   <div className="relative">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs ${member.color || 'bg-slate-800'}`}>
-                      {member.full_name[0]}
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs`}>
+                      {member.avatar_url ? (
+                      <img
+                        src={import.meta.env.VITE_API_URL + member.avatar_url}
+                        alt="Avatar"
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      member.full_name[0].toUpperCase()
+                    )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
@@ -76,13 +85,22 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
               {offlineMembers.map((member, i) => (
                 <div key={i} className="flex items-center gap-3 px-2 opacity-60">
                   <div className="relative">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs grayscale ${member.color || 'bg-slate-400'}`}>
-                      {member.name}
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs grayscale`}>
+                      {member.avatar_url ? (
+                      <img
+                        src={import.meta.env.VITE_API_URL + member.avatar_url}
+                        alt="Avatar"
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      member.full_name[0].toUpperCase()
+                    )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-800">{member.name}</h4>
+                    <h4 className="text-sm font-bold text-slate-800">{member.full_name}</h4>
                     <p className="text-[10px] text-gray-400 font-medium">{member.role || 'Member'}</p>
                   </div>
                 </div>

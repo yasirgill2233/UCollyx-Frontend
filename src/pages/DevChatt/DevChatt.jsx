@@ -487,6 +487,110 @@ const DevChat = () => {
 
   console.log("Chat Data:", chatData);
 
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState("");
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  // Sample users list (Aap ise apni API se bhi la sakte hain)
+  const allUsers1 = [
+    { id: 1, name: "Yasir", avatar: "" },
+    { id: 2, name: "Ali", avatar: "" },
+    { id: 3, name: "Zain", avatar: "" },
+    { id: 4, name: "Osama", avatar: "" },
+  ];
+
+  
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInputText(value);
+
+    const cursorPosition = e.target.selectionStart;
+    const textBeforeCursor = value.substring(0, cursorPosition);
+
+    // Last index of '@' before the cursor
+    const lastAtPos = textBeforeCursor.lastIndexOf("@");
+
+    // Check karein ke @ mojood hai aur uske foran baad space nahi hai
+    if (lastAtPos !== -1) {
+      const query = textBeforeCursor.substring(lastAtPos + 1);
+
+      // Agar query mein space aa jaye to dropdown band kar do
+      if (query.includes(" ")) {
+        setShowMentions(false);
+        return;
+      }
+
+      // Console karkay check karein trigger ho raha ha ya nahi
+      console.log("Mention Query:", query);
+
+      setMentionSearch(query);
+      const filtered = allUsers1.filter((u) =>
+        u.name.toLowerCase().includes(query.toLowerCase()),
+      );
+
+      setFilteredUsers(filtered);
+      setShowMentions(true);
+    } else {
+      setShowMentions(false);
+    }
+  };
+
+  const selectMention = (userName) => {
+    const cursorPosition = inputText.lastIndexOf("@"); // Simple logic for last @
+    const textBeforeAt = inputText.substring(0, cursorPosition);
+    const textAfterAt = inputText
+      .substring(cursorPosition)
+      .split(" ")
+      .slice(1)
+      .join(" ");
+
+    // Naya text banayein: "@Name " + baki ka purana text
+    const newText = `${textBeforeAt}@${userName} ${textAfterAt}`;
+
+    setInputText(newText);
+    setShowMentions(false);
+  };
+
+
+  const renderMessageWithMentions = (text) => {
+  if (!text) return "";
+
+  // Regex jo @ ke baad aane wale words ko dhoondta ha
+  const parts = text.split(/(@\w+)/g); 
+
+  return parts.map((part, index) => {
+    if (part.startsWith("@")) {
+      return (
+        <span 
+          key={index} 
+          className="text-blue-600 bg-blue-100 font-bold px-1 rounded-md cursor-pointer hover:bg-blue-300/50"
+        >
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+};
+
+// 1. Backend se notifications load karne ka function
+const loadNotifications = async () => {
+  try {
+    const res = await API.get('/notifications'); // Aapka naya route
+    console.log("Notifications:", res.data.data);
+    if (res.data.success) {
+      setNotifications(res.data.data); // Database ka direct data set karein
+    }
+  } catch (err) {
+    console.error("Error loading notifications:", err);
+  }
+};
+
+useEffect(() => {
+  loadNotifications();
+}, []);
+
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
       {/* 1. Project/Chat Sidebar */}
@@ -688,14 +792,14 @@ const DevChat = () => {
                   >
                     {msg.avatar_url ? (
                       <img
-                        src={`http://localhost:4002${msg.avatar_url}`}
+                        src={import.meta.env.VITE_API_URL + msg.avatar_url}
                         alt="Avatar"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
                       msg.user[0].toUpperCase()
-                    ) }
+                    )}
                     {/* {msg.user ? msg.user[0].toUpperCase() : "U"} */}
                   </div>
 
@@ -753,7 +857,7 @@ const DevChat = () => {
                       ) : (
                         <div>
                           <p className="whitespace-pre-wrap break-words">
-                            {msg.text}
+                            {renderMessageWithMentions(msg.text)}
                           </p>
                         </div>
                       )}
@@ -792,10 +896,41 @@ const DevChat = () => {
 
         {/* Message Input Area */}
         <div className="px-8 pb-8 pt-2 bg-[#f5f5f593]">
-          <div className="bg-white border border-slate-200 rounded-[24px] shadow-xl shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
+          <div className="relative bg-white border border-slate-200 rounded-[24px] shadow-xl shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
+            {/* Mentions Dropdown */}
+            {showMentions && filteredUsers.length > 0 && (
+              <div
+                className="absolute bottom-full left-0 mb-4 w-64 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden z-[9999]"
+                style={{ pointerEvents: "auto" }} // Ensure click kaam kare
+              >
+                <div className="px-4 py-2 bg-slate-50 border-b border-slate-100">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    People
+                  </span>
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      onClick={() => selectMention(user.name)}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 cursor-pointer transition-all border-b border-slate-50 last:border-0"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                        {user.name[0]}
+                      </div>
+                      <span className="text-sm font-semibold text-slate-700">
+                        {user.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <textarea
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={handleInputChange}
+              // onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
