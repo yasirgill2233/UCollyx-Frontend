@@ -55,7 +55,7 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      member.full_name[0].toUpperCase()
+                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member.full_name[0].toUpperCase()}</div>
                     )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />

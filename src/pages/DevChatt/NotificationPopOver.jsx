@@ -1,19 +1,30 @@
-import React from 'react';
-import { X, AtSign, MessageSquare, Hash, UserPlus, CheckCheck } from 'lucide-react';
-import API from '../../api/axios'; // Apna axios instance import karein
+import React from "react";
+import {
+  X,
+  AtSign,
+  MessageSquare,
+  Hash,
+  UserPlus,
+  CheckCheck,
+} from "lucide-react";
+import API from "../../api/axios";
 
-const NotificationPopover = ({ isOpen, onClose, notifications, setNotifications, onSelectChat }) => {
+const NotificationPopover = ({
+  isOpen,
+  onClose,
+  notifications,
+  setNotifications,
+  onSelectChat,
+}) => {
   if (!isOpen) return null;
 
-  // Unread count calculate karein (is_read column use ho rha ha)
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
-  // Sab ko read mark karne ka function
   const handleMarkAllRead = async (e) => {
     e.stopPropagation();
     try {
-      await API.put('/notifications/mark-read'); // Backend logic call karein
-      const updated = notifications.map(n => ({ ...n, is_read: true }));
+      await API.put("/notifications/mark-all-read");
+      const updated = notifications.map((n) => ({ ...n, is_read: true }));
       setNotifications(updated);
     } catch (err) {
       console.error("Failed to mark all read");
@@ -21,23 +32,21 @@ const NotificationPopover = ({ isOpen, onClose, notifications, setNotifications,
   };
 
   const handleNotifClick = async (notif) => {
+    console.log("Notify:",notif)
     try {
-      // 1. DB mein read mark karein
       if (!notif.is_read) {
-        await API.put('/notifications/mark-read', { id: notif.id });
-        const updated = notifications.map(n => 
-          n.id === notif.id ? { ...n, is_read: true } : n
+        await API.put("/notifications/mark-read", { id: notif.id });
+        const updated = notifications.map((n) =>
+          n.id === notif.id ? { ...n, is_read: true } : n,
         );
         setNotifications(updated);
       }
-
-      // 2. Navigation logic
-      // target_url format: "/chat/channel/12" ya "/chat/dm/5"
       if (notif.target_url) {
-        const parts = notif.target_url.split('/');
-        const type = parts[2]; // 'channel' ya 'dm'
-        const id = parts[3];   // ID
-        onSelectChat(id, type);
+        const parts = notif.target_url.split("/");
+        const type = parts[2];
+        const name = parts[3]; 
+        const id = parts[4];
+        onSelectChat(name, id, type);
       }
       onClose();
     } catch (err) {
@@ -48,61 +57,77 @@ const NotificationPopover = ({ isOpen, onClose, notifications, setNotifications,
   return (
     <>
       <div className="fixed inset-0 z-[290] bg-black/5" onClick={onClose} />
-      
+
       <div className="absolute top-16 right-8 w-[380px] bg-white rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 z-[300] overflow-hidden animate-in fade-in slide-in-from-top-3 duration-300">
-        
         {/* Header */}
         <div className="p-5 flex justify-between items-center bg-slate-50/50 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <h3 className="font-black text-slate-800 tracking-tight">Notifications</h3>
+            <h3 className="font-black text-slate-800 tracking-tight">
+              Notifications
+            </h3>
             {unreadCount > 0 && (
               <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg">
                 {unreadCount} New
               </span>
             )}
           </div>
-          <button 
+          <button
             onClick={handleMarkAllRead}
-            className="text-[11px] font-black text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            className="text-[11px] font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:cursor-pointer"
           >
             <CheckCheck size={14} /> Mark all read
           </button>
         </div>
 
-        {/* List */}
         <div className="max-h-[420px] overflow-y-auto bg-white">
-          {notifications.length > 0 ? (
-            notifications.map((notif) => (
-              <div 
-                key={notif.id} 
-                onClick={() => handleNotifClick(notif)}
-                className={`p-4 flex gap-4 cursor-pointer transition-all border-b border-slate-50 group ${!notif.is_read ? 'bg-blue-50/30' : 'hover:bg-slate-50'}`}
-              >
-                {/* Icon mapping based on notif.type from DB */}
-                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                  notif.type === 'mention' ? 'bg-indigo-100 text-indigo-600' : 
-                  notif.type === 'dm' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'
-                }`}>
-                  {notif.type === 'mention' ? <AtSign size={16} /> : <MessageSquare size={16} />}
-                </div>
+          {notifications.filter((n) => !n.is_read).length > 0 ? (
+            notifications
+              .filter((n) => !n.is_read)
+              .map((notif) => (
+                <div
+                  key={notif.id}
+                  onClick={() => handleNotifClick(notif)}
+                  className="p-4 flex gap-4 cursor-pointer transition-all border-b border-slate-50 group bg-blue-50/30 hover:bg-slate-100"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                      notif.type === "mention"
+                        ? "bg-indigo-100 text-indigo-600"
+                        : notif.type === "dm"
+                          ? "bg-emerald-100 text-emerald-600"
+                          : "bg-orange-100 text-orange-600"
+                    }`}
+                  >
+                    {notif.type === "mention" ? (
+                      <AtSign size={16} />
+                    ) : (
+                      <MessageSquare size={16} />
+                    )}
+                  </div>
 
-                <div className="flex-1">
-                  <p className={`text-[13px] leading-snug ${!notif.is_read ? 'font-bold text-slate-800' : 'text-slate-500 font-medium'}`}>
-                    {notif.content} {/* DB Column */}
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-bold uppercase tracking-wider">
-                    {new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </div>
+                  <div className="flex-1">
+                    <p className="text-[13px] leading-snug font-bold text-slate-800">
+                      {notif.content}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-1.5 font-bold uppercase tracking-wider">
+                      {new Date(notif.createdAt).toLocaleTimeString([], {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
 
-                {!notif.is_read && (
                   <div className="w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white self-center" />
-                )}
-              </div>
-            ))
+                </div>
+              ))
           ) : (
             <div className="py-20 text-center">
-              <p className="text-slate-300 font-bold text-sm">No notifications yet ☕</p>
+              <p className="text-slate-300 font-bold text-sm">
+                All caught up! No unread notifications ☕
+              </p>
             </div>
           )}
         </div>
@@ -112,53 +137,6 @@ const NotificationPopover = ({ isOpen, onClose, notifications, setNotifications,
 };
 
 export default NotificationPopover;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import React from 'react';
 // import { X, AtSign, MessageSquare, Hash, UserPlus, CheckCheck } from 'lucide-react';
@@ -177,7 +155,7 @@ export default NotificationPopover;
 
 //   const handleNotifClick = (notif) => {
 //     // 1. Mark this specific one as read
-//     const updated = notifications.map(n => 
+//     const updated = notifications.map(n =>
 //       n.id === notif.id ? { ...n, unread: false } : n
 //     );
 //     setNotifications(updated);
@@ -192,9 +170,9 @@ export default NotificationPopover;
 //   return (
 //     <>
 //       <div className="fixed inset-0 z-[290] bg-black/5" onClick={onClose} />
-      
+
 //       <div className="absolute top-16 right-8 w-[380px] bg-white rounded-[28px] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-slate-100 z-[300] overflow-hidden animate-in fade-in slide-in-from-top-3 duration-300">
-        
+
 //         {/* Header */}
 //         <div className="p-5 flex justify-between items-center bg-slate-50/50 border-b border-slate-100">
 //           <div className="flex items-center gap-2.5">
@@ -206,7 +184,7 @@ export default NotificationPopover;
 //             )}
 //           </div>
 //           <div className="flex items-center gap-2">
-//             <button 
+//             <button
 //               onClick={handleMarkAllRead}
 //               className="text-[11px] font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 p-1.5 rounded-lg hover:bg-blue-50 transition-all"
 //             >
@@ -222,14 +200,14 @@ export default NotificationPopover;
 //         <div className="max-h-[420px] overflow-y-auto custom-scrollbar bg-white">
 //           {notifications.length > 0 ? (
 //             notifications.map((notif) => (
-//               <div 
-//                 key={notif.id} 
+//               <div
+//                 key={notif.id}
 //                 onClick={() => handleNotifClick(notif)}
 //                 className={`p-4 flex gap-4 cursor-pointer transition-all relative border-b border-slate-50 group ${notif.unread ? 'bg-blue-50/30 hover:bg-blue-50/60' : 'hover:bg-slate-50'}`}
 //               >
 //                 {/* Dynamic Icon based on type */}
 //                 <div className={`w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:scale-110 ${
-//                   notif.type === 'mention' ? 'bg-indigo-100 text-indigo-600' : 
+//                   notif.type === 'mention' ? 'bg-indigo-100 text-indigo-600' :
 //                   notif.type === 'dm' ? 'bg-emerald-100 text-emerald-600' :
 //                   notif.type === 'channel' ? 'bg-orange-100 text-orange-600' : 'bg-purple-100 text-purple-600'
 //                 }`}>

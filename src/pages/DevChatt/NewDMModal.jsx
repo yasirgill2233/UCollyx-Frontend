@@ -36,6 +36,8 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
     member.User.full_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log("Filtered Members:", filteredMembers);
+
   if (!isOpen) return null;
 
   return (
@@ -74,16 +76,26 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-sm transition-transform group-hover:scale-105`}>
-                        {member.User.full_name}
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/20 font-bold shadow-sm transition-transform group-hover:scale-105`}>
+                        {/* {member.User.full_name} */}
+                         {member.User?.avatar_url ? (
+                      <img
+                        src={import.meta.env.VITE_API_URL + member.User.avatar_url}
+                        alt="Avatar"
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover rounded-xl"
+                      />
+                    ) : (
+                      <div className='text-black w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center'>{member.User.full_name[0].toUpperCase()}</div>
+                    )}
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.User.status === 'Online' ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.User.status === 'active' ? 'bg-green-500' : 'bg-gray-300'}`} />
                     </div>
                     
                     <div>
                       <h4 className="text-[13px] font-bold text-slate-800">{member.User.full_name}</h4>
                       <p className="text-[10px] text-gray-400 font-medium">
-                        {member.role} • <span className={member.status === 'Online' ? 'text-green-500' : 'text-gray-400'}>{member.status}</span>
+                        {member.role} • <span className={member.status === 'active' ? 'text-green-500' : 'text-gray-400'}>{member.status}</span>
                       </p>
                     </div>
                   </div>

@@ -16,6 +16,8 @@ import {
   MoreHorizontal,
   Smile,
   Calendar,
+  X,
+  FileText,
 } from "lucide-react";
 import EmojiPicker from "emoji-picker-react"; // Library Import
 // Components Imports
@@ -44,61 +46,38 @@ const DevChat = () => {
 
   console.log("Active Chat:", activeChat);
 
-  // 1. State for Schedule Modal
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-
-  // 2. Schedule Handler
-  // const handleScheduleMeeting = (meeting) => {
-  //   const meetingMessage = {
-  //     id: Date.now(),
-  //     user: "System",
-  //     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  //     isMe: false,
-  //     type: "meeting_card", // Naya message type
-  //     meetingDetails: meeting,
-  //     text: `Scheduled a meeting: ${meeting.title}`
-  //   };
-
-  //   setChatData((prev) => ({
-  //     ...prev,
-  //     [activeChat.name]: [...(prev[activeChat.name] || []), meetingMessage],
-  //   }));
-  // };
 
   const handleScheduleMeeting = () => {
     const callMessage = {
       id: Date.now(),
-      user: "Yasir", // Current Logged in User
+      user: "Yasir",
       time: new Date().toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       }),
       text: "Started a video call",
-      type: "call", // Unique type for styling
+      type: "call",
       isMe: true,
     };
 
-    // 1. Chat list mein add karein
     setChatData((prev) => ({
       ...prev,
       [activeChat.id]: [...(prev[activeChat.id] || []), callMessage],
     }));
 
-    // 2. Local modal open karein
     setIsVideoModalOpen(true);
   };
 
   const [channels, setChannels] = useState([]);
 
-  // 2. Channels fetch karne ka function
   const fetchMyChannels = async () => {
     try {
       const res = await API.get("/channels/my-channels");
       console.log("Channels:", res.data.data);
       if (res.data.success) {
-        setChannels(res.data.data); // Pure objects ki array save hogi
+        setChannels(res.data.data);
 
-        // Agar koi channel pehle se active nahi hai toh pehle channel ko select kar lein
         if (!activeChat && res.data.data.length > 0) {
           setActiveChat({
             name: res.data.data.name,
@@ -112,7 +91,6 @@ const DevChat = () => {
     }
   };
 
-  // 3. Page load par API call karein
   useEffect(() => {
     fetchMyChannels();
   }, []);
@@ -120,91 +98,24 @@ const DevChat = () => {
   const [dmUsers, setDmUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "mention",
-      text: 'Ahmed Khan mentioned you in #AI Project: "Check the new API docs"',
-      time: "2 min ago",
-      unread: true,
-      targetChat: "AI Project",
-      chatType: "channel",
-    },
-    {
-      id: 2,
-      type: "dm",
-      text: "Faisal Raza sent you a direct message",
-      time: "10 min ago",
-      unread: true,
-      targetChat: "Faisal",
-      chatType: "dm",
-    },
-    {
-      id: 3,
-      type: "file",
-      text: 'Zeeshan Ali uploaded "Project_Final_v2.pdf" in #Alpha Project',
-      time: "45 min ago",
-      unread: true,
-      targetChat: "Alpha Project",
-      chatType: "channel",
-    },
-    {
-      id: 4,
-      type: "channel",
-      text: "5 new messages in #General channel",
-      time: "1 hour ago",
-      unread: false,
-      targetChat: "General",
-      chatType: "channel",
-    },
-    {
-      id: 5,
-      type: "thread",
-      text: "Hamza replied to your thread in #Random",
-      time: "3 hours ago",
-      unread: true,
-      targetChat: "Random",
-      chatType: "channel",
-    },
-    {
-      id: 6,
-      type: "join",
-      text: "Sara Mir joined #Alpha Project",
-      time: "5 hours ago",
-      unread: false,
-      targetChat: "Alpha Project",
-      chatType: "channel",
-    },
-    {
-      id: 7,
-      type: "reaction",
-      text: "Bilal reacted with to your message in #AI Project",
-      time: "Yesterday",
-      unread: false,
-      targetChat: "AI Project",
-      chatType: "channel",
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
 
-  // 2. Backend se conversation users fetch karne ka function
   const fetchConversations = async () => {
     try {
       const res = await API.get("/messages/conversations");
       console.log("Conversations:", res.data.data);
       if (res.data.success) {
-        setDmUsers(res.data.data); // Database se aaye hue active DM users update ho gaye
+        setDmUsers(res.data.data);
       }
     } catch (err) {
       console.error("Error fetching conversations:", err);
     }
   };
 
-  // 3. Component mount hone par call karein
   useEffect(() => {
     fetchConversations();
   }, []);
 
-  // 2. Naya channel add karne ka function
   const addNewChannel = async (channelData) => {
     try {
       const payload = {
@@ -253,7 +164,6 @@ const DevChat = () => {
 
   const onEmojiClick = (emojiData) => {
     setInputText((prev) => prev + emojiData.emoji);
-    // setShowEmojiPicker(false);
   };
 
   useEffect(() => {
@@ -299,6 +209,7 @@ const DevChat = () => {
           avatar_url: savedMember.User.avatar_url,
           text: "I am added",
           startdate: savedMember.createdAt,
+          created_at: savedMember.User?.created_at,
           isMe: false,
           time: new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -342,7 +253,6 @@ const DevChat = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   console.log("Logged in user:", user.id);
 
-  // 2. States for UI/Modals
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false);
   const [isDMModalOpen, setIsDMModalOpen] = useState(false);
   const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -357,61 +267,143 @@ const DevChat = () => {
     ? JSON.parse(localStorage.getItem("user")).id
     : null;
 
+  // const handleSendMessage = async () => {
+  //   if (!inputText.trim() || !activeChat) return;
+
+  //   console.log("Active chat:", activeChat.id);
+
+  //   const currentInput = inputText.trim();
+  //   setInputText("");
+
+  //   try {
+  //     const payload = {
+  //       text: currentInput,
+  //       type: activeChat.type, // 'channel' ya 'dm'
+  //       name: activeChat.name, // 'channel' ya 'dm'
+  //       channelId: activeChat.type === "channel" ? activeChat.id : null,
+  //       receiverId: activeChat.type === "dm" ? activeChat.id : null,
+  //     };
+
+  //     const res = await API.post("/messages/send", payload);
+
+  //     if (res.data.success) {
+  //       const savedMsg = res.data.data;
+
+  //       const newMessage = {
+  //         id: savedMsg.id,
+  //         user: savedMsg.Sender?.full_name || "Yasir",
+  //         time: new Date(savedMsg.createdAt).toLocaleTimeString([], {
+  //           hour: "2-digit",
+  //           minute: "2-digit",
+  //         }),
+  //         text: savedMsg.content,
+  //         isMe: savedMsg.sender_id === currentUserId,
+  //         email: savedMsg.Sender?.email || "yasir@dev.com",
+  //         status: savedMsg.Sender?.status || "active",
+  //         created_at: savedMsg.Sender?.created_at,
+  //         role: "Developer",
+  //         color: "bg-blue-500",
+  //         avatar_url: savedMsg.Sender?.avatar_url || null,
+  //       };
+
+  //       setChatData((prev) => ({
+  //         ...prev,
+  //         [activeChat.id]: [...(prev[activeChat.id] || []), newMessage],
+  //       }));
+  //     }
+
+  //     triggerToast("Message sent!", "success");
+  //   } catch (err) {
+  //     console.error("Error sending message:", err);
+  //     setInputText(currentInput);
+  //     alert(err.response?.data?.message || "Failed to send message");
+  //   }
+  // };
+
+
   const handleSendMessage = async () => {
-    if (!inputText.trim() || !activeChat) return;
+  // Check karein ke text hai YA files hain
+  if ((!inputText.trim() && selectedFiles.length === 0) || !activeChat) return;
 
-    console.log("Active chat:", activeChat.id);
+  const currentInput = inputText.trim();
+  const currentFiles = [...selectedFiles]; // Files ka backup lein error handling ke liye
 
-    const currentInput = inputText.trim();
-    setInputText(""); // Local input ko foran empty kar dein taake UI fast lage
+  // IDs se prefix khatam karke asli numeric ID nikalen
+  const numericId = activeChat.id.toString().includes("-") 
+    ? activeChat.id.split("-")[1] 
+    : activeChat.id;
 
-    try {
-      const payload = {
-        text: currentInput,
-        type: activeChat.type, // 'channel' ya 'dm'
-        channelId: activeChat.type === "channel" ? activeChat.id : null,
-        receiverId: activeChat.type === "dm" ? activeChat.id : null,
+  setInputText("");
+  setSelectedFiles([]); // Files foran clear karein UI se
+
+  try {
+    // 1. FormData object banayein (Kyuki attachments bhejni hain)
+    const formData = new FormData();
+    formData.append("text", currentInput);
+    formData.append("type", activeChat.type);
+    
+    if (activeChat.type === "channel") {
+      formData.append("channelId", numericId);
+    } else {
+      formData.append("receiverId", numericId);
+    }
+
+    // 2. Files ko loop mein add karein
+    currentFiles.forEach((file) => {
+      formData.append("attachments", file); // Backend field name 'attachments'
+    });
+
+    // Axios khud boundary set kar lega jab wo FormData dekhega
+    const res = await API.post("/messages/send", formData);
+
+    if (res.data.success) {
+      const savedMsg = res.data.data;
+
+      const newMessage = {
+        id: savedMsg.id,
+        user: savedMsg.Sender?.full_name || "Yasir",
+        time: new Date(savedMsg.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        text: savedMsg.content,
+        isMe: savedMsg.sender_id === currentUserId,
+        email: savedMsg.Sender?.email || "yasir@dev.com",
+        status: savedMsg.Sender?.status || "active",
+        created_at: savedMsg.Sender?.created_at,
+        role: "Developer",
+        color: "bg-blue-500",
+        avatar_url: savedMsg.Sender?.avatar_url || null,
+        // Attachment data agar backend se wapis aa raha hai
+        attachments: savedMsg.attachments || [], 
       };
 
-      // 1. API Call karein
-      const res = await API.post("/messages/send", payload);
-      console.log("Saved Message:", res.data.data.Sender);
+      setChatData((prev) => ({
+        ...prev,
+        [activeChat.id]: [...(prev[activeChat.id] || []), newMessage],
+      }));
 
-      if (res.data.success) {
-        const savedMsg = res.data.data;
-
-        // 2. Backend se aane wale data ke mutabiq frontend object banayein
-        const newMessage = {
-          id: savedMsg.id,
-          user: savedMsg.Sender?.full_name || "Yasir",
-          time: new Date(savedMsg.createdAt).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          text: savedMsg.content,
-          isMe: savedMsg.sender_id === currentUserId,
-          email: savedMsg.Sender?.email || "yasir@dev.com",
-          status: savedMsg.Sender?.status || "Active",
-          role: "Developer",
-          color: "bg-blue-500",
-          avatar_url: savedMsg.Sender?.avatar_url || null,
-        };
-
-        // 3. State update karein
-        setChatData((prev) => ({
-          ...prev,
-          [activeChat.name]: [...(prev[activeChat.name] || []), newMessage],
-        }));
+      // --- CHANNEL LIST UPDATE (TOP PAR LANAY KA LOGIC) ---
+      if (activeChat.type === "channel") {
+        setChannels((prev) => {
+          const current = prev.find((c) => c.id === activeChat.id);
+          const others = prev.filter((c) => c.id !== activeChat.id);
+          if (!current) return prev;
+          // UpdatedAt ko force update karein taake UI top par le aaye
+          return [{ ...current, updatedAt: new Date().toISOString() }, ...others];
+        });
       }
-
-      triggerToast("Message sent!", "success");
-    } catch (err) {
-      console.error("Error sending message:", err);
-      // Agar api fail ho jaye toh input text ko wapas restore kar sakte hain user ke liye
-      setInputText(currentInput);
-      alert(err.response?.data?.message || "Failed to send message");
     }
-  };
+
+    triggerToast("Message sent!", "success");
+  } catch (err) {
+    console.error("Error sending message:", err);
+    // Error ki surat mein data wapis set karein
+    setInputText(currentInput);
+    setSelectedFiles(currentFiles);
+    alert(err.response?.data?.message || "Failed to send message");
+  }
+};
 
   const [isChatLoading, setIsChatLoading] = useState(false);
 
@@ -420,10 +412,9 @@ const DevChat = () => {
 
     setActiveChat({ name, type, id });
     setChatMembers([]);
-    // 2. Agar ID nahi hai, toh API call skip karein aur empty load karein
     if (!id) {
-      if (!chatData[name]) {
-        setChatData((prev) => ({ ...prev, [name]: [] }));
+      if (!chatData[id]) {
+        setChatData((prev) => ({ ...prev, [id]: [] }));
       }
       return;
     }
@@ -438,7 +429,6 @@ const DevChat = () => {
       console.log("Messages:", res.data.data);
 
       if (res.data.success) {
-        // Backend se aye hue messages ko aapke existing format mein convert karein
         const formattedMessages = (res.data.data.messages || res.data.data).map(
           (msg) => ({
             id: msg.id,
@@ -448,22 +438,22 @@ const DevChat = () => {
               minute: "2-digit",
             }),
             text: msg.content,
-            isMe: msg.sender_id === currentUserId, // Logged in check
+            isMe: msg.sender_id === currentUserId,
             status: msg.Sender?.status || "Active",
             email: msg.Sender?.email || "",
+            created_at: msg.Sender?.created_at,
             role: "Developer",
-            color: "bg-blue-500", // Koi default color
+            color: "bg-blue-500",
             avatar_url: msg.Sender?.avatar_url || null,
+            attachments: msg.attachments || [], 
           }),
         );
 
-        // State update karein for this specific chat name
         setChatData((prev) => ({
           ...prev,
-          [name]: formattedMessages,
+          [id]: formattedMessages,
         }));
 
-        // Agar channel hai toh members ko separate state mein save karein
         if (type === "channel" && res.data.data.members) {
           setChannelMembers(res.data.data.members);
         }
@@ -471,7 +461,6 @@ const DevChat = () => {
     } catch (err) {
       console.error("Error fetching chat messages:", err);
     } finally {
-      // Request complete hone par loading false kar dein
       setIsChatLoading(false);
     }
   };
@@ -491,15 +480,12 @@ const DevChat = () => {
   const [mentionSearch, setMentionSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
 
-  // Sample users list (Aap ise apni API se bhi la sakte hain)
   const allUsers1 = [
     { id: 1, name: "Yasir", avatar: "" },
     { id: 2, name: "Ali", avatar: "" },
     { id: 3, name: "Zain", avatar: "" },
     { id: 4, name: "Osama", avatar: "" },
   ];
-
-  
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -508,20 +494,16 @@ const DevChat = () => {
     const cursorPosition = e.target.selectionStart;
     const textBeforeCursor = value.substring(0, cursorPosition);
 
-    // Last index of '@' before the cursor
     const lastAtPos = textBeforeCursor.lastIndexOf("@");
 
-    // Check karein ke @ mojood hai aur uske foran baad space nahi hai
     if (lastAtPos !== -1) {
       const query = textBeforeCursor.substring(lastAtPos + 1);
 
-      // Agar query mein space aa jaye to dropdown band kar do
       if (query.includes(" ")) {
         setShowMentions(false);
         return;
       }
 
-      // Console karkay check karein trigger ho raha ha ya nahi
       console.log("Mention Query:", query);
 
       setMentionSearch(query);
@@ -537,7 +519,7 @@ const DevChat = () => {
   };
 
   const selectMention = (userName) => {
-    const cursorPosition = inputText.lastIndexOf("@"); // Simple logic for last @
+    const cursorPosition = inputText.lastIndexOf("@");
     const textBeforeAt = inputText.substring(0, cursorPosition);
     const textAfterAt = inputText
       .substring(cursorPosition)
@@ -545,51 +527,98 @@ const DevChat = () => {
       .slice(1)
       .join(" ");
 
-    // Naya text banayein: "@Name " + baki ka purana text
     const newText = `${textBeforeAt}@${userName} ${textAfterAt}`;
 
     setInputText(newText);
     setShowMentions(false);
   };
 
-
   const renderMessageWithMentions = (text) => {
-  if (!text) return "";
+    if (!text) return "";
 
-  // Regex jo @ ke baad aane wale words ko dhoondta ha
-  const parts = text.split(/(@\w+)/g); 
+    const parts = text.split(/(@\w+)/g);
 
-  return parts.map((part, index) => {
-    if (part.startsWith("@")) {
-      return (
-        <span 
-          key={index} 
-          className="text-blue-600 bg-blue-100 font-bold px-1 rounded-md cursor-pointer hover:bg-blue-300/50"
-        >
-          {part}
-        </span>
-      );
+    return parts.map((part, index) => {
+      if (part.startsWith("@")) {
+        return (
+          <span
+            key={index}
+            className="text-blue-600 bg-blue-100 font-bold px-1 rounded-md cursor-pointer hover:bg-blue-300/50"
+          >
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
+  };
+
+  const loadNotifications = async () => {
+    try {
+      const res = await API.get("/notifications");
+      console.log("Notifications:", res.data.data);
+      if (res.data.success) {
+        setNotifications(res.data.data);
+      }
+    } catch (err) {
+      console.error("Error loading notifications:", err);
     }
-    return part;
-  });
+  };
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const getLatestChat = (channels, dms) => {
+    const allChats = [
+      ...channels.map((c) => ({ ...c, type: "channel" })),
+      ...dms.map((d) => ({ ...d, type: "dm", name: d.full_name })),
+    ];
+
+    console.log("All Chats for Latest Check:", allChats);
+
+    if (allChats.length === 0) return null;
+
+    // Sort by updatedAt ya latestMessage time
+    return allChats.sort((a, b) => {
+      const timeA = new Date(
+        a.updatedAt || a.createdAt || a.updated_at || a.created_at,
+      ).getTime();
+      const timeB = new Date(
+        b.updatedAt || b.createdAt || b.updated_at || b.created_at,
+      ).getTime();
+      return timeB - timeA; // Descending order (latest first)
+    })[0];
+  };
+
+  useEffect(() => {
+    // Page load par agar channels aur dms aa gaye hain aur activeChat khali hai
+    if ((channels.length > 0 || dmUsers.length > 0) && !activeChat?.id) {
+      const latest = getLatestChat(channels, dmUsers);
+
+      if (latest) {
+        console.log("Auto-switching to latest chat:", latest.name);
+        // switchChat use karein taake messages fetch hon
+        switchChat(
+          latest.name || latest.full_name,
+          latest.type || (latest.full_name ? "dm" : "channel"),
+          latest.id,
+        );
+      }
+    }
+  }, [channels, dmUsers]); // Jab data load ho, tab chale
+
+  const [selectedFiles, setSelectedFiles] = useState([]);
+const fileInputRef = useRef(null);
+
+const handleFileChange = (e) => {
+  const files = Array.from(e.target.files);
+  setSelectedFiles((prev) => [...prev, ...files]);
 };
 
-// 1. Backend se notifications load karne ka function
-const loadNotifications = async () => {
-  try {
-    const res = await API.get('/notifications'); // Aapka naya route
-    console.log("Notifications:", res.data.data);
-    if (res.data.success) {
-      setNotifications(res.data.data); // Database ka direct data set karein
-    }
-  } catch (err) {
-    console.error("Error loading notifications:", err);
-  }
+const removeFile = (index) => {
+  setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
 };
-
-useEffect(() => {
-  loadNotifications();
-}, []);
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
@@ -688,8 +717,20 @@ useEffect(() => {
                   className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all cursor-pointer ${activeChat.name === member.full_name ? "bg-blue-50 text-blue-700 font-bold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"}`}
                 >
                   <div className="relative">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-[11px] font-bold text-slate-600">
-                      {member?.full_name?.charAt(0)}
+                    <div className="w-9 h-9 rounded-full bg-slate-200 backdrop-blur-md border border-white/20 flex items-center justify-center text-[11px] font-bold text-slate-600">
+                      {/* {member?.full_name?.charAt(0)} */}
+
+                      {member.avatar_url ? (
+                      <img
+                        src={import.meta.env.VITE_API_URL + member.avatar_url}
+                        alt="Avatar"
+                        crossOrigin="anonymous"
+                        className="w-full h-full object-cover rounded-2xl"
+                      />
+                    ) : (
+                      member.full_name[0].toUpperCase()
+                    )}
+
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                   </div>
@@ -729,14 +770,42 @@ useEffect(() => {
 
           <div className="flex items-center gap-4">
             <div className="flex -space-x-2 mr-2">
-              {[1, 2, 3].map((i) => (
+              {activeChat?.type === "channel" && (
                 <div
-                  key={i}
-                  className="w-7 h-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[8px] font-bold"
+                  className="flex -space-x-2 hover:cursor-pointer"
+                  onClick={() => setIsMembersOpen(true)}
                 >
-                  U{i}
+                  {channelMembers
+                    ?.filter((member) => member.status === "active")
+                    .slice(0, 4)
+                    .map((i) => (
+                      <div
+                        key={i.id || i}
+                        className="w-7 h-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold overflow-hidden uppercase text-slate-600"
+                      >
+                        {i.avatar_url ? (
+                          <img
+                            src={import.meta.env.VITE_API_URL + i.avatar_url}
+                            alt={i.full_name}
+                            crossOrigin="anonymous"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{i.full_name?.charAt(0) || "U"}</span>
+                        )}
+                      </div>
+                    ))}
+
+                  {channelMembers?.filter((m) => m.status === "active").length >
+                    4 && (
+                    <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
+                      +
+                      {channelMembers.filter((m) => m.status === "active")
+                        .length - 4}
+                    </div>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="relative">
@@ -745,38 +814,19 @@ useEffect(() => {
                 className="text-slate-400 cursor-pointer hover:text-blue-600 transition-colors "
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
               />
-              {notifications.some((n) => n.unread) && (
+              {notifications.some((n) => !n.is_read) && (
                 <div className="absolute -top-1 -right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full" />
               )}
             </div>
           </div>
         </div>
 
-        {/* Messages List */}
         <div className="flex-1 overflow-y-auto p-8 space-y-10 bg-[#f5f5f593]">
           {isChatLoading ? (
-            /* SCENARIO 1: LOADING SKELETON (Flicker se bachata hai) */
-            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] animate-pulse">
-              {/* <div className="flex space-x-2">
-        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-      </div>
-      <span className="text-xs text-slate-400 font-bold mt-4 tracking-wider uppercase">Loading Chat...</span> */}
-            </div>
-          ) : (chatData[activeChat.name] || []).length > 0 ? (
-            /* SCENARIO 2: MESSAGES LIST (Data load ho gya) */
+            <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] animate-pulse"></div>
+          ) : (chatData[activeChat.id] || []).length > 0 ? (
             <>
-              <div className="text-center relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-100"></div>
-                </div>
-                <span className="relative bg-[#f5f5f593] px-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                  Today
-                </span>
-              </div>
-
-              {(chatData[activeChat.name] || []).map((msg) => (
+              {(chatData[activeChat.id] || []).map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex gap-4 group ${msg.isMe ? "flex-row-reverse" : "flex-row"}`}
@@ -855,11 +905,66 @@ useEffect(() => {
                           </button>
                         </div>
                       ) : (
-                        <div>
-                          <p className="whitespace-pre-wrap break-words">
-                            {renderMessageWithMentions(msg.text)}
-                          </p>
-                        </div>
+                        // <div>
+                        //   <p className="whitespace-pre-wrap break-words">
+                        //     {renderMessageWithMentions(msg.text)}
+                        //   </p>
+                        // </div>
+
+                        <div className="space-y-3">
+      {/* Text Message */}
+      {msg.text && (
+        <p className="whitespace-pre-wrap break-words">
+          {renderMessageWithMentions(msg.text)}
+        </p>
+      )}
+
+      {/* Attachments Section */}
+      {msg.attachments && msg.attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {msg.attachments.map((file, idx) => {
+            const fileUrl = `${import.meta.env.VITE_API_URL}/${file.path.replace(/\\/g, '/')}`;
+            const isImage = file.mimetype.startsWith('image/');
+
+            return (
+              <div key={idx} className="max-w-[250px]">
+                {isImage ? (
+                  // Image Preview
+                  <a href={fileUrl} target="_blank" rel="noreferrer">
+                    <img
+                      src={fileUrl}
+                      alt={file.filename}
+                      crossOrigin="anonymous"
+                      className="rounded-lg max-h-48 w-full object-cover border border-slate-200 hover:opacity-90 transition-opacity cursor-zoom-in"
+                    />
+                  </a>
+                ) : (
+                  // Document/File Icon View
+                  <a
+                    href={fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 p-3 bg-white/50 border border-slate-200 rounded-xl hover:bg-white transition-all group"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                      <FileText size={20} />
+                    </div>
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="text-[12px] font-bold text-slate-700 truncate w-32">
+                        {file.filename}
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase font-black">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </span>
+                    </div>
+                  </a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
                       )}
                     </div>
                   </div>
@@ -927,6 +1032,35 @@ useEffect(() => {
               </div>
             )}
 
+            {selectedFiles.length > 0 && (
+  <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-slate-100 bg-slate-50/30">
+    {selectedFiles.map((file, index) => (
+      <div key={index} className="relative group bg-white border border-slate-200 rounded-lg p-2 flex items-center gap-2 pr-8 shadow-sm">
+        <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center text-blue-600">
+          <Paperclip size={14} />
+        </div>
+        <span className="text-xs font-medium text-slate-600 truncate max-w-[120px]">{file.name}</span>
+        <button 
+          onClick={() => removeFile(index)}
+          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+        >
+          <X size={10} />
+        </button>
+      </div>
+    ))}
+  </div>
+)}
+
+{/* Hidden File Input */}
+<input
+  type="file"
+  ref={fileInputRef}
+  onChange={handleFileChange}
+  multiple
+  className="hidden"
+  accept="image/*,.pdf,.doc,.docx,.zip"
+/>
+
             <textarea
               value={inputText}
               onChange={handleInputChange}
@@ -938,7 +1072,7 @@ useEffect(() => {
                 }
               }}
               className="w-full px-6 pt-5 text-[14px] text-slate-700 outline-none resize-none min-h-[60px] font-medium"
-              placeholder={`Message ${activeChat.type === "channel" ? "#" : ""}${activeChat.name}...`}
+              placeholder={`Message ${activeChat.type === "channel" ? "" : ""}${activeChat.name}...`}
             />
 
             <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50">
@@ -947,16 +1081,17 @@ useEffect(() => {
                   <Plus
                     className="cursor-pointer hover:text-blue-600 transition-colors"
                     size={19}
+                    onClick={() => fileInputRef.current.click()}
                   />
-                  <Paperclip
+                  {/* <Paperclip
                     className="cursor-pointer hover:text-blue-600 transition-colors"
                     size={19}
-                  />
+                  /> */}
                 </div>
-                <AtSign
+                {/* <AtSign
                   className="cursor-pointer hover:text-blue-600 transition-colors"
                   size={18}
-                />
+                /> */}
                 <div
                   className="relative flex items-center"
                   ref={emojiPickerRef}
@@ -1043,7 +1178,7 @@ useEffect(() => {
         onClose={() => setIsNotifOpen(false)}
         notifications={notifications}
         setNotifications={setNotifications}
-        onSelectChat={(name, type) => switchChat(name, type)}
+        onSelectChat={(name, id, type) => switchChat(name, type, id)}
       />
       <UserProfileSidebar
         isOpen={isProfileOpen}
@@ -1054,7 +1189,7 @@ useEffect(() => {
         isOpen={isAddMemberModalOpen}
         onClose={() => setIsAddMemberModalOpen(false)}
         onAdd={handleAddMember}
-        existingMembers={chatData[activeChat.name] || []}
+        existingMembers={chatData[activeChat.id] || []}
       />
       {/* <VideoCallModal 
   isOpen={isVideoModalOpen} 
