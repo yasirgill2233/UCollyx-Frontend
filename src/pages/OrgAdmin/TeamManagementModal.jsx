@@ -13,8 +13,13 @@ const TeamManagementModal = ({
   removeMember,
   handleSaveChanges,
 }) => {
-  if (activeModal !== "team") return null;
+  if (activeModal == "team") return null;
 
+  function handleRoleChange1(){
+    console.log("hello")
+  }
+
+  console.log("lkjklj", projectTeam)
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">
       <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-10 shadow-2xl animate-in zoom-in duration-200">
@@ -46,7 +51,7 @@ const TeamManagementModal = ({
               <option value="">Choose a member from list...</option>
               {allUsers?.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.full_name} ({user.email}){" "}
+                  {user?.full_name} ({user?.email}){" "}
                   {/* FIX: user.name -> user.full_name */}
                 </option>
               ))}
@@ -65,8 +70,8 @@ const TeamManagementModal = ({
 
         {/* MEMBERS LIST (Dynamic) */}
         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 mb-10 custom-scrollbar">
-          {projectTeam && projectTeam.length > 0 ? (
-            projectTeam.map((member) => (
+          {selectedProject?.members && selectedProject?.members.length > 0 ? (
+            selectedProject?.members.map((member) => (
               <div
                 key={member.id}
                 className="flex items-center justify-between p-5 border border-slate-50 rounded-2xl bg-white hover:border-indigo-100 transition-all group"
@@ -94,7 +99,7 @@ const TeamManagementModal = ({
 
                 <div className="flex items-center gap-6">
                   <select
-                    value={member.role || "Member"}
+                    value={member?.ProjectMember?.project_role}
                     onChange={(e) =>
                       handleRoleChange(member.id, e.target.value)
                     }

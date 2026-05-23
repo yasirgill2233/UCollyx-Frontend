@@ -7,203 +7,326 @@ import API from "../../api/axios";
 import toast from "react-hot-toast";
 import ActiveProjectModal from "./ActiveProjectModal copy";
 import { triggerToast } from "../../utils/toastHelper";
+import { useProjectMutations, useProjectsData } from "../../hooks/useProjects";
 
 const AdminProjectsView = () => {
   // --- Data States ---
-  const [projects, setProjects] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
+  // const [projects, setProjects] = useState([]);
+  // const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    total: 0,
-    active: 0,
-    noManager: 0,
-    archived: 0,
-  });
+  // const [stats, setStats] = useState({
+  //   total: 0,
+  //   active: 0,
+  //   noManager: 0,
+  //   archived: 0,
+  // });
 
   // --- UI States ---
-  const [activeFilter, setActiveFilter] = useState("All Projects");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeModal, setActiveModal] = useState(null);
-  const [selectedProject, setSelectedProject] = useState(null);
+  // const [activeFilter, setActiveFilter] = useState("All Projects");
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [activeModal, setActiveModal] = useState(null);
+  // const [selectedProject, setSelectedProject] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [selectedProjectForSidebar, setSelectedProjectForSidebar] =
     useState(null);
   const [activeTab, setActiveTab] = useState("Overview");
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [projectTeam, setProjectTeam] = useState([]);
+  // const [projectTeam, setProjectTeam] = useState([]);
 
+  // const [newProject, setNewProject] = useState({
+  //   name: "",
+  //   description: "",
+  //   status: "ACTIVE",
+  //   managerId: "",
+  // });
+
+  // --- React Query Hooks ---
+  const { data: serverData, isLoading } = useProjectsData();
+  const {
+    query,
+    createMutation,
+    teamMutation,
+    archiveMutation,
+    activeMutation,
+  } = useProjectMutations();
+
+  // --- UI States (Sirf UI ke liye) ---
+  const [activeFilter, setActiveFilter] = useState("All Projects");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeModal, setActiveModal] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectTeam, setProjectTeam] = useState([]); // Modal ke andar editing ke liye local state
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
     status: "ACTIVE",
     managerId: "",
   });
+  // Agar aapne activeMutation hook mein nahi banaya, toh useProjectMutations mein add krain
 
-  // --- 1. Fetch Projects & Users (Parallel) ---
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [projectRes, userRes] = await Promise.all([
-        API.get("/projects/get"),
-        API.get("/users/proj"),
-      ]);
+  // fetchData ki jagah ab hum ye use karte hain (Manual refresh ke liye):
+  const fetchData = () => query.refetch();
 
-      console.log(projectRes, userRes);
-
-      if (projectRes.data.success) {
-        setProjects(projectRes.data.projects);
-        setStats(projectRes.data.stats); // Backend se aane wale stats
-      }
-
-      console.log("Stats:", stats);
-
-      if (userRes.data.success) {
-        setAllUsers(userRes.data.users);
-      }
-    } catch (err) {
-      console.error("Data fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
+  // Serverside Data Extraction
+  const projects = serverData?.projectsRes?.projects || [];
+  const allUsers = serverData?.usersRes?.users || [];
+  const baseStats = serverData?.projectsRes?.stats || {
+    total: 0,
+    active: 0,
+    archived: 0,
   };
 
-  useEffect(() => {
-    if (projects && projects.length > 0) {
-      const noManagerCount = projects.filter(
-        (project) =>
-          !project.members?.some(
-            (m) => m.ProjectMember?.project_role === "Manager",
-          ),
-      ).length;
-
-      setStats((prev) => ({
-        ...prev,
-        noManager: noManagerCount,
-      }));
-    }
-  }, [projects]);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // --- 2. Create Project Logic ---
-  const handleCreateSubmit = async (e, createChannel) => {
-    e.preventDefault();
-    try {
-      const payload = {
-        name: newProject.name,
-        description: newProject.description,
-        status: newProject.status,
-        manager_id: newProject.managerId || 1,
-        createChannel: createChannel,
-      };
-
-      const res = await API.post("/projects/create", payload);
-
-      if (res.data.success) {
-        await fetchData(); // Refresh list
-        setSelectedProjectId(res.data.data.id);
-        setNewProject({
-          name: "",
-          description: "",
-          status: "ACTIVE",
-          managerId: "",
-        });
-        setActiveModal("team"); // Team modal par move karein
-      }
-    } catch (err) {
-      // triggerToast("Error creating project: " + err.response?.data?.message,"error");
-      // Agar validation error (400) hai toh uske detailed messages pick karo
-    if (err.response && err.response.data && err.response.data.errors) {
-      const allErrors = err.response.data.errors
-        .map((errObj) => `${errObj.field}: ${errObj.message}`)
-        .join("\n");
-      
-      triggerToast(allErrors, "error");
-    } else {
-      triggerToast(
-        (err.response?.data?.message || err.message),
-        "error"
-      );
-    }
-    }
-  };
-
-  const handleSaveChanges = async () => {
-    console.log("Check role in team:", projectTeam);
-    try {
-      // selectedProject wo hai jis par click kar ke modal khula tha
-      const projectId = selectedProject.id;
-
-      console.log("Selected Project:", projectId);
-
-      const res = await API.post(`/projects/${projectId}/team`, {
-        members: projectTeam.map((m) => ({
-          id: m.id,
-          role: m.role,
-        })), // projectTeam mein {id, full_name, role} objects hain
-      });
-
-      if (res.data.success) {
-        triggerToast("Team saved successfully!",'success')
-        setActiveModal(null);
-        fetchData(); // Table refresh karein taake members count update ho jaye
-      }
-    } catch (err) {
-      console.error("Error saving team:", err);
-      triggerToast("Failed to save team changes.",'error')
-    }
-  };
-
-  // --- 4. Archive Project ---
-  const handleArchiveProject = async (projectId) => {
-    try {
-      await API.patch(`/projects/${projectId}/archive`);
-      await fetchData();
-      setActiveModal(null);
-    } catch (err) {
-      console.error("Archive error:", err);
-    }
-  };
-
-  console.log("All Users Are Here:", allUsers);
-
-  // --- Helpers for Display ---
-  const currentProject = projects.find((p) => p.id === selectedProjectId);
+  // --- Computed Stats (noManager calculation frontend par krain) ---
+  const stats = useMemo(() => {
+    const noManagerCount = projects.filter(
+      (p) =>
+        !p.members?.some((m) => m.ProjectMember?.project_role === "Manager"),
+    ).length;
+    return { ...baseStats, noManager: noManagerCount };
+  }, [projects, baseStats]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
-      // 1. Search Logic (Name ya Project Code)
       const matchesSearch =
         p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.project_code &&
-          p.project_code.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (p.code && p.code.toLowerCase().includes(searchQuery.toLowerCase()));
+        p.project_code?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // 2. Status normalization (Backend se hamesha "ACTIVE" ya "ARCHIVED" aata hai)
       const status = p.status?.toUpperCase();
-
-      if (activeFilter === "Active") {
+      if (activeFilter === "Active")
         return matchesSearch && status === "ACTIVE";
-      }
-      if (activeFilter === "Archived") {
+      if (activeFilter === "Archived")
         return matchesSearch && status === "ARCHIVED";
-      }
-      if (activeFilter === "No Manager") {
-        // Check karein manager object empty hai ya manager_id null hai
-        return matchesSearch && !p.manager && !p.manager_id;
-      }
+      if (activeFilter === "No Manager") return matchesSearch && !p.manager_id;
 
       return matchesSearch;
     });
   }, [searchQuery, activeFilter, projects]);
 
-  // --- Team Management State ---
-  const [memberSearch, setMemberSearch] = useState("");
+  const handleCreateSubmit = (e, createChannel) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        ...newProject,
+        manager_id: newProject.managerId || 1,
+        createChannel,
+      },
+      {
+        onSuccess: (res) => {
+          setSelectedProject(res.data);
+          setActiveModal("team");
+          setNewProject({
+            name: "",
+            description: "",
+            status: "ACTIVE",
+            managerId: "",
+          });
+        },
+        onError: (err) => {
+          const errorMsg = err.response?.data?.errors
+            ? err.response.data.errors
+                .map((e) => `${e.field}: ${e.message}`)
+                .join("\n")
+            : err.response?.data?.message || "Creation failed";
+          triggerToast(errorMsg, "error");
+        },
+      },
+    );
+  };
 
-  // --- Helper: Render Avatar Group ---
+  useEffect(() => {
+    if (activeModal === "team" && selectedProject) {
+      const currentProj = projects.find((p) => p.id === selectedProject.id);
+      if (currentProj) {
+        const initialTeam = currentProj.members.map((id) => {
+          const user = allUsers.find((u) => u.id === id);
+          return {
+            ...user,
+            role:
+              user?.full_name === currentProj.manager ? "Manager" : "Member",
+          };
+        });
+        setProjectTeam(initialTeam);
+      }
+    }
+  }, [activeModal, selectedProject, projects, allUsers]);
+
+  // 1. Handle Input Change (For Create Modal)
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProject((prev) => ({ ...prev, [name]: value }));
+  };
+
+
+//   const handleRoleChange = (memberId, newRole) => {
+//   console.log("Triggered Role Change:", memberId, newRole);
+
+//   setSelectedProject((prevProject) => {
+//     if (!prevProject || !prevProject.members) return prevProject;
+
+//     // Direct selectedProject ke members array ko map kar rahe hain
+//     const updatedMembers = prevProject.members.map((m) => {
+      
+//       // Pivot object setup structure check taake structure undefined crash na kare
+//       const currentPivot = m.ProjectMember || { project_role: "Member" };
+
+//       if (newRole === "Manager") {
+//         // Condition: Agar naya role Manager hai, toh sirf targeted member Manager banega baqi sab auto-Member
+//         return m.id === memberId
+//           ? { ...m, ProjectMember: { ...currentPivot, project_role: "Manager" } }
+//           : { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } };
+//       } else {
+//         // Condition: Agar kisi Manager ko switch karke Member kar rahe hain
+//         return m.id === memberId
+//           ? { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } }
+//           : m;
+//       }
+//     });
+
+//     return {
+//       ...prevProject,
+//       members: updatedMembers
+//     };
+//   });
+// };
+
+
+// ==========================================
+// 🎯 1. ADD MEMBER HANDLER (Direct State Sync)
+// ==========================================
+const handleAddMember = () => {
+  if (!selectedUserId) return triggerToast("Select a user", "error");
+
+  const userId = parseInt(selectedUserId);
+  const currentMembers = selectedProject?.members || [];
+
+  console.log("Adding Member Node Target:", userId, selectedProject);
+
+  // Duplication check directly from selectedProject members array
+  if (currentMembers.some((m) => m.id === userId)) {
+    return triggerToast("Already added to this project team", "error");
+  }
+
+  const user = allUsers.find((u) => u.id === userId);
+  
+  if (user) {
+    const newMemberWithPivot = {
+      ...user,
+      ProjectMember: {
+        project_role: "Member"
+      }
+    };
+
+    setSelectedProject((prevProject) => {
+      if (!prevProject) return prevProject;
+      return {
+        ...prevProject,
+        members: [...currentMembers, newMemberWithPivot]
+      };
+    });
+
+    setSelectedUserId("");
+    triggerToast(`${user.full_name || 'Member'} staging context bound!`, "success");
+  } else {
+    triggerToast("User context resource not found", "error");
+  }
+};
+
+
+// ==========================================
+// 🎚️ 2. ROLE CHANGE HANDLER (Manager Constraint Rule)
+// ==========================================
+const handleRoleChange = (memberId, newRole) => {
+  console.log("Triggered Role Change Mapping:", memberId, newRole);
+
+  setSelectedProject((prevProject) => {
+    if (!prevProject || !prevProject.members) return prevProject;
+
+    const updatedMembers = prevProject.members.map((m) => {
+      const currentPivot = m.ProjectMember || { project_role: "Member" };
+
+      if (newRole === "Manager") {
+        // Enforce rule: Aik project ka aik hi manager ho sakta hai, baqi auto-Member switch honge
+        return m.id === memberId
+          ? { ...m, ProjectMember: { ...currentPivot, project_role: "Manager" } }
+          : { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } };
+      } else {
+        // Manager se normal member status change
+        return m.id === memberId
+          ? { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } }
+          : m;
+      }
+    });
+
+    return {
+      ...prevProject,
+      members: updatedMembers
+    };
+  });
+};
+
+
+// ==========================================
+// ✕ 3. REMOVE MEMBER HANDLER
+// ==========================================
+const removeMember = (userId) => {
+  setSelectedProject((prevProject) => {
+    if (!prevProject) return prevProject;
+    return {
+      ...prevProject,
+      // Target state filtering pipeline execution
+      members: prevProject.members ? prevProject.members.filter((m) => m.id !== userId) : []
+    };
+  });
+};
+
+
+// ==========================================
+// 💾 4. SAVE TEAM TO DATABASE (Mutation)
+// ==========================================
+const handleSaveTeam = () => {
+  const membersList = selectedProject?.members || [];
+
+  // Map state formatting block to meet precise database schema endpoints
+  const formattedMembers = membersList.map((m) => ({
+    id: m.id,
+    role: m.ProjectMember?.project_role || "Member", 
+  }));
+
+  console.log("Invoking Database Team Sync Lifecycle:", {
+    projectId: selectedProject?.id,
+    members: formattedMembers,
+  });
+
+  teamMutation.mutate(
+    {
+      projectId: selectedProject.id,
+      members: formattedMembers,
+    },
+    {
+      onSuccess: () => {
+        triggerToast("Team metadata synchronized successfully!", "success");
+        setActiveModal(null); // safely dismiss modal overlay view
+      },
+      onError: (error) => {
+        console.error("Team Save Mutation Core Failure:", error);
+        triggerToast(error?.response?.data?.message || "Failed to save team.", "error");
+      }
+    }
+  );
+};
+
+  console.log("Check Active:", activeModal, selectedProject, selectedProjectId);
+
+  console.log("All Users:==============",projectTeam)
+
+  if (isLoading)
+    return (
+      <div className="h-screen flex items-center justify-center font-black text-indigo-600 animate-pulse text-xl">
+        UCOLLYX ENGINE SYNCING...
+      </div>
+    );
+
   const renderAvatarGroup = (memberIds = []) => {
     if (!Array.isArray(memberIds)) return null;
     const maxVisible = 4;
@@ -230,93 +353,6 @@ const AdminProjectsView = () => {
         )}
       </div>
     );
-  };
-
-  const handleAddMember = () => {
-    // 1. Basic Validation
-    if (!selectedUserId) {
-      triggerToast("Please select a user first","error");
-      return;
-    }
-
-    const userId = parseInt(selectedUserId);
-
-    // 2. Check karein ke member pehle se list (projectTeam) mein hai ya nahi
-    const isAlreadyAdded = projectTeam.find((m) => m.id === userId);
-    if (isAlreadyAdded) {
-      triggerToast("This member is already added to the team.","error");
-      setSelectedUserId(""); // Dropdown reset karein
-      return;
-    }
-
-    // 3. allUsers mein se wo user object dhoondein
-    const user = allUsers.find((u) => u.id === userId);
-
-    if (user) {
-      // 4. Naya member object banayein (backend keys ke mutabiq)
-      const newMember = {
-        id: user.id,
-        full_name: user.full_name, // 'name' ki bajaye 'full_name' use karein
-        email: user.email,
-        role: "Member", // Default role
-      };
-
-      // 5. Sirf modal ki local state update karein
-      setProjectTeam((prev) => [...prev, newMember]);
-
-      // 6. Dropdown reset karein
-      setSelectedUserId("");
-    } else {
-      console.error("User not found in allUsers list");
-    }
-  };
-
-  const removeMember = (userId) => {
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === selectedProjectId
-          ? { ...p, members: p.members.filter((id) => id !== userId) }
-          : p,
-      ),
-    );
-    setProjectTeam((prev) => prev.filter((m) => m.id !== userId));
-  };
-
-  const handleRoleChange = (memberId, newRole) => {
-    setProjectTeam((prev) =>
-      prev.map((m) => {
-        if (newRole === "Manager") {
-          return m.id === memberId
-            ? { ...m, role: "Manager" }
-            : { ...m, role: "Member" };
-        } else {
-          return m.id === memberId ? { ...m, role: "Member" } : m;
-        }
-      }),
-    );
-  };
-
-  useEffect(() => {
-    if (activeModal === "team" && selectedProjectId) {
-      const currentProj = projects?.find((p) => p.id === selectedProjectId);
-      if (currentProj) {
-        const initialTeam = currentProj.members.map((id) => {
-          const user = allUsers?.find((u) => u.id === id);
-          return {
-            ...user,
-            role:
-              user?.full_name === currentProj?.manager ? "Manager" : "Member",
-          };
-        });
-        setProjectTeam(initialTeam);
-      }
-    }
-  }, [activeModal, selectedProjectId]);
-
-  // --- Handlers ---
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProject((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -551,6 +587,7 @@ const AdminProjectsView = () => {
                       >
                         Manage Team
                       </button>
+
                       <button
                         onClick={() => {
                           setSelectedProject(project);
@@ -583,55 +620,68 @@ const AdminProjectsView = () => {
       {/* --- MODALS SECTION --- */}
       {activeModal && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          {/* 1. Create Project Modal (Image 7) */}
           {activeModal === "create" && (
             <CreateProjectModal
-              activeModal={activeModal}
               setActiveModal={setActiveModal}
               newProject={newProject}
               handleInputChange={handleInputChange}
-              handleCreateSubmit={handleCreateSubmit}
+              handleCreateSubmit={handleCreateSubmit} // Iske andar mutation logic hai
               allUsers={allUsers}
+              isLoading={createMutation.isLoading} // Loading spinner dikhane ke liye add kiya
             />
           )}
 
-          {/* --- TEAM MODAL (IMAGE 8 LOGIC) --- */}
+          {/* TEAM MODAL */}
           {activeModal === "team" && (
             <TeamManagementModal
-              activeModal={activeModal}
               setActiveModal={setActiveModal}
-              selectedProject={currentProject} // find kiya hua project
+              selectedProject={selectedProject}
               selectedUserId={selectedUserId}
               setSelectedUserId={setSelectedUserId}
               allUsers={allUsers}
               projectTeam={projectTeam}
-              handleAddMember={handleAddMember}
-              handleRoleChange={handleRoleChange}
-              removeMember={removeMember}
-              handleSaveChanges={handleSaveChanges}
+              handleAddMember={handleAddMember} // Defined
+              handleRoleChange={handleRoleChange} // Defined
+              removeMember={removeMember} // Defined
+              handleSaveChanges={handleSaveTeam} // Mutation hook wala function
+              isLoading={teamMutation.isLoading}
             />
           )}
 
-          {/* Archive Modal Call */}
           {activeModal === "archive" && (
-            <ArchiveProjectModal
-              activeModal={activeModal}
-              setActiveModal={setActiveModal}
-              selectedProject={selectedProject}
-              fetchData={fetchData} // Ye function API se projects dobara load karega
-              setSelectedProjectForSidebar={setSelectedProjectForSidebar}
-            />
-          )}
+  <ArchiveProjectModal
+    setActiveModal={setActiveModal}
+    selectedProject={selectedProject}
+    isLoading={archiveMutation.isLoading}
+    onConfirm={() => {
+      archiveMutation.mutate(selectedProject.id, {
+        onSuccess: () => {
+          setActiveModal(null);
+          setSelectedProjectForSidebar(null);
+          triggerToast("Project Archived!", "success");
+        }
+      });
+    }}
+  />
+)}
 
-          {activeModal === "active" && (
-            <ActiveProjectModal
-              activeModal={activeModal}
-              setActiveModal={setActiveModal}
-              selectedProject={selectedProject}
-              fetchData={fetchData} // Ye function API se projects dobara load karega
-              setSelectedProjectForSidebar={setSelectedProjectForSidebar}
-            />
-          )}
+{/* Active Modal Call */}
+{activeModal === "active" && (
+  <ActiveProjectModal
+    setActiveModal={setActiveModal}
+    selectedProject={selectedProject}
+    isLoading={activeMutation.isLoading}
+    onConfirm={() => {
+      activeMutation.mutate(selectedProject.id, {
+        onSuccess: () => {
+          setActiveModal(null);
+          setSelectedProjectForSidebar(null);
+          triggerToast("Project Restored!", "success");
+        }
+      });
+    }}
+  />
+)}
         </div>
       )}
 
@@ -646,7 +696,7 @@ const AdminProjectsView = () => {
             setActiveTab={setActiveTab}
             allUsers={allUsers}
             setActiveModal={setActiveModal}
-            setSelectedProjectId={setSelectedProjectId}
+            setSelectedProjectId={setSelectedProject.id}
             setSelectedProject={setSelectedProject}
             projects={projects} // Ye zaroori hai sync ke liye
           />

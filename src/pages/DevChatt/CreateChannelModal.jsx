@@ -11,14 +11,12 @@ const CreateChannelModal = ({ isOpen, onClose, onCreateChannel }) => {
   const handleCreate = () => {
     if (!channelName.trim()) return;
     
-    // Parent function ko data bhejna
     onCreateChannel({
       name: channelName.trim(),
       description: description.trim() || null,
       is_private: isPrivate
     });
     
-    // Form reset aur close
     setChannelName("");
     setDescription("");
     setIsPrivate(false);

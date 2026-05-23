@@ -11,130 +11,254 @@ import {
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import API from "../../api/axios";
+import { authService } from "../../api/services/authService";
+import { useGoogleLoginMutation, useLoginMutation } from "../../hooks/useAuth";
+import { useAvailableWorkspaces } from "../../hooks/useWorkspace";
+import useLocalStorage from "../../hooks/custom/useLocalStorage";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
+  // const [error, setError] = useState("");
+
+  // const navigate = useNavigate();
+
+  // const playWorkspaceSound = () => {
+  //   const audio = new Audio("/sounds/enter.mp3");
+  //   audio.volume = 0.9; // Isay 0.4 se zyada na rakhen taake user shock na ho
+  //   audio.play().catch((err) => console.log("Playback blocked:", err));
+  // };
+
+  // const handlePostLoginRedirect = async (user) => {
+  //   if (user.role === "super_admin") {
+  //     console.log("Super Admin identified, skipping workspace fetch.");
+  //     localStorage.setItem("user", JSON.stringify(user));
+  //     navigate("/super-admin/dashboard");
+  //     return;
+  //   }
+  //   try {
+  //     const res = await API.get("/workspace/my-workspaces");
+  //     const workspaces = res.data.workspaces || [];
+  //     const count = res.data.count || 0;
+
+  //     if (user.requestStatus === "pending") {
+  //         navigate("/request-pending");
+  //       } else if (user.requestStatus === "rejected") {
+  //         navigate("/request-rejected");
+  //       } else {
+  //          if (count > 0 && workspaces.length > 0) {
+  //       const userRole = workspaces[0].role;
+  //       const updatedUser = { ...user, role: userRole };
+  //       localStorage.setItem("user", JSON.stringify(updatedUser));
+
+  //       console.log("Found Role:", userRole);
+  //       playWorkspaceSound();
+
+  //       if (count === 1) {
+  //         if (userRole === "dev") {
+  //           navigate(`/dev/dashboard`);
+  //         } else if (userRole === "qa") {
+  //           navigate(`/qa/dashboard`);
+  //         } else if (userRole === "manager") {
+  //           navigate(`/manager/portfolio`);
+  //         } else if (userRole === "org_admin") {
+  //           navigate(`/org-admin/dashboard`);
+  //         } else if (userRole === "member") {
+  //           navigate(`/awaiting-role`);
+  //         } else {
+  //           navigate(`/super-admin/dashboard`);
+  //         }
+  //       } else {
+  //         navigate("/select-workspace", { state: { workspaces } });
+  //       }
+  //     } else {
+  //       console.log("No workspaces found");
+  //       localStorage.setItem("user", JSON.stringify(user));
+  //       navigate("/workspace-selection");
+  //     }
+  //       }
+     
+  //   } catch (err) {
+  //     console.error("Redirect Error:", err);
+  //     navigate("/login");
+  //   }
+  // };
+
+  // const handleLogin = async (e) => {
+  //   e.preventDefault();
+  //   if (!email || !password) return;
+
+  //   setIsLoading(true);
+  //   setError("");
+
+  //   try {
+  //     const res = await API.post("/auth/login", { email, password });
+
+  //     console.log("Check role:", res.data.user);
+
+  //     localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem("user", JSON.stringify(res.data.user));
+
+  //     handlePostLoginRedirect(res.data.user);
+  //   } catch (err) {
+  //     const msg =
+  //       err.response?.data?.message || "Login failed. Please try again.";
+  //     setError(msg);
+
+  //     if (msg.toLowerCase().includes("verify")) {
+  //       navigate("/verify", { state: { email: email } });
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleGoogleSuccess = async (response) => {
+  //   setIsLoading(true);
+  //   try {
+  //     const res = await API.post("/auth/google", {
+  //       idToken: response.credential,
+  //     });
+
+  //     localStorage.setItem("token", res.data.token);
+  //     localStorage.setItem("user", JSON.stringify(res.data.user));
+
+  //     if (res.data.isNewUser) {
+  //       navigate("/set-password");
+  //     } else {
+  //       await handlePostLoginRedirect(res.data.user);
+  //     }
+  //   } catch (err) {
+  //     setError("Google Sign-In failed!");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
 
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [user, setUser] = useLocalStorage('user', null);
+  const [token, setToken] = useLocalStorage('token', null);
+  const queryClient = useQueryClient();
+
+  // React Query Mutations
+  const loginMutation = useLoginMutation();
+  const googleMutation = useGoogleLoginMutation();
+
+  const { data: workspaces } = useAvailableWorkspaces();
+console.log("Current Workspaces in Cache:", workspaces);
 
   const playWorkspaceSound = () => {
     const audio = new Audio("/sounds/enter.mp3");
-    audio.volume = 0.9; // Isay 0.4 se zyada na rakhen taake user shock na ho
-    audio.play().catch((err) => console.log("Playback blocked:", err));
+    audio.volume = 0.9;
+    audio.play().catch(() => {});
   };
 
   const handlePostLoginRedirect = async (user) => {
     if (user.role === "super_admin") {
-      console.log("Super Admin identified, skipping workspace fetch.");
-      localStorage.setItem("user", JSON.stringify(user));
+      // localStorage.setItem("user", JSON.stringify(user));
+      setUser(user);
       navigate("/super-admin/dashboard");
       return;
     }
-    try {
-      const res = await API.get("/workspace/my-workspaces");
-      const workspaces = res.data.workspaces || [];
-      const count = res.data.count || 0;
 
-      if (user.requestStatus === "pending") {
-          navigate("/request-pending");
-        } else if (user.requestStatus === "rejected") {
-          navigate("/request-rejected");
-        } else {
-           if (count > 0 && workspaces.length > 0) {
+    try {
+      if (user.requestStatus === "pending") return navigate("/request-pending");
+      if (user.requestStatus === "rejected") return navigate("/request-rejected");
+
+      const res = await authService.getMyWorkspaces();
+      const workspaces = res.workspaces || [];
+      const count = res.count || 0;
+
+      if (count > 0 && workspaces.length > 0) {
         const userRole = workspaces[0].role;
         const updatedUser = { ...user, role: userRole };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-
-        console.log("Found Role:", userRole);
+        // localStorage.setItem("user", JSON.stringify(updatedUser));
+        // setUser(updatedUser);
+        
         playWorkspaceSound();
 
+        const routes = {
+          dev: "/dev/dashboard",
+          qa: "/qa/dashboard",
+          manager: "/manager/portfolio",
+          org_admin: "/org-admin/dashboard",
+          member: "/awaiting-role",
+          super_admin: "/super-admin/dashboard"
+        };
+        
         if (count === 1) {
-          if (userRole === "dev") {
-            navigate(`/dev/dashboard`);
-          } else if (userRole === "qa") {
-            navigate(`/qa/dashboard`);
-          } else if (userRole === "manager") {
-            navigate(`/manager/portfolio`);
-          } else if (userRole === "org_admin") {
-            navigate(`/org-admin/dashboard`);
-          } else if (userRole === "member") {
-            navigate(`/awaiting-role`);
-          } else {
-            navigate(`/super-admin/dashboard`);
-          }
+          navigate(routes[userRole] || "/");
         } else {
           navigate("/select-workspace", { state: { workspaces } });
         }
       } else {
-        console.log("No workspaces found");
-        localStorage.setItem("user", JSON.stringify(user));
+        // localStorage.setItem("user", JSON.stringify(user));
+        setUser(user);
         navigate("/workspace-selection");
       }
-        }
-     
     } catch (err) {
-      console.error("Redirect Error:", err);
-      navigate("/login");
+      navigate("/");
     }
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
     if (!email || !password) return;
 
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const res = await API.post("/auth/login", { email, password });
-
-      console.log("Check role:", res.data.user);
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      handlePostLoginRedirect(res.data.user);
-    } catch (err) {
-      const msg =
-        err.response?.data?.message || "Login failed. Please try again.";
-      setError(msg);
-
-      if (msg.toLowerCase().includes("verify")) {
-        navigate("/verify", { state: { email: email } });
+    loginMutation.mutate({ email, password }, {
+      onSuccess: (data) => {
+        // localStorage.setItem("token", data.token);
+        // localStorage.setItem("user", JSON.stringify(data.user));
+        queryClient.clear();
+        setUser(data.user);
+        setToken(data.token);
+    setToken(data.token);
+        handlePostLoginRedirect(data.user);
+      },
+      onError: (err) => {
+        const msg = err.response?.data?.message || "Login failed.";
+        if (msg.toLowerCase().includes("verify")) {
+          navigate("/verify", { state: { email } });
+        }
       }
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
-  const handleGoogleSuccess = async (response) => {
-    setIsLoading(true);
-    try {
-      const res = await API.post("/auth/google", {
-        idToken: response.credential,
-      });
-
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      if (res.data.isNewUser) {
-        navigate("/set-password");
-      } else {
-        await handlePostLoginRedirect(res.data.user);
+  const handleGoogleSuccess = (response) => {
+    googleMutation.mutate(response.credential, {
+      onSuccess: (data) => {
+        // localStorage.setItem("token", data.token);
+        // localStorage.setItem("user", JSON.stringify(data.user));
+        queryClient.clear();
+        setUser(data.user);
+        setToken(data.token);
+    setToken(data.token);
+        if (data.isNewUser) {
+          navigate("/set-password");
+        } else {
+          handlePostLoginRedirect(data.user);
+        }
       }
-    } catch (err) {
-      setError("Google Sign-In failed!");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
+
+  // UI Variables
+  const isLoading = loginMutation.isPending || googleMutation.isPending;
+  const error = loginMutation.error?.response?.data?.message || googleMutation.error?.message;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4">
+      <div className="w-60 absolute top-0 left-0">
+        <img src="/logo.png" alt="" className="" />
+      </div>
       {/* Main Container: 2 Columns */}
       <div className="flex flex-row w-full max-w-[1000px] h-[650px] bg-white rounded-[40px] shadow-2xl overflow-hidden">
         {/* Left Side: Login Form */}

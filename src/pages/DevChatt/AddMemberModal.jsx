@@ -2,42 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { X, Search, UserPlus } from 'lucide-react';
 import API from '../../api/axios';
 
+import { useWorkspaceMembers } from '../../hooks/useWorkspace';
+
 const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers = [] }) => {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Ye wo saare log hain jo system mein hain (Total Directory)
-  const allTeamMembers = [
-    { id: 101, email:"zainahmed@gmail.com", status:"Active", name: 'Zain Ahmed', role: 'UI Designer', color: 'bg-orange-500' },
-    { id: 102, email:"hassanraza@gmail.com", status:"Active", name: 'Hassan Raza', role: 'Backend Dev', color: 'bg-indigo-600' },
-    { id: 103, email:"sanakhan@gmail.com", status:"InActive", name: 'Sana Khan', role: 'Product Manager', color: 'bg-pink-500' },
-    { id: 104, email:"alimurtaza@gmail.com", status:"Active", name: 'Ali Murtaza', role: 'Full Stack', color: 'bg-emerald-500' },
-  ];
-
-
-  const [allUsers, setAllUsers] = useState([]);
   
-    const fetchWorkspaceMembers = async () => {
-      try {
-        const res = await API.get('/workspace/members'); // Apna exact route use karein
-        console.log("Add Member:",res.data.data)
-        if (res.data.success) {
-          setAllUsers(res.data.data);
-        }
-      } catch (err) {
-        console.error("Error fetching users:", err);
-      }
-    };
+  // React Query Hook
+  const { data: membersResp } = useWorkspaceMembers();
+  const allUsers = membersResp || [];
+
+  console.log("Users:",membersResp)
+
+  // Filter Logic: Jo pehle se member nahi hain aur search match kar rahe hain
+  const availableToAdd = allUsers.filter(member => {
+    const isAlreadyMember = existingMembers.some(
+      (em) => em.email === member.User.email // ID ya Email se check karna behtar ha
+    );
+    const matchesSearch = member.User.full_name.toLowerCase().includes(searchTerm.toLowerCase());
     
-    useEffect(() => {
-      fetchWorkspaceMembers();
-    }, []);
-  
-
-  // Filter: Sirf wo dikhao jo pehle se channel mein nahi hain aur search se match karein
-  const availableToAdd = allUsers.filter(member => 
-    !existingMembers.some(em => em.full_name === member.User.full_name) &&
-    member.User.full_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    return !isAlreadyMember && matchesSearch;
+  });
 
   if (!isOpen) return null;
 

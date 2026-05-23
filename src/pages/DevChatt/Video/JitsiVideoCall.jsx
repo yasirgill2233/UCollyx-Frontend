@@ -1,28 +1,46 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, Maximize2, Minimize2 } from "lucide-react";
+import { useMediaRecorder } from "../../../hooks/useMediaRecorder";
+import { finalizeMeetingApi } from "../../../api/services/meetingService";
 
-const JitsiVideoCall = ({ isOpen, onClose, roomName, userName }) => {
+const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userEmail, currentMeetingId }) => {
   const jitsiContainerRef = useRef(null);
   const [apiInstance, setApiInstance] = useState(null);
   const [isMinimized, setIsMinimized] = useState(false);
+
+  const { startRecording, stopRecording } = useMediaRecorder(async (blob) => {
+    await finalizeMeetingApi(blob, currentMeetingId);
+});
+
+    const handleClose = () => {
+    if (apiInstance) apiInstance.dispose();
+    setApiInstance(null);
+    onClose();
+  };
+
+  const secureRoomName = useMemo(() => {
+  const baseName = `UCollyx-${activeChat}-${roomName}`;
+  const hashedName = btoa(baseName).replace(/[=+/]/g, ''); 
+  
+  return `UCollyx-${hashedName}`;
+}, [roomName, activeChat]);
 
   useEffect(() => {
     if (isOpen && window.JitsiMeetExternalAPI && !apiInstance) {
       const domain = "meet.jit.si";
       const options = {
-        roomName: `UCollyx-${roomName.replace(/\s+/g, "-")}`,
+        roomName: secureRoomName,        
         parentNode: jitsiContainerRef.current,
-        userInfo: { displayName: userName },
+        userInfo: { displayName: userName, email: userEmail },
         configOverwrite: {
           prejoinPageEnabled: false,
           disableDeepLinking: true,
-          // Background ko platform ke theme se match karein
-          defaultBackgroundColor: "#0f172a", 
+          defaultBackgroundColor: "#0f172a",
         },
         interfaceConfigOverwrite: {
           TOOLBAR_BUTTONS: [
-            "microphone", "camera", "desktop", "chat", "raisehand", 
-            "videoquality", "tileview", "hangup", "settings"
+            "microphone", "camera", "chat", "raisehand", 
+            "videoquality", "tileview", "settings"
           ],
           SETTINGS_SECTIONS: ['devices', 'language', 'profile'],
         },
@@ -31,21 +49,26 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName }) => {
       const api = new window.JitsiMeetExternalAPI(domain, options);
       setApiInstance(api);
 
-      api.on("videoConferenceLeft", () => {
+      api.on("readyToClose", () => {
         handleClose();
       });
+
+       if (apiInstance) {
+    apiInstance.on('videoConferenceJoined', () => {
+      startRecording();
+    });
+
+    apiInstance.on('videoConferenceLeft', () => {
+      stopRecording();
+      handleClose();
+    });
+  }
 
       return () => {
         if (api) api.dispose();
       };
     }
   }, [isOpen]);
-
-  const handleClose = () => {
-    if (apiInstance) apiInstance.dispose();
-    setApiInstance(null);
-    onClose();
-  };
 
   if (!isOpen) return null;
 
@@ -58,8 +81,6 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName }) => {
       <div className={`relative bg-slate-900 overflow-hidden shadow-2xl transition-all duration-500 ${
         isMinimized ? "w-full h-full" : "w-full max-w-6xl h-[85vh] rounded-[32px] border border-slate-700/50"
       }`}>
-        
-        {/* Top Controls Bar */}
         <div className="absolute top-4 right-6 z-[110] flex items-center gap-3">
           <button 
             onClick={() => setIsMinimized(!isMinimized)}

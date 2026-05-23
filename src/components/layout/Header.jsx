@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Search, Bell, ChevronDown, LogOut, Key, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import ProfileModal from "./ProfileModal"; // Naya Profile Modal
 import ChangePasswordModal from "./ChangePasswordModal"; // Naya Change Password Modal
+import { useQueryClient } from "@tanstack/react-query";
 
 const Header = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // 1. User state initialized directly from localStorage fallback
   const [currentUser, setCurrentUser] = useState(() => {
@@ -14,7 +16,7 @@ const Header = () => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-console.log("Current User in Header:", currentUser.avatar_url);
+  console.log("Current User in Header:", currentUser.avatar_url);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -26,6 +28,7 @@ console.log("Current User in Header:", currentUser.avatar_url);
     } catch (err) {
       console.error("Logout API failed:", err);
     } finally {
+      queryClient.clear();
       localStorage.clear();
       navigate("/sign-out");
     }
@@ -67,17 +70,19 @@ console.log("Current User in Header:", currentUser.avatar_url);
             >
               {/* Circular Avatar using first letters of Full Name */}
               <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-  {currentUser.avatar_url ? (
-    <img 
-      src={import.meta.env.VITE_API_URL + currentUser.avatar_url} 
-      alt="Avatar"
-      crossOrigin="anonymous"
-      className="w-full h-full object-cover" 
-    />
-  ) : (
-    currentUser.full_name ? currentUser.full_name[0] : "U"
-  )}
-</div>
+                {currentUser.avatar_url ? (
+                  <img
+                    src={import.meta.env.VITE_API_URL + currentUser.avatar_url}
+                    alt="Avatar"
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover"
+                  />
+                ) : currentUser.full_name ? (
+                  currentUser.full_name[0]
+                ) : (
+                  "U"
+                )}
+              </div>
               <ChevronDown
                 className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />

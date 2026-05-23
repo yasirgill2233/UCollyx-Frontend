@@ -4,11 +4,62 @@ import { useNavigate } from "react-router-dom"; // Fixed import
 import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { triggerToast } from "../../utils/toastHelper";
+import { useRegisterMutation } from "../../hooks/useAuth";
 
 export default function Register() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   
-  // State for form fields
+  // // State for form fields
+  // const [formData, setFormData] = useState({
+  //   full_name: "",
+  //   email: "",
+  //   password: "",
+  //   confirmPassword: ""
+  // });
+
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const [loading, setLoading] = useState(false);
+
+  // // Input Change Handler
+  // const handleChange = (e) => {
+  //   setFormData({ ...formData, [e.target.name]: e.target.value });
+  // };
+
+  // // Signup Handler
+  // const handleSignup = async (e) => {
+  //   e.preventDefault();
+    
+  //   // Basic Validation
+  //   if (formData.password !== formData.confirmPassword) {
+  //     return triggerToast("Passwords do not match","error");
+  //   }
+
+  //   setLoading(true);
+  //   try {
+
+  //     const res = await API.post('/auth/register', {
+  //       full_name: formData.full_name,
+  //       email: formData.email,
+  //       password: formData.password
+  //     });
+
+  //     triggerToast("OTP sent to your email!","success");
+  //     navigate('/verify', { state: { email: formData.email } });
+  //   } catch (err) {
+  //     const audio = new Audio("/sounds/short_bongo.mp3");
+  //     audio.volume = 0.5;
+  //     audio.play().catch((e) => console.log("Sound blocked"));
+  //     triggerToast(err.response?.data?.message || "Something went wrong","error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  const navigate = useNavigate();
+  const registerMutation = useRegisterMutation();
+
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
@@ -18,49 +69,56 @@ export default function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // Input Change Handler
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Signup Handler
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    
-    // Basic Validation
-    if (formData.password !== formData.confirmPassword) {
-      return triggerToast("Passwords do not match","error");
-    }
-
-    setLoading(true);
-    try {
-
-      const res = await API.post('/auth/register', {
-        full_name: formData.full_name,
-        email: formData.email,
-        password: formData.password
-      });
-
-      triggerToast("OTP sent to your email!","success");
-      navigate('/verify', { state: { email: formData.email } });
-    } catch (err) {
-      const audio = new Audio("/sounds/short_bongo.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((e) => console.log("Sound blocked"));
-      triggerToast(err.response?.data?.message || "Something went wrong","error");
-    } finally {
-      setLoading(false);
-    }
+  const playErrorSound = () => {
+    const audio = new Audio("/sounds/short_bongo.mp3");
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
   };
 
+  const handleSignup = (e) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      return triggerToast("Passwords do not match", "error");
+    }
+
+    // Mutation call
+    registerMutation.mutate({
+      full_name: formData.full_name,
+      email: formData.email,
+      password: formData.password
+    }, {
+      onSuccess: () => {
+        triggerToast("OTP sent to your email!", "success");
+        navigate('/verify', { state: { email: formData.email } });
+      },
+      onError: (err) => {
+        playErrorSound();
+        const msg = err.response?.data?.message || "Something went wrong";
+        triggerToast(msg, "error");
+      }
+    });
+  };
+
+  // UI helpers
+  const isLoading = registerMutation.isPending;
+
   return (
+
+    
     <div className="flex justify-center items-center h-screen bg-[#f0f2f5]">
-      <div className="flex flex-col w-[30%] h-[83%] border border-b-default rounded-2xl shadow-2xl p-8 gap-3 items-center bg-white">
+       <div className="w-60 absolute top-0 left-0">
+        <img src="/logo.png" alt="" className="" />
+      </div>
+      <div className="flex flex-col w-[30%] h-[73%] border border-b-default rounded-2xl shadow-2xl p-8 gap-5 items-center bg-white">
         
         {/* Progress Stepper */}
-        <div className="flex items-center w-full max-w-md mb-12 mt-4">
+        {/* <div className="flex items-center w-full max-w-md mb-12 mt-4">
           <div className="flex items-center w-full">
             <div className="w-8 h-8 shrink-0 bg-indigo-600 border-2 border-indigo-600 rounded-full flex items-center justify-center text-white text-sm">1</div>
             <div className="flex-auto border-t-2 border-indigo-200"></div>
@@ -70,10 +128,10 @@ export default function Register() {
             <div className="flex-auto border-t-2 border-indigo-200"></div>
           </div>
           <div className="w-8 h-8 shrink-0 bg-indigo-100 border-2 border-indigo-600 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">3</div>
-        </div>
+        </div> */}
         
         <div className="w-full h-[120px] flex flex-col items-center justify-center gap-2">
-          <div className=" bg-indigo-600 p-4 rounded-xl mb-2"><UserRoundPlus size={20} className="text-white" /></div>
+          {/* <div className=" bg-indigo-600 p-4 rounded-xl mb-2"><UserRoundPlus size={20} className="text-white" /></div> */}
           <p className="text-2xl font-bold text-default-text">Create Your Account</p>
           <p className="text-default-text">Join UCollyx to collaborate with your team</p>
         </div>
@@ -170,10 +228,10 @@ export default function Register() {
 
         <button 
           onClick={handleSignup} 
-          disabled={loading}
+          disabled={isLoading}
           className="rounded-lg bg-indigo-600 text-white p-3 w-full hover:bg-indigo-700 transition-colors hover:cursor-pointer disabled:bg-gray-400"
         >
-          {loading ? "Creating Account..." : "Create Account"}
+          {isLoading ? "Creating Account..." : "Create Account"}
         </button>
         
         <hr className="border-b-default w-full mt-2"/>

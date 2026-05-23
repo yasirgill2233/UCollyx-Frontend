@@ -3,42 +3,82 @@ import { Lock, Eye, EyeOff, ShieldCheck, Loader2, ArrowRight } from "lucide-reac
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { triggerToast } from "../../utils/toastHelper";
+import { useUpdatePasswordMutation } from "../../hooks/useAuth";
 
 export default function SetPassword() {
+  // const [password, setPassword] = useState("");
+  // const [confirmPassword, setConfirmPassword] = useState("");
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState("");
+
+  // const navigate = useNavigate();
+
+  // const handleSetPassword = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+
+  //   // Basic Validations
+  //   if (password.length < 8) {
+  //     return setError("Password must be at least 8 characters long.");
+  //   }
+  //   if (password !== confirmPassword) {
+  //     return setError("Passwords do not match!");
+  //   }
+
+  //   setIsLoading(true);
+  //   try {
+  //     // Backend route: /api/auth/update-password
+  //     // Token headers mein axios interceptor ke zariye khud chala jayega
+  //     await API.post("/auth/update-password", { password });
+
+  //     triggerToast("Password set successfully! Let's set up your workspace.","success");
+  //     navigate("/workspace-selection");
+  //   } catch (err) {
+  //     triggerToast(err.response?.data?.message || "Failed to update password.","error");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const navigate = useNavigate();
+  const updatePasswordMutation = useUpdatePasswordMutation();
+
+  // Form States
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [validationError, setValidationError] = useState("");
 
-  const navigate = useNavigate();
-
-  const handleSetPassword = async (e) => {
+  const handleSetPassword = (e) => {
     e.preventDefault();
-    setError("");
+    setValidationError(""); // Reset local validation error
 
-    // Basic Validations
+    // --- Basic Validations ---
     if (password.length < 8) {
-      return setError("Password must be at least 8 characters long.");
+      return setValidationError("Password must be at least 8 characters long.");
     }
     if (password !== confirmPassword) {
-      return setError("Passwords do not match!");
+      return setValidationError("Passwords do not match!");
     }
 
-    setIsLoading(true);
-    try {
-      // Backend route: /api/auth/update-password
-      // Token headers mein axios interceptor ke zariye khud chala jayega
-      await API.post("/auth/update-password", { password });
-
-      triggerToast("Password set successfully! Let's set up your workspace.","success");
-      navigate("/workspace-selection");
-    } catch (err) {
-      triggerToast(err.response?.data?.message || "Failed to update password.","error");
-    } finally {
-      setIsLoading(false);
-    }
+    // --- Mutation Call ---
+    updatePasswordMutation.mutate(password, {
+      onSuccess: () => {
+        triggerToast("Password set successfully! Let's set up your workspace.", "success");
+        navigate("/workspace-selection");
+      },
+      onError: (err) => {
+        const msg = err.response?.data?.message || "Failed to update password.";
+        triggerToast(msg, "error");
+      }
+    });
   };
+
+  // UI Helpers (From Mutation)
+  const isUpdating = updatePasswordMutation.isPending;
+  // Agar backend se error aaye to wo yahan se bhi mil sakta hai
+  const apiError = updatePasswordMutation.error?.response?.data?.message;
 
   return (
     <div className="flex justify-center items-center h-screen bg-[#f0f2f5]">
@@ -55,9 +95,9 @@ export default function SetPassword() {
           </p>
         </div>
 
-        {error && (
+        {apiError && (
           <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold border border-red-100 text-center">
-            {error}
+            {apiError}
           </div>
         )}
 
@@ -108,10 +148,10 @@ export default function SetPassword() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !password || !confirmPassword}
+            disabled={isUpdating || !password || !confirmPassword}
             className="w-full bg-indigo-600 text-white p-4 rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 hover:translate-y-[-2px] active:translate-y-[0px] transition-all flex justify-center items-center gap-3 disabled:opacity-50 disabled:hover:translate-y-0"
           >
-            {isLoading ? (
+            {isUpdating ? (
               <Loader2 size={20} className="animate-spin" />
             ) : (
               <>

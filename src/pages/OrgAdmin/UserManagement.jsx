@@ -18,128 +18,94 @@ import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { triggerToast } from "../../utils/toastHelper";
 import { useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUserMutations, useUsersData } from "../../hooks/useUsers";
 
 export default function UsersManagement() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // React Query
+  const { data: users = [], isLoading: isUsersLoading } = useUsersData();
+  const { statusMutation, roleMutation, inviteMutation } = useUserMutations();
+
+  const isStatusUpdating = statusMutation.isPending; // Purane version mein .isLoading
+const isRoleUpdating = roleMutation.isPending;
+const isInviting = inviteMutation.isPending;
+
+  // Local UI States
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [roleFilter, setRoleFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [emails, setEmails] = useState(["", ""]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const addEmailField = () => setEmails([...emails, ""]);
-
-  const removeEmailField = (index) =>
-    setEmails(emails.filter((_, i) => i !== index));
-
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await API.get("/users/all");
-        setUsers(response.data);
-      } catch (err) {
-        console.error("Data fetch failed:", err);
+  // Status Toggle Handler
+  const onTogglePermissions = (userId) => {
+    const user = users.find((u) => u.id === userId);
+    const newStatus = user.status === "Disabled" ? "active" : "Disabled";
+
+    statusMutation.mutate({ userId, status: newStatus }, {
+      onSuccess: () => {
+        setSelectedUser(null);
+        triggerToast(`User access ${newStatus === "Disabled" ? "disabled" : "active"} successfully.`);
       }
-    };
-
-    fetchUsers();
-  }, []);
-
-  const onTogglePermissions = async (userId) => {
-    try {
-      const user = users.find((u) => u.id === userId);
-      const newStatus = user.status === "Disabled" ? "active" : "Disabled";
-
-      await API.post(`/users/${userId}/status`, {
-        status: newStatus,
-      });
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)),
-      );
-
-      setSelectedUser(null);
-      triggerToast(
-        `User access ${newStatus === "Disabled" ? "disabled" : "active"} successfully.`,
-      );
-    } catch (err) {
-      console.error("API Error:", err);
-      triggerToast("Failed to update user status.", "error");
-    }
+    });
   };
 
-  const onInvite = (newUser) => {
-    const userToAdd = {
-      ...newUser,
-      id: Date.now(),
-      status: "Invited",
-      lastActive: "Just now",
-    };
-    setUsers([userToAdd, ...users]);
-    setShowInviteModal(false);
+  // Role Update Handler
+  const handleUpdateRole = (userId, newRole) => {
+    roleMutation.mutate({ userId, role: newRole }, {
+      onSuccess: () => setOpenMenuId(null)
+    });
   };
 
+  // Invite Handler
+  const handleSendInvites = () => {
+    const validEmails = emails.filter((email) => email.trim() !== "");
+    if (validEmails.length === 0) return triggerToast("Please add at least one email", "error");
+
+    const userData = JSON.parse(localStorage.getItem("user"));
+    
+    inviteMutation.mutate({
+      workspaceSlug: userData.workspace_id,
+      emails: validEmails,
+      inviterName: userData.full_name,
+    }, {
+      onSuccess: () => {
+        setEmails(["", ""]);
+        setShowInviteModal(false);
+      }
+    });
+  };
+
+  // Filtered Users (Logic remains same but data comes from query)
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "All" || user.role === roleFilter;
     return matchesSearch && matchesRole;
   });
 
-  console.log("Filtered Users:", users);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const toggleMenu = (e, userId) => {
-    e.stopPropagation();
-    setOpenMenuId(openMenuId === userId ? null : userId);
-  };
+  // 1. Menu Toggle Logic (User action menu)
+const toggleMenu = (e, userId) => {
+  e.stopPropagation();
+  setOpenMenuId(openMenuId === userId ? null : userId);
+};
 
-  const handleUpdateRole = async (userId, newRole) => {
-    try {
-      await API.post(`/workspace/member/${userId}/role`, {
-        role: newRole,
-      });
-      setOpenMenuId(null);
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId ? { ...user, role: newRole } : user,
-        ),
-      );
-    } catch (error) {
-      console.error("Role update failed", error);
-    }
-  };
+// 2. Add Email Field (Invite Modal ke liye)
+const addEmailField = () => setEmails([...emails, ""]);
 
-  const handleSendInvites = async () => {
+// 3. Remove Email Field
+const removeEmailField = (index) => {
+  if (emails.length > 1) { // Kam az kam ek field honi chahiye
+    setEmails(emails.filter((_, i) => i !== index));
+  }
+};
 
-    const validEmails = emails.filter((email) => email.trim() !== "");
-
-    console.log("Check slug:",JSON.parse(localStorage.getItem("user")).workspace_id)
-
-    if (validEmails.length === 0) {
-
-      triggerToast("Please add at least one email",'success')
-      return
-    }
-
-    setIsLoading(true);
-    try {
-      await API.post("/workspace/invite-members", {
-        workspaceSlug: JSON.parse(localStorage.getItem("user")).workspace_id,
-        emails: validEmails,
-        inviterName: JSON.parse(localStorage.getItem("user")).full_name,
-      });
-
-      triggerToast("Invitations sent successfully!",'success')
-    } catch (err) {
-      triggerToast(err.response.data.message,'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isUsersLoading) return <div className="p-10 text-center animate-pulse">Loading Users Engine...</div>;
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans relative">
@@ -375,10 +341,10 @@ export default function UsersManagement() {
               </button>
               <button
                 onClick={handleSendInvites} // Ab ye final create trigger karega
-                disabled={isLoading}
+                disabled={isInviting}
                 className="flex-[1.5] py-3 bg-indigo-600 text-white rounded-md font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
               >
-                {isLoading ? (
+                {isInviting ? (
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   "Send Invitation"

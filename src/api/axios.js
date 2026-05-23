@@ -1,14 +1,21 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL+'/api', // Aapka backend URL
+    baseURL: import.meta.env.VITE_API_URL, 
 });
 
-// Ye interceptor har request se pehle check karega ke agar localStorage mein token hai to bhej do
 API.interceptors.request.use((req) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        req.headers.Authorization = `Bearer ${token}`;
+    const tokenData = localStorage.getItem('token'); // Get as string
+    
+    if (tokenData) {
+        try {
+            // Naye hook ki wajah se data "JSON string" hai, isay parse krna lazmi hai
+            const token = JSON.parse(tokenData); 
+            req.headers.Authorization = `Bearer ${token}`;
+        } catch (error) {
+            // Agar kabhi parsing fail ho jaye (purana plain string data)
+            req.headers.Authorization = `Bearer ${tokenData}`;
+        }
     }
     return req;
 });

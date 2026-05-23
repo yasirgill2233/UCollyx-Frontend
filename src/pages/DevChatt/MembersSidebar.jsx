@@ -4,16 +4,14 @@ import { X, Plus } from 'lucide-react';
 const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMember }) => {
   if (!isOpen) return null;
 
-
   console.log("Members Data:", members, "Channel Name:", channelName);
 
-  // Filter Online vs Offline (Assuming status property exists)
-  const onlineMembers = members.filter(m => m.status === 'active');
-  const offlineMembers = members.filter(m => m.status !== 'active');
+  const onlineMembers = members.filter(m => m.User.status === 'active');
+  const offlineMembers = members.filter(m => m.User.status !== 'active');
 
   return (
     <div className="fixed inset-y-0 right-0 w-72 bg-white border-l border-gray-100 shadow-2xl z-[200] animate-in slide-in-from-right duration-300">
-      {/* Header */}
+
       <div className="p-5 flex justify-between items-center border-b border-gray-50">
         <div>
           <h3 className="font-bold text-slate-800 text-base">Members</h3>
@@ -25,7 +23,7 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
       </div>
 
       <div className="p-4 space-y-6 overflow-y-auto h-[calc(100vh-80px)] custom-scrollbar">
-        {/* Add Member Button */}
+
         <button 
           onClick={onAddMember}
           className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-gray-100 text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition-all group"
@@ -47,27 +45,27 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                 <div key={i} className="flex items-center gap-3 px-2 group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-all">
                   <div className="relative">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs`}>
-                      {member.avatar_url ? (
+                      {member.User.avatar_url ? (
                       <img
-                        src={import.meta.env.VITE_API_URL + member.avatar_url}
+                        src={import.meta.env.VITE_API_URL + member.User.avatar_url}
                         alt="Avatar"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member.full_name[0].toUpperCase()}</div>
+                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User.full_name[0].toUpperCase()}</div>
                     )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-800">{member.full_name}</span>
+                      <span className="text-sm font-bold text-slate-800">{member.User.full_name}</span>
                       {member.isMe && (
                         <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-md font-black uppercase">you</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-gray-400 font-medium">{member.role || 'Member'}</p>
+                    <p className="text-[10px] text-gray-400 font-medium">{member.role_in_channel || 'Member'}</p>
                   </div>
                 </div>
               ))}
@@ -75,7 +73,6 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
           </div>
         )}
 
-        {/* Offline Section */}
         {offlineMembers.length > 0 && (
           <div>
             <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">
@@ -86,22 +83,22 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                 <div key={i} className="flex items-center gap-3 px-2 opacity-60">
                   <div className="relative">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs grayscale`}>
-                      {member.avatar_url ? (
+                      {member.User.avatar_url ? (
                       <img
-                        src={import.meta.env.VITE_API_URL + member.avatar_url}
+                        src={import.meta.env.VITE_API_URL + member.User.avatar_url}
                         alt="Avatar"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      member.full_name[0].toUpperCase()
+                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User.full_name[0].toUpperCase()}</div>
                     )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-800">{member.full_name}</h4>
-                    <p className="text-[10px] text-gray-400 font-medium">{member.role || 'Member'}</p>
+                    <h4 className="text-sm font-bold text-slate-800">{member.User.full_name}</h4>
+                    <p className="text-[10px] text-gray-400 font-medium">{member.role_in_channel || 'Member'}</p>
                   </div>
                 </div>
               ))}

@@ -2,35 +2,54 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LayoutGrid, Users, Loader2 } from "lucide-react"; // Icons add kiye
 import API from "../../api/axios";
+import { useAvailableWorkspaces } from "../../hooks/useWorkspace";
 
 export default function WorkspaceSelection() {
-    const navigate = useNavigate();
-    const [workspaces, setWorkspaces] = useState([]);
-    const [loading, setLoading] = useState(true);
+//     const navigate = useNavigate();
+//     const [workspaces, setWorkspaces] = useState([]);
+//     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-    const checkUserWorkspaces = async () => {
-        try {
-            const res = await API.get('/workspace/workspaces');
-            const list = res.data.data;
-            setWorkspaces(list);
+//     useEffect(() => {
+//     const checkUserWorkspaces = async () => {
+//         try {
+//             const res = await API.get('/workspace/workspaces');
+//             const list = res.data.data;
+//             setWorkspaces(list);
         
-        } catch (err) {
-            console.error("Workspace fetch failed", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-    checkUserWorkspaces();
-}, [navigate]);
+//         } catch (err) {
+//             console.error("Workspace fetch failed", err);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+//     checkUserWorkspaces();
+// }, [navigate]);
 
-    if (loading) {
-        return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-600" size={40} />
-            </div>
-        );
-    }
+//     if (loading) {
+//         return (
+//             <div className="flex h-screen items-center justify-center">
+//                 <Loader2 className="animate-spin text-indigo-600" size={40} />
+//             </div>
+//         );
+//     }
+
+
+const navigate = useNavigate();
+
+  // React Query Hook: useEffect aur useState ki ab zaroorat nahi
+  const { data: workspaceRes, isLoading } = useAvailableWorkspaces();
+  
+  // Data extraction with optional chaining
+  const workspaces = workspaceRes?.data || [];
+
+  // Initial Loading Screen
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="animate-spin text-indigo-600" size={40} />
+      </div>
+    );
+  }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6">

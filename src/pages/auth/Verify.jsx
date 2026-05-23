@@ -3,27 +3,120 @@ import { useNavigate, useLocation } from "react-router-dom"; // Email receive ka
 import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { triggerToast } from "../../utils/toastHelper";
+import { useResendOtpMutation, useVerifyOtpMutation } from "../../hooks/useAuth";
 
 export default function Verify() {
+  // const navigate = useNavigate();
+  // const location = useLocation();
+
+  // // Register screen se email uthayein (agar user direct is page par aaye to fallback)
+  // const email = location.state?.email || "user@example.com";
+
+  // const inputRefs = useRef([]);
+  // const [otp, setOtp] = useState(new Array(6).fill("")); // OTP digits store karne ke liye
+  // const [timeLeft, setTimeLeft] = useState(44);
+  // const [isTimerActive, setIsTimerActive] = useState(true);
+  // const [loading, setLoading] = useState(false);
+
+  // // Timer Logic
+  // useEffect(() => {
+  //   let timer;
+  //   if (isTimerActive && timeLeft > 0) {
+  //     timer = setInterval(() => {
+  //       setTimeLeft((prev) => prev - 1);
+  //     }, 1000);
+  //   } else if (timeLeft === 0) {
+  //     setIsTimerActive(false);
+  //     clearInterval(timer);
+  //   }
+  //   return () => clearInterval(timer);
+  // }, [timeLeft, isTimerActive]);
+
+  // const handleResend = async () => {
+  //   setLoading(true);
+  //   try {
+
+  //     await API.post("/auth/resend-otp", { email: email });
+
+  //     setOtp(new Array(6).fill(""));
+
+  //     setTimeLeft(44);
+  //     setIsTimerActive(true);
+
+  //     if (inputRefs.current[0]) {
+  //       inputRefs.current[0].focus();
+  //     }
+  //     triggerToast("A new 6-digit code has been sent to your inbox.", "success");
+
+  //   } catch (err) {
+  //     triggerToast("Failed to resend OTP. Please try again.","error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // const handleChange = (e, index) => {
+  //   const value = e.target.value;
+  //   if (isNaN(value)) return; // Sirf numbers allow karein
+
+  //   const newOtp = [...otp];
+  //   newOtp[index] = value.substring(value.length - 1);
+  //   setOtp(newOtp);
+
+  //   // Auto-focus to next input
+  //   if (value && index < 5) {
+  //     inputRefs.current[index + 1].focus();
+  //   }
+  // };
+
+  // const handleKeyDown = (e, index) => {
+  //   if (e.key === "Backspace" && !otp[index] && index > 0) {
+  //     inputRefs.current[index - 1].focus();
+  //   }
+  // };
+
+  // // Main Verify Logic
+  // const handleVerify = async () => {
+  //   const fullOtp = otp.join("");
+  //   if (fullOtp.length < 6) {
+  //     return triggerToast("Please enter all 6 digits.", "error");
+  //   }
+
+  //   setLoading(true);
+  //   try {
+  //     const res = await API.post("/auth/verify-otp", {
+  //       email: email,
+  //       code: fullOtp,
+  //     });
+
+  //     triggerToast("Email verified successfully! Please login.", "success");
+  //     navigate("/"); // Login page par bhej dein
+  //   } catch (err) {
+  //     triggerToast(err.response?.data?.message || "Invalid OTP","error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Register screen se email uthayein (agar user direct is page par aaye to fallback)
   const email = location.state?.email || "user@example.com";
 
+  // React Query Mutations
+  const verifyMutation = useVerifyOtpMutation();
+  const resendMutation = useResendOtpMutation();
+
+  // UI States
   const inputRefs = useRef([]);
-  const [otp, setOtp] = useState(new Array(6).fill("")); // OTP digits store karne ke liye
+  const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timeLeft, setTimeLeft] = useState(44);
   const [isTimerActive, setIsTimerActive] = useState(true);
-  const [loading, setLoading] = useState(false);
 
-  // Timer Logic
+  // Timer Logic (Same as before)
   useEffect(() => {
     let timer;
     if (isTimerActive && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
+      timer = setInterval(() => setTimeLeft((p) => p - 1), 1000);
     } else if (timeLeft === 0) {
       setIsTimerActive(false);
       clearInterval(timer);
@@ -31,71 +124,67 @@ export default function Verify() {
     return () => clearInterval(timer);
   }, [timeLeft, isTimerActive]);
 
-  const handleResend = async () => {
-    setLoading(true);
-    try {
-
-      await API.post("/auth/resend-otp", { email: email });
-
-      setOtp(new Array(6).fill(""));
-
-      setTimeLeft(44);
-      setIsTimerActive(true);
-
-      if (inputRefs.current[0]) {
-        inputRefs.current[0].focus();
+  // Resend OTP Handler
+  const handleResend = () => {
+    resendMutation.mutate(email, {
+      onSuccess: () => {
+        setOtp(new Array(6).fill(""));
+        setTimeLeft(44);
+        setIsTimerActive(true);
+        if (inputRefs.current[0]) inputRefs.current[0].focus();
+        triggerToast("A new 6-digit code has been sent to your inbox.", "success");
+      },
+      onError: () => {
+        triggerToast("Failed to resend OTP. Please try again.", "error");
       }
-      triggerToast("A new 6-digit code has been sent to your inbox.", "success");
+    });
+  };
 
-    } catch (err) {
-      triggerToast("Failed to resend OTP. Please try again.","error");
-    } finally {
-      setLoading(false);
+  // Verify OTP Handler
+  const handleVerify = () => {
+    const fullOtp = otp.join("");
+    if (fullOtp.length < 6) {
+      return triggerToast("Please enter all 6 digits.", "error");
     }
+
+    verifyMutation.mutate({ email, code: fullOtp }, {
+      onSuccess: () => {
+        triggerToast("Email verified successfully! Please login.", "success");
+        navigate("/");
+      },
+      onError: (err) => {
+        triggerToast(err.response?.data?.message || "Invalid OTP", "error");
+      }
+    });
   };
 
   const handleChange = (e, index) => {
     const value = e.target.value;
-    if (isNaN(value)) return; // Sirf numbers allow karein
+    // Sirf digits allow karein (No alphabets)
+    if (!/^\d*$/.test(value)) return; 
 
     const newOtp = [...otp];
+    // Sirf last entered digit uthayen
     newOtp[index] = value.substring(value.length - 1);
     setOtp(newOtp);
 
-    // Auto-focus to next input
+    // Auto-focus to next input agar value enter ho gae ha
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
   };
 
   const handleKeyDown = (e, index) => {
+    // Backspace dabane par pichle input par wapis jane ki logic
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
-  // Main Verify Logic
-  const handleVerify = async () => {
-    const fullOtp = otp.join("");
-    if (fullOtp.length < 6) {
-      return triggerToast("Please enter all 6 digits.", "error");
-    }
+  // Input handlers (handleChange, handleKeyDown) same hi rahen ge...
 
-    setLoading(true);
-    try {
-      const res = await API.post("/auth/verify-otp", {
-        email: email,
-        code: fullOtp,
-      });
-
-      triggerToast("Email verified successfully! Please login.", "success");
-      navigate("/"); // Login page par bhej dein
-    } catch (err) {
-      triggerToast(err.response?.data?.message || "Invalid OTP","error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // UI States for loading
+  const isLoading = verifyMutation.isPending || resendMutation.isPending;
 
   return (
     <div className="flex justify-center items-center h-screen bg-[#f0f2f5]">
@@ -152,14 +241,14 @@ export default function Verify() {
         {/* Action Button */}
         <button
           onClick={handleVerify}
-          disabled={loading || otp.join("").length < 6}
+          disabled={isLoading || otp.join("").length < 6}
           className={`rounded-lg text-white p-4 w-full transition-colors font-bold ${
-            loading || otp.join("").length < 6
+            isLoading || otp.join("").length < 6
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-indigo-600 hover:bg-indigo-700 cursor-pointer"
           }`}
         >
-          {loading ? "Verifying..." : "Verify & Continue"}
+          {isLoading ? "Verifying..." : "Verify & Continue"}
         </button>
 
         <div className="text-sm">

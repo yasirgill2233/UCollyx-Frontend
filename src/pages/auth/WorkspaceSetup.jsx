@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { triggerToast } from "../../utils/toastHelper";
+import { useCreateWorkspaceMutation, useInviteMutation } from "../../hooks/useWorkspace";
 
 // --- Helper: Slugify Function ---
 const slugify = (text) => {
@@ -25,123 +26,231 @@ const slugify = (text) => {
 };
 
 export default function WorkspaceSetup() {
+  // const navigate = useNavigate();
+  // const fileInputRef = useRef(null);
+
+  // // --- States ---
+  // const [step, setStep] = useState(1);
+  // const [isLoading, setIsLoading] = useState(false);
+
+  // // Form States
+  // const [name, setName] = useState("");
+  // const [slug, setSlug] = useState("");
+  // const [timezone, setTimezone] = useState("(GMT+5:00) Pakistan Standard Time");
+  // const [ownerEmail, setOwnerEmail] = useState("");
+  // const [logoPreview, setLogoPreview] = useState(null);
+  // const [emails, setEmails] = useState(["", ""]); // Team invites
+
+  // // --- Auto-fill Owner Email (Optional: Based on logged-in user) ---
+  // useEffect(() => {
+  //   const user = JSON.parse(localStorage.getItem("user"));
+  //   if (user?.email) setOwnerEmail(user.email);
+  // }, []);
+
+  // //   const triggerFileInput = () => {
+  // //   fileInputRef.current.click();
+  // // };
+
+  // // --- Handlers ---
+  // const handleNameChange = (e) => {
+  //   const val = e.target.value;
+  //   setName(val);
+  //   setSlug(slugify(val));
+  // };
+
+  // const handleLogoChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => setLogoPreview(reader.result);
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
+
+  // // const handleEmailChange = (index, value) => {
+  // //   const newEmails = [...emails];
+  // //   newEmails[index] = value;
+  // //   setEmails(newEmails);
+  // // };
+
+  // const addEmailField = () => setEmails([...emails, ""]);
+  // const removeEmailField = (index) =>
+  //   setEmails(emails.filter((_, i) => i !== index));
+
+  // // --- Final Submit Logic ---
+  // const handleCreateWorkspace = async () => {
+  //   if (!name || !slug) return triggerToast("Workspace name and URL are required!","error");
+
+  //   setIsLoading(true);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("name", name);
+  //     formData.append("slug", slug);
+  //     formData.append("timezone", timezone);
+  //     formData.append("ownerEmail", ownerEmail);
+
+  //     // Filter empty emails and append
+  //     const validEmails = emails.filter((email) => email.trim() !== "");
+  //     formData.append("invitedEmails", JSON.stringify(validEmails));
+
+  //     if (fileInputRef.current.files[0]) {
+  //       formData.append("logo", fileInputRef.current.files[0]);
+  //     }
+
+  //     console.log(formData);
+
+  //     const res = await API.post("/workspace/create", formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+
+  //     console.log(res);
+
+  //     setStep(2);
+
+  //     // Success: Redirect to the new workspace dashboard
+  //     // navigate(`/${res.data.data.slug}/dashboard`);
+  //   } catch (err) {
+  //     console.log(err);
+  //     triggerToast(err.response?.data?.message || "Failed to create workspace","error");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // const handleSendInvites = async () => {
+  //   // Sirf wo emails lein jo khali nahi hain
+  //   const validEmails = emails.filter((email) => email.trim() !== "");
+
+  //   if (validEmails.length === 0) {
+  //     // Agar koi email nahi dala to direct dashboard par le jayein
+  //     return navigate(`/`);
+  //   }
+
+  //   setIsLoading(true);
+  //   try {
+  //     await API.post("/workspace/invite-members", {
+  //       workspaceSlug: slug, // Workspace ki pehchan ke liye
+  //       emails: validEmails,
+  //       inviterName: JSON.parse(localStorage.getItem("user")).full_name,
+  //     });
+
+  //     triggerToast("Invitations sent successfully!","success");
+  //     navigate(`/`); // Dashboard par redirect karein
+  //   } catch (err) {
+  //     triggerToast(err.response.data.message || "Workspace created, but failed to send some invites.","error");
+  //     navigate(`/`);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
+  // Mutations
+  const createMutation = useCreateWorkspaceMutation();
+  const inviteMutation = useInviteMutation();
+
   // --- States ---
   const [step, setStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Form States
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [timezone, setTimezone] = useState("(GMT+5:00) Pakistan Standard Time");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [logoPreview, setLogoPreview] = useState(null);
-  const [emails, setEmails] = useState(["", ""]); // Team invites
+  const [emails, setEmails] = useState(["", ""]);
 
-  // --- Auto-fill Owner Email (Optional: Based on logged-in user) ---
+  // Auto-fill Owner Email
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user?.email) setOwnerEmail(user.email);
   }, []);
 
-  //   const triggerFileInput = () => {
-  //   fileInputRef.current.click();
-  // };
-
-  // --- Handlers ---
-  const handleNameChange = (e) => {
-    const val = e.target.value;
-    setName(val);
-    setSlug(slugify(val));
-  };
-
-  const handleLogoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // const handleEmailChange = (index, value) => {
-  //   const newEmails = [...emails];
-  //   newEmails[index] = value;
-  //   setEmails(newEmails);
-  // };
-
-  const addEmailField = () => setEmails([...emails, ""]);
-  const removeEmailField = (index) =>
-    setEmails(emails.filter((_, i) => i !== index));
+  // UI Handlers (addEmailField, removeEmailField etc. yahan rakhen)
 
   // --- Final Submit Logic ---
-  const handleCreateWorkspace = async () => {
-    if (!name || !slug) return triggerToast("Workspace name and URL are required!","error");
+  const handleCreateWorkspace = () => {
+    if (!name || !slug) return triggerToast("Workspace name and URL are required!", "error");
 
-    setIsLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("slug", slug);
-      formData.append("timezone", timezone);
-      formData.append("ownerEmail", ownerEmail);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("slug", slug);
+    formData.append("timezone", timezone);
+    formData.append("ownerEmail", ownerEmail);
 
-      // Filter empty emails and append
-      const validEmails = emails.filter((email) => email.trim() !== "");
-      formData.append("invitedEmails", JSON.stringify(validEmails));
-
-      if (fileInputRef.current.files[0]) {
-        formData.append("logo", fileInputRef.current.files[0]);
-      }
-
-      console.log(formData);
-
-      const res = await API.post("/workspace/create", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      console.log(res);
-
-      setStep(2);
-
-      // Success: Redirect to the new workspace dashboard
-      // navigate(`/${res.data.data.slug}/dashboard`);
-    } catch (err) {
-      console.log(err);
-      triggerToast(err.response?.data?.message || "Failed to create workspace","error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSendInvites = async () => {
-    // Sirf wo emails lein jo khali nahi hain
     const validEmails = emails.filter((email) => email.trim() !== "");
+    formData.append("invitedEmails", JSON.stringify(validEmails));
 
-    if (validEmails.length === 0) {
-      // Agar koi email nahi dala to direct dashboard par le jayein
-      return navigate(`/`);
+    if (fileInputRef.current.files[0]) {
+      formData.append("logo", fileInputRef.current.files[0]);
     }
 
-    setIsLoading(true);
-    try {
-      await API.post("/workspace/invite-members", {
-        workspaceSlug: slug, // Workspace ki pehchan ke liye
-        emails: validEmails,
-        inviterName: JSON.parse(localStorage.getItem("user")).full_name,
-      });
-
-      triggerToast("Invitations sent successfully!","success");
-      navigate(`/`); // Dashboard par redirect karein
-    } catch (err) {
-      triggerToast(err.response.data.message || "Workspace created, but failed to send some invites.","error");
-      navigate(`/`);
-    } finally {
-      setIsLoading(false);
-    }
+    createMutation.mutate(formData, {
+      onSuccess: (data) => {
+        setStep(2); // Next step par chale jayein
+        triggerToast("Workspace created successfully!", "success");
+      },
+      onError: (err) => {
+        triggerToast(err.response?.data?.message || "Failed to create workspace", "error");
+      }
+    });
   };
+
+  const handleSendInvites = () => {
+    const validEmails = emails.filter((email) => email.trim() !== "");
+    if (validEmails.length === 0) return navigate(`/`);
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    inviteMutation.mutate({
+      workspaceSlug: slug,
+      emails: validEmails,
+      inviterName: user.full_name,
+    }, {
+      onSuccess: () => {
+        triggerToast("Invitations sent successfully!", "success");
+        navigate(`/`);
+      },
+      onError: (err) => {
+        triggerToast(err.response?.data?.message || "Invites failed.", "error");
+        navigate(`/`); // Phir bhi dashboard le jayein kyunki workspace ban chuka hai
+      }
+    });
+  };
+
+  // 1. Workspace Name aur Slug handle karne ke liye
+const handleNameChange = (e) => {
+  const val = e.target.value;
+  setName(val);
+  // Slugify logic: spaces ko dashes mein badalna aur lowercase karna
+  setSlug(val.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''));
+};
+
+// 2. Logo upload aur preview ke liye
+const handleLogoChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result); // Screen par dikhane ke liye
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// 3. Invite fields mein naya email add karne ke liye
+const addEmailField = () => setEmails([...emails, ""]);
+
+// 4. Kisi specific email field ko delete karne ke liye
+const removeEmailField = (index) => {
+  if (emails.length > 1) {
+    setEmails(emails.filter((_, i) => i !== index));
+  }
+};
+
+  // UI Variable for overall loading
+  const isLoading = createMutation.isPending || inviteMutation.isPending;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4">

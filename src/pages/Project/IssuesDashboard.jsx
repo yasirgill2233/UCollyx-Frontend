@@ -1,4 +1,4 @@
-import React, { useState, useMemo, Activity } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   AlertCircle,
   Clock,
@@ -6,30 +6,44 @@ import {
   MessageSquare,
   MoreVertical,
   Search,
-  Filter,
-  ChevronRight,
   Paperclip,
   Send,
   X,
   ShieldAlert,
-  RefreshCw,
-  Play,
-  CircleDashed,
-  Eye,
 } from "lucide-react";
+import {
+  useAddComment,
+  useAssignedIssues,
+  useUpdateIssueStatus,
+} from "../../hooks/useIssues";
 
-// --- 1. Update Status Modal (Restored & Styled) ---
-const UpdateStatusModal = ({ isOpen, onClose, issue, onUpdate }) => {
+// --- 1. Update Status Modal (Fully Functional) ---
+const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
   const [selectedStatus, setSelectedStatus] = useState(
     issue?.status || "Resolved",
   );
   const [note, setNote] = useState("");
+  const updateStatusMutation = useUpdateIssueStatus();
 
   if (!isOpen) return null;
 
+  const handleSubmit = () => {
+    updateStatusMutation.mutate(
+      { issueId: issue.id, status: selectedStatus, note },
+      {
+        onSuccess: () => {
+          onClose();
+          setNote("");
+        },
+      },
+    );
+  };
+
+  console.log("=======================", issue);
+
   return (
     <div className="fixed inset-0 z-[200] w-[100%] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl p-6 border w-[30%] border-slate-100 animate-in zoom-in duration-200">
+      <div className="bg-white rounded-xl shadow-xl p-6 border w-[90%] md:w-[30%] border-slate-100 animate-in zoom-in duration-200">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-black text-slate-800 tracking-tight">
             Update Status
@@ -43,7 +57,7 @@ const UpdateStatusModal = ({ isOpen, onClose, issue, onUpdate }) => {
         </div>
         <p className="text-[13px] text-slate-500 mb-6 font-medium">
           Updating resolution for{" "}
-          <span className="text-blue-600 font-bold">#{issue?.id}044</span>
+          <span className="text-blue-600 font-bold">#{issue?.id}</span>
         </p>
 
         <div className="space-y-5">
@@ -56,13 +70,7 @@ const UpdateStatusModal = ({ isOpen, onClose, issue, onUpdate }) => {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 ring-blue-500/10 focus:border-blue-500 transition-all appearance-none bg-white"
             >
-              {[
-                "New",
-                "Acknowledged",
-                "In Progress",
-                "Resolved",
-                "Ready for QA",
-              ].map((s) => (
+              {["Acknowledged", "In Progress", "Ready for QA"].map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
@@ -90,13 +98,11 @@ const UpdateStatusModal = ({ isOpen, onClose, issue, onUpdate }) => {
             Cancel
           </button>
           <button
-            onClick={() => {
-              onUpdate(issue.id, selectedStatus);
-              onClose();
-            }}
-            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all"
+            onClick={handleSubmit}
+            disabled={updateStatusMutation.isPending}
+            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-50"
           >
-            Update Status
+            {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
           </button>
         </div>
       </div>
@@ -104,10 +110,19 @@ const UpdateStatusModal = ({ isOpen, onClose, issue, onUpdate }) => {
   );
 };
 
-// --- 2. Issue Detail Modal (Full Restored Details) ---
-const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
+// --- 2. Issue Detail Modal (Safeguarded Deep Read) ---
+const IssueDetailModal = ({ isOpen, onClose, issue }) => {
   const [showUpdate, setShowUpdate] = useState(false);
+
   if (!isOpen || !issue) return null;
+
+  // DB text string split safely handling
+  const stepsArray =
+    typeof issue?.steps_to_repro === "string"
+      ? issue.steps_to_repro.split("\n")
+      : [];
+
+  console.log(issue);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
@@ -120,17 +135,12 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
         </button>
 
         <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar">
-          {/* Header Tags */}
           <div className="flex gap-2 mb-6">
             <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1.5 rounded-lg tracking-widest uppercase">
-              BUG-{issue.id}1312
-            </span>
-            <span className="bg-red-50 text-red-500 text-[10px] font-black px-3 py-1.5 rounded-lg border border-red-100 tracking-widest uppercase">
-              RED-044
+              BUG-#{issue.id}
             </span>
           </div>
 
-          {/* Title & Actions */}
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10">
             <div className="max-w-2xl">
               <h2 className="text-3xl font-black text-slate-900 mb-3 leading-tight tracking-tight">
@@ -138,16 +148,21 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
               </h2>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-slate-400 font-bold uppercase tracking-wider">
                 <span>
-                  Module: <span className="text-slate-700">Auth Module</span>
+                  Module:{" "}
+                  <span className="text-slate-700">
+                    {issue.module || "General"}
+                  </span>
                 </span>
                 <span className="w-1 h-1 bg-slate-300 rounded-full" />
                 <span>
-                  By: <span className="text-slate-700">QA Yasir Saleem</span>
+                  Reporter:{" "}
+                  <span className="text-slate-700">
+                    {issue.reporter?.full_name || "QA Engineer"}
+                  </span>
                 </span>
-                <span className="w-1 h-1 bg-slate-300 rounded-full" />
                 <span>
-                  Assigned:{" "}
-                  <span className="text-blue-600 underline">Zain Ahmed</span>
+                  Project:{" "}
+                  <span className="text-slate-700">{issue.project_id}</span>
                 </span>
               </div>
             </div>
@@ -158,45 +173,43 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
               >
                 Update Status
               </button>
-              <button className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-black hover:bg-emerald-600 shadow-lg shadow-emerald-100 transition-all">
-                Ready for QA
-              </button>
             </div>
           </div>
 
           <div className="grid grid-cols-12 gap-10">
-            {/* Left Column */}
             <div className="col-span-12 lg:col-span-8 space-y-10">
-              <section>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <ShieldAlert size={14} className="text-orange-500" /> Red Card
-                  Reason
-                </h3>
-                <div className="bg-orange-50/50 border-l-4 border-orange-400 rounded-xl p-6 text-[14px] text-orange-900 leading-relaxed font-semibold italic">
-                  "Under high traffic conditions, the database connection pool
-                  becomes exhausted causing cascading failures across all
-                  backend services."
-                </div>
-              </section>
+              {issue.description && (
+                <section>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <ShieldAlert size={14} className="text-orange-500" />{" "}
+                    Description / Notes
+                  </h3>
+                  <div className="bg-orange-50/50 border-l-4 border-orange-400 rounded-xl p-6 text-[14px] text-orange-900 leading-relaxed font-semibold italic">
+                    "{issue.description}"
+                  </div>
+                </section>
+              )}
 
-              <section>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5">
-                  Steps to Reproduce
-                </h3>
-                <div className="space-y-4">
-                  {[1, 2, 3].map((num) => (
-                    <div
-                      key={num}
-                      className="flex items-start gap-4 text-[14px] text-slate-700 font-bold"
-                    >
-                      <span className="w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm">
-                        {num}
-                      </span>
-                      Simulate high load (500+ concurrent users via JMeter)
-                    </div>
-                  ))}
-                </div>
-              </section>
+              {stepsArray.length > 0 && (
+                <section>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-5">
+                    Steps to Reproduce
+                  </h3>
+                  <div className="space-y-4">
+                    {stepsArray.map((step, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-4 text-[14px] text-slate-700 font-bold"
+                      >
+                        <span className="w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm">
+                          {idx + 1}
+                        </span>
+                        {step}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               <section>
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
@@ -208,7 +221,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
                       <CheckCircle2 size={12} /> Expected
                     </h4>
                     <p className="text-[14px] text-slate-800 font-bold leading-snug">
-                      Connection pool scales to handle peak load
+                      {issue.expected_result || "No specific details provided."}
                     </p>
                   </div>
                   <div className="bg-red-50/40 border border-red-100 rounded-2xl p-6">
@@ -216,52 +229,14 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
                       <AlertCircle size={12} /> Actual
                     </h4>
                     <p className="text-[14px] text-slate-800 font-bold leading-snug">
-                      Pool exhausted after ~300 connections
+                      {issue.actual_result || "No specific metrics captured."}
                     </p>
                   </div>
                 </div>
               </section>
-
-              <section>
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                  Evidence
-                </h3>
-                <div className="flex flex-wrap gap-3">
-                  {["load-test-results.json", "db-metrics.png"].map((file) => (
-                    <div
-                      key={file}
-                      className="flex items-center gap-3 px-5 py-3 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-blue-300 hover:shadow-md cursor-pointer transition-all group"
-                    >
-                      <Paperclip
-                        size={14}
-                        className="text-slate-400 group-hover:text-blue-500"
-                      />
-                      <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900">
-                        {file}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
             </div>
 
-            {/* Right Sidebar */}
             <div className="col-span-12 lg:col-span-4 space-y-8">
-              <div className="bg-slate-900 rounded-[24px] p-8 text-center shadow-2xl shadow-slate-200">
-                <div className="flex items-center justify-center gap-2 text-slate-400 mb-2">
-                  <Clock size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">
-                    Time Since Raised
-                  </span>
-                </div>
-                <div className="text-4xl font-black text-white tracking-tighter mb-2">
-                  23:59:18
-                </div>
-                <div className="inline-block px-3 py-1 bg-red-500 text-white text-[9px] font-black rounded uppercase">
-                  SLA Breach in 2m
-                </div>
-              </div>
-
               <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Card Info
@@ -269,21 +244,26 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
                 <div className="space-y-4">
                   <InfoRow
                     label="Severity"
-                    value="Critical"
-                    valueClass="text-red-600"
+                    value={issue.severity}
+                    valueClass={
+                      issue.severity === "Critical"
+                        ? "text-red-600"
+                        : "text-slate-700"
+                    }
                   />
-                  <InfoRow label="Environment" value="Production" />
-                  <InfoRow label="Raised" value="Feb 02, 11:00 AM" />
+                  <InfoRow
+                    label="Environment"
+                    value={issue.environment || "Staging"}
+                  />
+                  <InfoRow
+                    label="Raised At"
+                    value={
+                      issue.created_at
+                        ? new Date(issue.created_at).toLocaleDateString()
+                        : "Recently"
+                    }
+                  />
                 </div>
-              </div>
-
-              <div className="bg-slate-50/50 rounded-3xl p-6 space-y-4">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Quick Status
-                </h3>
-                <StatusItem dot="bg-yellow-400" label="Acknowledged" />
-                <StatusItem dot="bg-blue-500" label="In Progress" active />
-                <StatusItem dot="bg-emerald-500" label="Fix Ready by QA" />
               </div>
             </div>
           </div>
@@ -294,89 +274,181 @@ const IssueDetailModal = ({ isOpen, onClose, issue, onUpdate }) => {
           isOpen={showUpdate}
           onClose={() => setShowUpdate(false)}
           issue={issue}
-          onUpdate={onUpdate}
         />
       )}
     </div>
   );
 };
 
-// --- 3. Comments Modal (Image 4 Logic) ---
+// --- 3. Comments Modal (Discussion View Hub) ---
 const CommentsModal = ({ isOpen, onClose, issue }) => {
+  console.log("Comment Comment Comment:::", issue);
+
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState([
-    {
-      user: "Zain Ahmed",
-      time: "5 min ago",
-      text: "Increased connection pool size as a temporary fix.",
-    },
-  ]);
+  const [localComments, setLocalComments] = useState([]);
+  const chatEndRef = useRef(null);
 
-  if (!isOpen) return null;
+  // Hook Connection (Jo parent standard module layout ko access karega)
+  const addCommentMutation = useAddComment();
 
-  const handleSend = () => {
-    if (newComment.trim()) {
-      setComments([
-        ...comments,
-        { user: "Zain Ahmed", time: "Just now", text: newComment },
-      ]);
-      setNewComment("");
+  // 1. Database se incoming comments real-time sync karein
+  useEffect(() => {
+    if (issue && Array.isArray(issue.comments)) {
+      setLocalComments(issue.comments);
+    } else {
+      setLocalComments([]);
     }
+  }, [issue, isOpen]);
+
+  // 2. Chat input block automatic scroll-down handler
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [localComments]);
+
+  if (!isOpen || !issue) return null;
+
+  // 3. Database Post Trigger Function
+  const handleSend = () => {
+    if (!newComment.trim() || addCommentMutation.isPending) return;
+
+    addCommentMutation.mutate(
+      {
+        issueId: issue.id,
+        comment_text: newComment.trim(),
+      },
+      {
+        onSuccess: (response) => {
+          // Backend service dynamic snapshot capture
+          const savedComment = response.data;
+
+          // Object hierarchy mapping (Log metrics ke mutabiq keys wrap ki hain)
+          const structuredComment = {
+            id: savedComment?.id || Date.now(),
+            comment_text: newComment.trim(),
+            createdAt: savedComment?.createdAt || new Date().toISOString(),
+            user: savedComment?.user || { full_name: "You" },
+          };
+
+          setLocalComments((prev) => [...prev, structuredComment]);
+          setNewComment(""); // Writing input area clear karein
+        },
+        onError: (err) => {
+          console.error("Discussion logging failed:", err);
+          alert("Failed to submit comment to database workflow pipeline.");
+        },
+      },
+    );
+  };
+
+  // 4. Readable Date Utility
+  const formatCommentTime = (dateString) => {
+    if (!dateString) return "Just now";
+    const date = new Date(dateString);
+    return (
+      date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+      " - " +
+      date.toLocaleDateString([], { month: "short", day: "numeric" })
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-in slide-in-from-bottom-4 duration-300">
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[80vh]">
+        {/* Header Setup */}
+        <div className="flex justify-between items-center mb-6 shrink-0 border-b border-slate-50 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
               <MessageSquare size={18} />
             </div>
-            <h2 className="text-sm font-black uppercase tracking-widest text-slate-800">
-              Discussion
-            </h2>
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-widest text-slate-800">
+                Discussion
+              </h2>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mt-0.5">
+                Context ID: #{issue.id}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full"
+            className="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-50 rounded-full transition-colors"
           >
             ✕
           </button>
         </div>
 
-        <div className="space-y-6 max-h-[400px] overflow-y-auto mb-8 pr-2 custom-scrollbar">
-          {comments.map((c, i) => (
-            <div key={i} className="flex gap-4 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-[12px] font-black text-white shrink-0 shadow-lg shadow-blue-100">
-                ZA
-              </div>
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2 mb-1">
-                  <p className="text-sm font-black text-slate-800">{c.user}</p>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                    {c.time}
-                  </span>
+        {/* Dynamic List Rendering (Rendering directly from mapped log structures) */}
+        <div className="flex-1 space-y-6 overflow-y-auto mb-6 pr-2 custom-scrollbar min-h-[180px]">
+          {localComments.map((c, i) => {
+            // Mapping directly using issue data snapshot structure
+            const userName = c?.user?.full_name || "Workspace Member";
+
+            return (
+              <div
+                key={c.id || i}
+                className="flex gap-4 group animate-in fade-in duration-150"
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[12px] font-black text-slate-600 shrink-0 border border-slate-200 uppercase select-none">
+                  {userName.charAt(0)}
                 </div>
-                <div className="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-[13px] text-slate-600 font-medium leading-relaxed">
-                  {c.text}
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <p className="text-sm font-black text-slate-800">
+                      {userName}
+                    </p>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                      {formatCommentTime(c.createdAt)}
+                    </span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-[13px] text-slate-600 font-medium leading-relaxed break-words shadow-sm">
+                    {c.comment_text}
+                  </div>
                 </div>
               </div>
+            );
+          })}
+
+          {/* Empty Safe State Configuration */}
+          {localComments.length === 0 && (
+            <div className="h-full flex flex-col items-center justify-center py-10 text-center my-auto">
+              <MessageSquare
+                size={28}
+                className="text-slate-200 mb-2 animate-bounce"
+              />
+              <p className="text-slate-400 font-black uppercase tracking-widest text-[9px]">
+                No logs recorded
+              </p>
             </div>
-          ))}
+          )}
+          <div ref={chatEndRef} />
         </div>
 
-        <div className="relative">
+        {/* Input Text Form Area */}
+        <div className="relative shrink-0 pt-2 border-t border-slate-50">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm h-28 resize-none outline-none focus:border-blue-500 transition-all font-medium"
-            placeholder="Add a comment or update for QA..."
+            disabled={addCommentMutation.isPending}
+            className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm h-28 resize-none outline-none focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400 transition-all font-medium"
+            placeholder={
+              addCommentMutation.isPending
+                ? "Syncing..."
+                : "Add a comment or update for QA..."
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
           />
           <button
             onClick={handleSend}
-            className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-black hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center gap-2"
+            disabled={!newComment.trim() || addCommentMutation.isPending}
+            className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-black hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all select-none"
           >
-            <Send size={14} /> Send
+            <Send size={14} />{" "}
+            {addCommentMutation.isPending ? "Sending..." : "Send"}
           </button>
         </div>
       </div>
@@ -384,61 +456,66 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
   );
 };
 
-// --- Main Dashboard ---
+// --- Main Console Dashboard Component ---
 const IssuesDashboard = () => {
-  const [issues, setIssues] = useState([
-    {
-      id: 1,
-      severity: "Critical",
-      title: "Payment gateway timeout causing transaction failures",
-      status: "New",
-    },
-    {
-      id: 2,
-      severity: "High",
-      title: "User session data leaking between logged-in accounts",
-      status: "Acknowledged",
-    },
-    {
-      id: 3,
-      severity: "Medium",
-      title: "Sidebar navigation items missing on tablet viewport",
-      status: "Resolved",
-    },
-    {
-      id: 4,
-      severity: "Low",
-      title: "Icon misalignment in footer social links section",
-      status: "In Progress",
-    },
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState("All");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [commentIssue, setCommentIssue] = useState(null);
 
+  // --- 1. REACT QUERY ASSIGNED LIVE FETCH ---
+  const {
+    data: issues = [],
+    isLoading,
+    isError,
+  } = useAssignedIssues(severityFilter);
+  const updateStatusMutation = useUpdateIssueStatus();
+
+  // --- 2. CLIENT-SIDE LIVE TEXT FILTERS ---
+  // --- CLIENT-SIDE LIVE SEARCH & SEVERITY FILTERS ---
   const filteredIssues = useMemo(() => {
+    if (!Array.isArray(issues)) return [];
+
     return issues.filter((issue) => {
-      const matchesSearch = issue.title
+      // 1. Search Filter Logic
+      const titleText = issue?.title || "";
+      const matchesSearch = titleText
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
+
+      // 2. Frontend Severity Filter Logic 🔥
+      const bugSeverity = (issue?.severity || "").toUpperCase();
       const matchesSeverity =
-        severityFilter === "All" || issue.severity === severityFilter;
+        severityFilter === "All" ||
+        bugSeverity === severityFilter.toUpperCase();
+
+      // Dono conditions true hongi to hi record show hoga
       return matchesSearch && matchesSeverity;
     });
   }, [searchTerm, severityFilter, issues]);
 
-  const updateStatus = (id, newStatus) => {
-    setIssues(
-      issues.map((i) => (i.id === id ? { ...i, status: newStatus } : i)),
+  const handleInlineStatusUpdate = (issueId, nextStatus) => {
+    updateStatusMutation.mutate(
+      {
+        issueId,
+        status: nextStatus,
+        note: "Inline dashboard update status applied.",
+      },
+      { onSuccess: () => setOpenMenuId(null) },
     );
-    setOpenMenuId(null);
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#F8FAFC]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 md:p-12 bg-[#F8FAFC] font-sans">
+    <div className="p-8 md:p-12 bg-[#F8FAFC] font-sans min-h-screen">
       <div className="mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
           <div>
@@ -446,7 +523,8 @@ const IssuesDashboard = () => {
               Project Health Console
             </h1>
             <p className="text-slate-500 font-bold text-sm mt-1">
-              Real-time QA issue tracking & resolution hub.
+              Issues explicitly assigned for your review and resolution
+              pipelines.
             </p>
           </div>
 
@@ -465,6 +543,7 @@ const IssuesDashboard = () => {
             </div>
 
             <select
+              value={severityFilter}
               className="px-6 py-3 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-600 outline-none cursor-pointer hover:border-slate-300 shadow-sm"
               onChange={(e) => setSeverityFilter(e.target.value)}
             >
@@ -477,6 +556,7 @@ const IssuesDashboard = () => {
           </div>
         </div>
 
+        {/* Issues Rendering Table Layout */}
         <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -484,6 +564,9 @@ const IssuesDashboard = () => {
                 <tr className="bg-slate-50/50 border-b border-slate-100">
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     Severity
+                  </th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    Assigned by
                   </th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                     Issue Details
@@ -501,13 +584,12 @@ const IssuesDashboard = () => {
                   filteredIssues.map((issue) => (
                     <tr
                       key={issue.id}
-                      className="hover:bg-blue-50/30 transition-all group hover:bg-slate-100"
+                      className="hover:bg-slate-50/80 transition-all group"
                     >
-                      {/* Severity */}
                       <td className="px-8 py-6">
                         <span
                           className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border shadow-sm inline-block ${
-                            issue.severity === "Critical"
+                            (issue.severity || "").toUpperCase() === "CRITICAL"
                               ? "bg-red-50 text-red-600 border-red-100"
                               : "bg-white text-slate-500 border-slate-200"
                           }`}
@@ -516,56 +598,86 @@ const IssuesDashboard = () => {
                         </span>
                       </td>
 
-                      {/* Title & Info */}
+                      <td className="px-8 py-6 max-w-md">
+                        <div className="flex gap-2  items-center">
+                        <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
+                          {issue.reporter.avatar_url ? (
+                            <img
+                              src={
+                                import.meta.env.VITE_API_URL +
+                                issue.reporter.avatar_url
+                              }
+                              alt="Avatar"
+                              crossOrigin="anonymous"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : issue.reporter.full_name ? (
+                            issue.reporter.full_name[0]
+                          ) : (
+                            "U"
+                          )}
+                        </div>
+                        <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
+                          {issue.reporter.full_name}
+                        </p>
+                        </div>
+                      </td>
+
                       <td className="px-8 py-6 max-w-md">
                         <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
                           {issue.title}
                         </p>
                         <div className="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-tight">
-                          <span>{issue.id}044</span>
+                          <span>ID: #{issue.id}</span>
                           <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                          <span>2 hours ago</span>
+                          <span>
+                            {issue.created_at
+                              ? new Date(issue.created_at).toLocaleDateString()
+                              : "Recently"}
+                          </span>
                         </div>
                       </td>
 
-                      {/* Status with minimal Blue influence */}
                       <td className="px-8 py-6">
                         <div
-                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold tracking-tight transition-all ${
-                            issue.status === "In Progress"
-                              ? "bg-blue-50 border-blue-100 text-blue-600"
-                              : issue.status === "Resolved"
-                                ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                : "bg-slate-50 border-slate-100 text-slate-500"
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold tracking-tight ${
+                            issue.retest_status === "Failed"
+                              ? "bg-red-50 border-red-100 text-red-600"
+                              : issue.status === "In Progress"
+                                ? "bg-blue-50 border-blue-100 text-blue-600"
+                                : issue.status === "Acknowledged"
+                                  ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                                  : "bg-slate-50 border-slate-100 text-slate-500"
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              issue.status === "In Progress"
-                                ? "bg-blue-500"
-                                : issue.status === "Resolved"
-                                  ? "bg-emerald-500"
-                                  : "bg-slate-300"
+                              issue.retest_status === "Failed"
+                                ? "bg-red-500"
+                                : issue.status === "In Progress"
+                                  ? "bg-blue-500"
+                                  : issue.status === "Acknowledged"
+                                    ? "bg-emerald-500"
+                                    : "bg-slate-300"
                             }`}
                           />
-                          {issue.status}
+                          {issue.retest_status === "Failed"
+                            ? issue.retest_status
+                            : issue.status}
                         </div>
                       </td>
 
-                      {/* Actions */}
-                      <td className="px-8 py-6">
+                      <td className="px-8 py-6 text-center">
                         <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => setSelectedIssue(issue)}
-                            className="px-5 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-bold hover:bg-blue-700 shadow-md shadow-blue-100 transition-all active:scale-95"
+                            className="px-5 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-bold hover:bg-blue-700 shadow-md transition-all"
                           >
                             View
                           </button>
-
                           <button
                             onClick={() => setCommentIssue(issue)}
-                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-100 transition-all"
-                            title="Add Comment"
+                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl border border-transparent transition-all"
                           >
                             <MessageSquare size={16} />
                           </button>
@@ -577,31 +689,25 @@ const IssuesDashboard = () => {
                                   openMenuId === issue.id ? null : issue.id,
                                 )
                               }
-                              className={`p-2.5 rounded-xl transition-all ${
-                                openMenuId === issue.id
-                                  ? "bg-slate-100 text-slate-900"
-                                  : "text-slate-300 hover:text-slate-600"
-                              }`}
+                              className="p-2.5 rounded-xl text-slate-400 hover:text-slate-600"
                             >
                               <MoreVertical size={18} />
                             </button>
-
-                            {/* Dropdown Menu */}
                             {openMenuId === issue.id && (
-                              <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-[50] py-2 animate-in fade-in slide-in-from-top-2">
+                              <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-[50] py-2">
                                 <p className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                  Update Status
+                                  Quick Status Update
                                 </p>
                                 {[
-                                  "New",
                                   "Acknowledged",
                                   "In Progress",
-                                  "Resolved",
                                   "Ready for QA",
                                 ].map((st) => (
                                   <button
                                     key={st}
-                                    onClick={() => updateStatus(issue.id, st)}
+                                    onClick={() =>
+                                      handleInlineStatusUpdate(issue.id, st)
+                                    }
                                     className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                                   >
                                     {st}
@@ -616,14 +722,11 @@ const IssuesDashboard = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="px-8 py-20 text-center">
-                      <div className="flex flex-col items-center opacity-40">
-                        <Search size={40} className="mb-4" />
-                        <p className="text-lg font-bold">No Detail found</p>
-                        <p className="text-sm font-medium">
-                          Try adjusting your search or filters
-                        </p>
-                      </div>
+                    <td
+                      colSpan="4"
+                      className="px-8 py-20 text-center text-slate-400 text-xs font-bold uppercase tracking-wider"
+                    >
+                      No issues matched requirements.
                     </td>
                   </tr>
                 )}
@@ -633,37 +736,30 @@ const IssuesDashboard = () => {
         </div>
       </div>
 
-      <IssueDetailModal
-        isOpen={!!selectedIssue}
-        onClose={() => setSelectedIssue(null)}
-        issue={selectedIssue}
-        onUpdate={updateStatus}
-      />
-      <CommentsModal
-        isOpen={!!commentIssue}
-        onClose={() => setCommentIssue(null)}
-        issue={commentIssue}
-      />
+      {selectedIssue && (
+        <IssueDetailModal
+          isOpen={!!selectedIssue}
+          onClose={() => setSelectedIssue(null)}
+          issue={selectedIssue}
+        />
+      )}
+      {commentIssue && (
+        <CommentsModal
+          isOpen={!!commentIssue}
+          onClose={() => setCommentIssue(null)}
+          issue={commentIssue}
+        />
+      )}
     </div>
   );
 };
 
-// Helper Components
 const InfoRow = ({ label, value, valueClass = "text-slate-800" }) => (
   <div className="flex justify-between items-center text-xs border-b border-slate-50 pb-3 last:border-0 last:pb-0">
     <span className="text-slate-400 font-bold tracking-tight uppercase text-[10px]">
       {label}
     </span>
     <span className={`font-black ${valueClass}`}>{value}</span>
-  </div>
-);
-
-const StatusItem = ({ dot, label, active }) => (
-  <div
-    className={`flex items-center gap-4 px-5 py-3 border-2 rounded-2xl text-[12px] font-black cursor-pointer transition-all ${active ? "border-blue-500 bg-blue-50/50 text-blue-700 shadow-lg shadow-blue-50" : "border-transparent bg-white text-slate-500 hover:border-slate-200"}`}
-  >
-    <span className={`w-2.5 h-2.5 rounded-full ${dot} shadow-sm`}></span>
-    {label}
   </div>
 );
 

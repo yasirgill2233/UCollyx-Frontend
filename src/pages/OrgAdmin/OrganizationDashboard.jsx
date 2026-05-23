@@ -6,59 +6,44 @@ import Modal from "../../components/ui/Modal";
 import toast from "react-hot-toast";
 import API from "../../api/axios";
 import PendingRequestsModal from "./PendingRequestsModal";
+import { useDashboardStats } from "../../hooks/useWorkspace";
+import { useQueryClient } from "@tanstack/react-query";
+import useLocalStorage from "../../hooks/custom/useLocalStorage";
 
 const OrganizationDashboard = () => {
-  // Dynamic Data based on your uploaded screen
+  
+  
+  const [user] = useLocalStorage('user', null)
+  
+  const id = user.workspace_id
 
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // const stats = {
-  //   users: { total: 47, pending: 3, developers: 32, managers: 15 },
-  //   projects: { active: 23, withoutManager: 2, archived: 8 },
-  //   alerts: { withoutRoles: 4, conflicts: 0 }
-  // };
+  // React Query Hook
+  const { data: statsResp, isLoading, isError } = useDashboardStats(id);
+  const stats = statsResp?.data;
 
+
+  console.log("Workspace ID:",id)
+
+  // Handle Request Action (Refresh logic simplified)
   const handleRequestAction = (message) => {
     toast.success(message);
-    fetchDashboardData(); // Refresh counts and list
-    // Agar list khali ho jaye to modal band kar dein
-    if (stats.pendingList.length <= 1) setIsPendingModalOpen(false);
-  };
-
-  // API se data mangwanay ka function
-  const fetchDashboardData = async () => {
-    try {
-      // Workspace ID filhal 1 hai, aap ise context ya URL se le sakte hain
-      const workspaceId = 1;
-      const res = await API.get(`/workspace/${workspaceId}/dashboard-stats`);
-
-      console.log(res.data.data);
-
-      if (res.data.success) {
-        setStats(res.data.data);
-        // Success Sound
-        new Audio("/sounds/success.mp3").play().catch(() => {});
-      }
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching dashboard stats:", err);
-      // Error Toast
-      toast.error("Database se data sync nahi ho saka");
-      setLoading(false);
+    // Manual fetch ki bajaye cache invalidate krain
+    queryClient.invalidateQueries(['dashboard-stats', id]);
+    
+    if (stats?.pendingList?.length <= 1) {
+      setIsPendingModalOpen(false);
     }
   };
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  console.log("Check kro zara",statsResp)
 
-  const navigate = useNavigate();
-
-  const [showInviteModal, setShowInviteModal] = useState(false);
-
-  const recentActions = [
+    const recentActions = [
     {
       id: 1,
       user: "Sarah Johnson",
@@ -96,19 +81,13 @@ const OrganizationDashboard = () => {
     },
   ];
 
-  const onInvite = (newUser) => {
-    console.log(newUser);
-    alert(newUser.role);
-    setShowInviteModal(false);
-  };
+  // Stats Calculations (Safety checks ke sath)
+  const total = stats?.users?.total || 0;
+  const devPercentage = total ? Math.round((stats?.users?.developers / total) * 100) : 0;
+  const managerPercentage = total ? Math.round((stats?.users?.managers / total) * 100) : 0;
+  const qaPercentage = total ? Math.round((stats?.users?.qa / total) * 100) : 0;
 
-  const total = stats?.users?.total || 1; // 1 taake division by zero error na aaye
-
-  const devPercentage = Math.round((stats?.users?.developers / total) * 100);
-  const managerPercentage = Math.round((stats?.users?.managers / total) * 100);
-  const qaPercentage = Math.round((stats?.users?.qa / total) * 100);
-
-  if (loading)
+  if (isLoading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFDFD]">
         <div className="text-indigo-600 font-black text-xl animate-pulse">
@@ -117,6 +96,7 @@ const OrganizationDashboard = () => {
       </div>
     );
 
+  if (isError) return <div>Data sync failed. Please check your connection.</div>;
   return (
     <div className="min-h-screen bg-[#FDFDFD] p-12 font-sans text-left selection:bg-indigo-100">
       <Modal />

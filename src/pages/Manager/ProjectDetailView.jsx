@@ -14,6 +14,8 @@ const ProjectDetailView = () => {
 
   const project = location.state?.project;
 
+  console.log("Hey There I am using whatsapp:",project)
+
   if (!project) {
     return <div className="p-10 text-center font-bold">Project data not found!</div>;
   }
@@ -60,8 +62,8 @@ const ProjectDetailView = () => {
         </div>
         <div className="grid grid-cols-4 gap-6">
            {[
-             { label: "To Do", val: project.todo }, { label: "In Progress", val: project.inprogress },
-             { label: "Blocked", val: project.blocked }, { label: "Done", val: project.done }
+             { label: "To Do", val: project.todoCount }, { label: "In Progress", val: project.inprogressCount },
+             { label: "Blocked", val: project.blockedCount }, { label: "Done", val: project.doneCount }
            ].map((item, i) => (
              <div key={i} className="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
                 <h3 className="text-2xl font-black text-slate-800 mb-1">{item.val}</h3>

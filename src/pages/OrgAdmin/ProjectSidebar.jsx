@@ -18,6 +18,8 @@ const ProjectSidebar = ({
 
   const channelName = `# ${currentProject.name?.toLowerCase().replace(/\s+/g, "-") || "project"}`;
 
+  console.log("sdfsdfsdfd",selectedProjectForSidebar)
+
   return (
     <div className="fixed inset-0 z-[150] flex justify-end">
       <div

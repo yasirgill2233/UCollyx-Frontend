@@ -1,11 +1,40 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
-import { X, Check, UserX, User } from 'lucide-react';
+import { X, Check, UserX, User, Loader2 } from 'lucide-react';
 import API from '../../api/axios';
+import { useHandleRequestMutation } from '../../hooks/useWorkspace';
+import { triggerToast } from '../../utils/toastHelper';
 
 const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) => {
   
-  // Modal ke baahar click karne se band ho jaye
+  // // Modal ke baahar click karne se band ho jaye
+  // useEffect(() => {
+  //   const handleEsc = (event) => {
+  //     if (event.keyCode === 27) onClose();
+  //   };
+  //   window.addEventListener('keydown', handleEsc);
+  //   return () => window.removeEventListener('keydown', handleEsc);
+  // }, [onClose]);
+
+  // if (!isOpen) return null;
+
+  // const handleAction = async (requestId, action, role, fullName, email) => {
+  //   // console.log("role is:",role)
+  //   try {
+  //     const res = await API.post('/workspace/handle-join-request', 
+  //       { requestId, action, role, fullName, email },
+  //     );
+
+  //     if (res.data.success) {
+  //       onActionSuccess(`User ${action} successfully!`);
+  //     }
+  //   } catch (err) {
+  //     console.error("Action error:", err);
+  //   }
+  // };
+
+  const requestMutation = useHandleRequestMutation();
+
   useEffect(() => {
     const handleEsc = (event) => {
       if (event.keyCode === 27) onClose();
@@ -16,19 +45,20 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
 
   if (!isOpen) return null;
 
-  const handleAction = async (requestId, action, role, fullName, email) => {
-    // console.log("role is:",role)
-    try {
-      const res = await API.post('/workspace/handle-join-request', 
-        { requestId, action, role, fullName, email },
-      );
-
-      if (res.data.success) {
-        onActionSuccess(`User ${action} successfully!`);
+  const handleAction = (requestId, action, role, fullName, email) => {
+    requestMutation.mutate(
+      { requestId, action, role, fullName, email },
+      {
+        onSuccess: (res) => {
+          triggerToast(`User ${action === 'approve' ? 'approved' : 'rejected'} successfully!`, "success");
+          // Agar list khali ho jaye to modal band bhi kr skte hain
+          if (requests.length <= 1) onClose();
+        },
+        onError: (err) => {
+          triggerToast(err.response?.data?.message || "Action failed", "error");
+        }
       }
-    } catch (err) {
-      console.error("Action error:", err);
-    }
+    );
   };
 
   return (
@@ -85,14 +115,24 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
                       className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-90"
                       title="Approve Member"
                     >
+                      {/* <Check size={18} /> */}
+                      {requestMutation.isPending && requestMutation.variables?.requestId === req.id && requestMutation.variables?.action === 'approved' ? (
+                      <Loader2 size={18} className="animate-spin text-green-500" />
+                    ) : (
                       <Check size={18} />
+                    )}
                     </button>
                     <button 
                       onClick={() => handleAction(req.id, 'rejected', req.requested_role, req.User?.full_name, req.User?.email)}
                       className="w-10 h-10 bg-white text-slate-400 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-90"
                       title="Reject Request"
                     >
+                      {/* <UserX size={18} /> */}
+                      {requestMutation.isPending && requestMutation.variables?.requestId === req.id && requestMutation.variables?.action === 'rejected' ? (
+                      <Loader2 size={18} className="animate-spin text-red-500" />
+                    ) : (
                       <UserX size={18} />
+                    )}
                     </button>
                   </div>
                 </div>

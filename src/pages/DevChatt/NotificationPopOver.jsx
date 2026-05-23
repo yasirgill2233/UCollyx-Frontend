@@ -9,50 +9,79 @@ import {
 } from "lucide-react";
 import API from "../../api/axios";
 
+import { useNotifications } from '../../hooks/useNotifications';
+
 const NotificationPopover = ({
   isOpen,
   onClose,
   notifications,
-  setNotifications,
+  // setNotifications,
   onSelectChat,
 }) => {
+
+  const { data: notifResp, markRead, markAllRead } = useNotifications();
+  // notifications = notifResp?.data || [];
+
   if (!isOpen) return null;
 
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
-
-  const handleMarkAllRead = async (e) => {
+  const handleMarkAllRead = (e) => {
     e.stopPropagation();
-    try {
-      await API.put("/notifications/mark-all-read");
-      const updated = notifications.map((n) => ({ ...n, is_read: true }));
-      setNotifications(updated);
-    } catch (err) {
-      console.error("Failed to mark all read");
-    }
+    markAllRead(); // React Query action
   };
 
-  const handleNotifClick = async (notif) => {
-    console.log("Notify:",notif)
-    try {
-      if (!notif.is_read) {
-        await API.put("/notifications/mark-read", { id: notif.id });
-        const updated = notifications.map((n) =>
-          n.id === notif.id ? { ...n, is_read: true } : n,
-        );
-        setNotifications(updated);
-      }
-      if (notif.target_url) {
-        const parts = notif.target_url.split("/");
+  const handleNotifClick = (notif) => {
+    if (!notif.is_read) {
+      markRead(notif.id); // Mark as read via mutation
+    }
+    
+    // Aapka switch chat logic
+    if (notif.target_url) {
+      const parts = notif.target_url.split("/");
         const type = parts[2];
         const name = parts[3]; 
         const id = parts[4];
         onSelectChat(name, id, type);
-      }
-      onClose();
-    } catch (err) {
-      console.error("Error handling notification click");
     }
+    onClose();
   };
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  console.log("Notifications in Popover:", notifications);
+
+  // const handleMarkAllRead = async (e) => {
+  //   e.stopPropagation();
+  //   try {
+  //     await API.put("/notifications/mark-all-read");
+  //     const updated = notifications.map((n) => ({ ...n, is_read: true }));
+  //     setNotifications(updated);
+  //   } catch (err) {
+  //     console.error("Failed to mark all read");
+  //   }
+  // };
+
+  // const handleNotifClick = async (notif) => {
+  //   console.log("Notify:",notif)
+  //   try {
+  //     if (!notif.is_read) {
+  //       await API.put("/notifications/mark-read", { id: notif.id });
+  //       const updated = notifications.map((n) =>
+  //         n.id === notif.id ? { ...n, is_read: true } : n,
+  //       );
+  //       setNotifications(updated);
+  //     }
+  //     if (notif.target_url) {
+  //       const parts = notif.target_url.split("/");
+  //       const type = parts[2];
+  //       const name = parts[3]; 
+  //       const id = parts[4];
+  //       onSelectChat(name, id, type);
+  //     }
+  //     onClose();
+  //   } catch (err) {
+  //     console.error("Error handling notification click");
+  //   }
+  // };
 
   return (
     <>

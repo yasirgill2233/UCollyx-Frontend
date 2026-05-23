@@ -11,7 +11,7 @@ const CreateProjectModal = ({
 
   const [createChannel, setCreateChannel] = useState(true);
   
-  if (activeModal !== "create") return null;
+  if (activeModal == "create") return null;
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[2000] flex items-center justify-center p-4">

@@ -16,20 +16,11 @@ import RequestSuccessful from "./RequestSuccessful";
 import API from "../../api/axios";
 import toast from "react-hot-toast";
 import { triggerToast } from "../../utils/toastHelper";
+import { useAvailableWorkspaces, useJoinWorkspaceMutation } from "../../hooks/useWorkspace";
 
 export default function JoinWorkspaceFlow() {
   // selection, join-form, request-sent
-  const [tab, setTab] = useState("invite");
-  const [inviteCode, setInviteCode] = useState(""); // State for input
-  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [workspaces, setWorkspaces] = useState([]);
-  const navigate = useNavigate(); // Hook initialize karein
-
-  const [role, setRole] = useState("");
-  const [step, setStep] = useState("role-selection");
-
-  const roles = [
+   const roles = [
     {
       id: "dev",
       label: "Developer",
@@ -53,95 +44,121 @@ export default function JoinWorkspaceFlow() {
     },
   ];
 
-  useEffect(() => {
-    const checkUserWorkspaces = async () => {
-      try {
-        const res = await API.get("/workspace/workspaces");
-        const list = res.data.data;
-        setWorkspaces(list);
-      } catch (err) {
-        console.error("Workspace fetch failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkUserWorkspaces();
-  }, [navigate]);
+  // const [tab, setTab] = useState("invite");
+  // const [inviteCode, setInviteCode] = useState(""); // State for input
+  // const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  // const [workspaces, setWorkspaces] = useState([]);
+  // const navigate = useNavigate(); // Hook initialize karein
 
-  const handleJoinAction = async () => {
-    setLoading(true);
-    try {
-      if (tab === "invite") {
-        if (!inviteCode) {
-          const audio = new Audio("/sounds/short_bongo.mp3");
-          audio.volume = 0.5;
-          audio.play().catch((e) => console.log("Sound blocked"));
-          return triggerToast("Please enter an invite code!","error");
-        }
+  // const [role, setRole] = useState("");
+  // const [step, setStep] = useState("role-selection");
 
-        const res = await API.post("/workspace/join", {
-          role: role,
-          inviteCode: inviteCode.toUpperCase(),
-          type: "code",
-        });
+ 
+  // useEffect(() => {
+  //   const checkUserWorkspaces = async () => {
+  //     try {
+  //       const res = await API.get("/workspace/workspaces");
+  //       const list = res.data.data;
+  //       setWorkspaces(list);
+  //     } catch (err) {
+  //       console.error("Workspace fetch failed", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkUserWorkspaces();
+  // }, [navigate]);
 
-        triggerToast("Success! Welcome to the workspace.","success")
-        navigate("/"); // Hamari login wali redirection logic dashboard par le jayegi
-      } else {
-        if (!selectedWorkspace) {
-          return triggerToast("Please select a workspace!","error")
-        }
+  // const handleJoinAction = async () => {
+  //   setLoading(true);
+  //   try {
+  //     if (tab === "invite") {
+  //       if (!inviteCode) {
+  //         const audio = new Audio("/sounds/short_bongo.mp3");
+  //         audio.volume = 0.5;
+  //         audio.play().catch((e) => console.log("Sound blocked"));
+  //         return triggerToast("Please enter an invite code!","error");
+  //       }
 
-        console.log(selectedWorkspace);
-        await API.post("/workspace/join", {
-          role: role,
-          workspaceId: selectedWorkspace.id,
-          type: "request",
-        });
+  //       const res = await API.post("/workspace/join", {
+  //         role: role,
+  //         inviteCode: inviteCode.toUpperCase(),
+  //         type: "code",
+  //       });
 
-        navigate("/request-pending"); // Request sent screen
-      }
-    } catch (err) {
-      triggerToast(err.response?.data?.message || "Something went wrong","error");
-    } finally {
-      setLoading(false);
+  //       triggerToast("Success! Welcome to the workspace.","success")
+  //       navigate("/"); // Hamari login wali redirection logic dashboard par le jayegi
+  //     } else {
+  //       if (!selectedWorkspace) {
+  //         return triggerToast("Please select a workspace!","error")
+  //       }
+
+  //       console.log(selectedWorkspace);
+  //       await API.post("/workspace/join", {
+  //         role: role,
+  //         workspaceId: selectedWorkspace.id,
+  //         type: "request",
+  //       });
+
+  //       navigate("/request-pending"); // Request sent screen
+  //     }
+  //   } catch (err) {
+  //     triggerToast(err.response?.data?.message || "Something went wrong","error");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const navigate = useNavigate();
+  
+  // React Query Hooks
+  const { data: workspaceRes, isLoading: isFetchingList } = useAvailableWorkspaces();
+  const joinMutation = useJoinWorkspaceMutation();
+
+  // UI States
+  const [tab, setTab] = useState("invite");
+  const [inviteCode, setInviteCode] = useState("");
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const [role, setRole] = useState("");
+  const [step, setStep] = useState("role-selection");
+
+  const workspaces = workspaceRes?.data || [];
+
+  const handleJoinAction = () => {
+    // 1. Basic Validation
+    if (tab === "invite" && !inviteCode) {
+      new Audio("/sounds/short_bongo.mp3").play().catch(() => {});
+      return triggerToast("Please enter an invite code!", "error");
     }
+    
+    if (tab === "request" && !selectedWorkspace) {
+      return triggerToast("Please select a workspace!", "error");
+    }
+
+    // 2. Prepare Payload
+    const payload = tab === "invite" 
+      ? { role, inviteCode: inviteCode.toUpperCase(), type: "code" }
+      : { role, workspaceId: selectedWorkspace.id, type: "request" };
+
+    // 3. Mutation Call
+    joinMutation.mutate(payload, {
+      onSuccess: () => {
+        if (tab === "invite") {
+          triggerToast("Success! Welcome to the workspace.", "success");
+          navigate("/");
+        } else {
+          navigate("/request-pending");
+        }
+      },
+      onError: (err) => {
+        triggerToast(err.response?.data?.message || "Something went wrong", "error");
+      }
+    });
   };
 
-  // const workspaces = [
-  //   {
-  //     id: 1,
-  //     name: "Acme Corporation",
-  //     members: 24,
-  //     type: "Pro",
-  //     color: "bg-red-500",
-  //     letter: "A",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "TechVentures Ltd",
-  //     members: 8,
-  //     type: "Starter",
-  //     color: "bg-yellow-500",
-  //     letter: "T",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "StartupHub",
-  //     members: 15,
-  //     type: "Pro",
-  //     color: "bg-green-500",
-  //     letter: "S",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Design Studio X",
-  //     members: 6,
-  //     type: "Starter",
-  //     color: "bg-cyan-500",
-  //     letter: "D",
-  //   },
-  // ];
+  // UI Variables
+  const isJoining = joinMutation.isPending;
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#f0f2f5] p-4 font-sans">
@@ -293,10 +310,10 @@ export default function JoinWorkspaceFlow() {
               </button>
               <button
                 onClick={handleJoinAction}
-                disabled={loading}
+                disabled={isJoining}
                 className="bg-blue-700 text-white flex justify-center gap-3 rounded-md items-center p-3 w-[50%]"
               >
-                {loading
+                {isJoining
                   ? "Processing..."
                   : tab === "invite"
                     ? "Join Workspace"
