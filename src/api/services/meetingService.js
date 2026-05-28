@@ -33,6 +33,9 @@ export const meetingService = {
 };
 
 export const finalizeMeetingApi = async (audioBlob, messageId) => {
+
+  console.log("Finalizing meeting with audio blob:", audioBlob, "and messageId:", messageId);
+  
   const formData = new FormData();
   formData.append('audio', audioBlob, 'meeting-rec.webm');
 

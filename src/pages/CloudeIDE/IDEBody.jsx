@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Gitgraph } from "@gitgraph/react";
 import {
@@ -23,8 +23,10 @@ import {
   Activity,
   Save,
   SaveAll,
+  Bot,
+  Upload,
 } from "lucide-react";
-import { Editor } from "@monaco-editor/react";
+import { Editor, useMonaco } from "@monaco-editor/react";
 
 import AIPanel from "./IDE/AIPanel";
 
@@ -56,9 +58,11 @@ const IDEBody = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const param = useParams();
-  console.log("Route Params:", param);
+
+  const monaco = useMonaco();
 
   const slug = localStorage.getItem("slug");
+  const user_role = JSON.parse(localStorage.getItem("user")).role;
 
   const [showExplorer, setShowExplorer] = useState(true);
   const [rightPanel, setRightPanel] = useState("AI");
@@ -73,48 +77,11 @@ const IDEBody = () => {
     },
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [activeUsers, setActiveUsers] = useState([]);
+  const [activeFileUsers, setActiveFileUsers] = useState([]);
+  const [activeProjectUsers, setActiveProjectUsers] = useState([]);
 
-  const handleEditorDidMount = (editor, monaco) => {
-    console.log("✅ Monaco Editor Load Ho Gaya!");
-
-    monaco.languages.registerInlineCompletionsProvider("javascript", {
-      provideInlineCompletions: async (model, position) => {
-        console.log("⌨️ Typing detected, checking for suggestions...");
-
-        const codeBefore = model.getValueInRange({
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column,
-        });
-
-        // Local console check
-        console.log("📄 Context captured:", codeBefore.slice(-20));
-
-        try {
-          const suggestion = await getAISuggestion(codeBefore);
-          console.log("🤖 AI Response Received:", suggestion);
-
-          return {
-            items: [
-              {
-                insertText: suggestion,
-                range: new monaco.Range(
-                  position.lineNumber,
-                  position.column,
-                  position.lineNumber,
-                  position.column,
-                ),
-              },
-            ],
-          };
-        } catch (err) {
-          console.error("❌ API Call Failed:", err);
-          return { items: [] };
-        }
-      },
-    });
-  };
+  const modelDecorationsRef = useRef({});
 
   const loadProject = async (id) => {
     setActiveProjectId(id ? id : null);
@@ -130,10 +97,6 @@ const IDEBody = () => {
       socket.emit("terminal:close");
     };
   }, [activeProjectId]);
-
-  const [suggestion, setSuggestion] = useState("");
-
-  const [saveTimeout, setSaveTimeout] = useState(null);
 
   const [menuPos, setMenuPos] = useState({
     x: 0,
@@ -153,14 +116,26 @@ const IDEBody = () => {
     },
   );
 
+  const timerRef = useRef(null);
+
   useEffect(() => {
+    if (!slug) return;
+
     socket.on("file-tree-update", (data) => {
-      console.log("📢 File system changed, refreshing tree...", data);
-      refreshTree(slug);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+
+      timerRef.current = setTimeout(() => {
+        refreshTree(slug);
+      }, 500);
     });
 
-    return () => socket.off("file-tree-update");
-  }, []);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      socket.off("file-tree-update");
+    };
+  }, [slug]);
 
   const handleContextMenu = (e, itemId) => {
     e.preventDefault();
@@ -203,7 +178,6 @@ const IDEBody = () => {
         `http://localhost:4002/api/files/tree?projectId=${projectId}`,
       );
 
-      console.log("Tree refreshed with data:", res.data);
       setProjectData(res.data);
     } catch (e) {
       console.error("Tree load error:", e);
@@ -211,8 +185,6 @@ const IDEBody = () => {
   };
 
   useEffect(() => {
-    // localStorage.setItem("activeProjectId", param?.projectId);
-    // loadProject(param?.projectId);
     loadProject(slug);
   }, [slug]);
 
@@ -227,35 +199,62 @@ const IDEBody = () => {
     return "plaintext";
   };
 
+  socket.on("project:users-update", (usersList) => {
+    setActiveUsers(usersList);
+  });
+
   const handleEditorChange = (value) => {
-    // 1. Foran local state update karein taake typing lag na kare
     setFileContents((prev) => ({
       ...prev,
       [activeTab]: value,
     }));
 
-    // 2. Agar pehle se koi timer chal raha hai, to usay khatam karein
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
+    if (activeFilePath && slug && !isIncomingRemoteChange.current) {
+      socket.emit("code:update", {
+        projectId: slug,
+        filePath: activeFilePath,
+        content: value,
+      });
     }
+  };
 
-    // 3. Naya timer shuru karein (1 second baad save hoga)
-    const newTimeout = setTimeout(async () => {
-      if (activeFilePath) {
-        try {
-          await axios.post("http://localhost:4002/api/files/save", {
-            path: activeFilePath,
-            content: value,
-          });
-          console.log("💾 Auto-saved successfully!");
-        } catch (err) {
-          console.error("❌ Auto-save failed:", err);
+  const [previewWidth, setPreviewWidth] = useState(450);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isPreviewMaximized, setIsPreviewMaximized] = useState(false);
+  const [projectPort, setProjectPort] = useState("5174");
+  const [runCommand, setRunCommand] = useState("npm run dev");
+
+  const startResizing = React.useCallback((mouseDownEvent) => {
+    mouseDownEvent.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const stopResizing = React.useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const resize = React.useCallback(
+    (mouseMoveEvent) => {
+      if (isResizing) {
+        const newWidth = window.innerWidth - mouseMoveEvent.clientX;
+        if (newWidth > 250 && newWidth < 800) {
+          setPreviewWidth(newWidth);
         }
       }
-    }, 1000);
+    },
+    [isResizing],
+  );
 
-    setSaveTimeout(newTimeout);
-  };
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", resize);
+      window.addEventListener("mouseup", stopResizing);
+    }
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizing, resize, stopResizing]);
 
   const deleteItem = async (path) => {
     if (window.confirm("Are you sure you want to delete this?")) {
@@ -265,87 +264,106 @@ const IDEBody = () => {
   };
 
   const openFile = async (path, name) => {
-    console.log("File Name", name);
-    setActiveTab(name);
-    if (!openTabs.includes(name)) {
-      setOpenTabs([...openTabs, name]);
-    }
-    setActiveFilePath(path); // Ye line zaroori hai!
+    if (!path || !name) return;
 
-    // Aapka purana file loading logic...
+    setActiveTab(name);
+    setActiveFilePath(path);
+
+    setOpenTabs((prev) => {
+      const exists = prev.some((tab) =>
+        typeof tab === "object" ? tab.name === name : tab === name,
+      );
+      if (!exists) return [...prev, { name, path }];
+      return prev;
+    });
+
     try {
       const res = await axios.post("http://localhost:4002/api/files/content", {
         path,
       });
-      setFileContents((prev) => ({ ...prev, [name]: res.data.content }));
+      const freshContent = res.data.content;
+
+      setFileContents((prev) => ({ ...prev, [name]: freshContent }));
+
+      if (editorRef.current && monacoRef.current) {
+        const editor = editorRef.current;
+        const monacoInstance = monacoRef.current;
+
+        const fileUri = monacoInstance.Uri.file(path);
+        let model = monacoInstance.editor.getModel(fileUri);
+        const currentLang = getLanguage(name);
+
+        if (!model) {
+          model = monacoInstance.editor.createModel(
+            freshContent,
+            currentLang,
+            fileUri,
+          );
+        } else {
+          if (model.getValue() !== freshContent) {
+            model.setValue(freshContent);
+          }
+          monacoInstance.editor.setModelLanguage(model, currentLang);
+        }
+
+        // 🚀 Switch the tab model smoothly
+        editor.setModel(model);
+
+        // Server ko batao ke hamara active tab change ho gaya ha
+        if (socket && slug && user) {
+          socket.emit("file:join", {
+            projectId: slug,
+            filePath: path,
+            username: user.full_name || user.name,
+          });
+        }
+      }
     } catch (err) {
-      console.error("Error loading file content");
+      console.error("Error loading file content", err);
     }
   };
 
   const closeTab = (e, fileName) => {
     e.stopPropagation();
-    const newTabs = openTabs.filter((tab) => tab !== fileName);
+    const newTabs = openTabs.filter((tab) => {
+      const name = typeof tab === "object" ? tab.name : tab;
+      return name !== fileName;
+    });
+
     setOpenTabs(newTabs);
-    if (activeTab === fileName && newTabs.length > 0) {
-      setActiveTab(newTabs[newTabs.length - 1]);
-    } else if (newTabs.length === 0) {
-      setActiveTab("");
+
+    if (activeTab === fileName) {
+      if (newTabs.length > 0) {
+        const nextTab = newTabs[newTabs.length - 1];
+        const nextTabName =
+          typeof nextTab === "object" ? nextTab.name : nextTab;
+        const nextTabPath =
+          typeof nextTab === "object" ? nextTab.path : activeFilePath;
+
+        openFile(nextTabPath, nextTabName);
+      } else {
+        setActiveTab("");
+        setActiveFilePath("");
+
+        if (editorRef.current && monacoRef.current) {
+          editorRef.current.setModel(null);
+        }
+      }
     }
   };
 
-  // 2. Naya File ya Folder create karne ki API
-  // const addItem = async (parentId, type) => {
-  //   const name = prompt(`Enter ${type} name (e.g., test.js or myFolder):`);
-  //   if (!name) return;
-
-  //   try {
-  //     const parentPath = parentId || projectData.id;
-
-  //     const response = await axios.post(
-  //       "http://localhost:4002/api/files/create",
-  //       {
-  //         projectId: activeProjectId,
-  //         parentPath: parentPath,
-  //         name: name,
-  //         type: type,
-  //       },
-  //     );
-
-  //     if (response.data.success) {
-  //       // refreshTree(param.projectId); // List refresh karein taake naya item nazar aaye
-  //       refreshTree(slug);
-  //     }
-  //   } catch (err) {
-  //     console.error("Error creating item:", err);
-  //     // alert("Failed to create " + type);
-  //     const audio = new Audio("/sounds/short_bongo.mp3");
-  //     audio.volume = 0.5;
-  //     audio.play().catch((e) => console.log("Sound blocked"));
-  //     toast.error("Failed to create " + type);
-  //   }
-  // };
-
-  // IDEBody.jsx mein update
   const addItem = async (parentId, type) => {
     const name = prompt(`Enter ${type} name:`);
     if (!name) return;
 
     try {
-      //   // Agar parentId 'root' hai toh project ka path use karo, warna wahi folder path
       const targetPath = parentId;
-      // alert(`Hi, ${parentId}, ${targetPath}`);
-
-      console.log("Hey There", targetPath, parentId);
-
       await axios.post("http://localhost:4002/api/files/create", {
-        // projectId: activeProjectId,
         parentPath: targetPath,
         name: name,
         type: type,
       });
       refreshTree(slug);
-      // refreshTree call ho jayega socket event se
     } catch (err) {
       toast.error("Failed to create " + type);
     }
@@ -354,16 +372,11 @@ const IDEBody = () => {
   const [expandedFolders, setExpandedFolders] = useState({});
 
   const toggleFolder = (id) => {
-    // alert(id)
     setExpandedFolders((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
   };
-
-  // console.log(expandedFolders)
-
-  // import { useEffect, useState } from 'react';
 
   const GitGraphView = ({ projectId }) => {
     const [commits, setCommits] = useState([]);
@@ -374,7 +387,6 @@ const IDEBody = () => {
         .then((data) => setCommits(data));
     }, [projectId]);
 
-    console.log("Commits:", commits);
     return (
       <div
         style={{
@@ -386,7 +398,6 @@ const IDEBody = () => {
       >
         <Gitgraph>
           {(gitgraph) => {
-            // Simulate git commands with Gitgraph API.
             const master = gitgraph.branch("main");
             master.commit("Initial commit");
 
@@ -409,6 +420,456 @@ const IDEBody = () => {
     );
   };
 
+  const editorRef = useRef(null);
+  const monacoRef = useRef(null);
+  const decorationsRef = useRef({});
+  const isIncomingRemoteChange = useRef(false);
+
+  const activeTabRef = useRef(activeTab);
+  const activeFilePathRef = useRef(activeFilePath);
+
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
+  useEffect(() => {
+    activeFilePathRef.current = activeFilePath;
+  }, [activeFilePath]);
+
+  useEffect(() => {
+    if (!activeFilePath || !slug) return;
+
+    socket.on("code:update", (data) => {
+      if (data.filePath === activeFilePathRef.current) {
+        if (fileContents[activeTabRef.current] !== data.content) {
+          isIncomingRemoteChange.current = true;
+
+          setFileContents((prev) => ({
+            ...prev,
+            [activeTabRef.current]: data.content,
+          }));
+
+          if (editorRef.current) {
+            const editor = editorRef.current;
+            const model = editor.getModel();
+
+            if (model && editor.getValue() !== data.content) {
+              const currentSelections = editor.getSelections();
+              const scrollTop = editor.getScrollTop();
+
+              const fullRange = model.getFullModelRange();
+
+              editor.executeEdits("remote-sync", [
+                {
+                  range: fullRange,
+                  text: data.content,
+                  forceMoveMarkers: false,
+                },
+              ]);
+
+              if (currentSelections) {
+                editor.setSelections(currentSelections);
+              }
+              editor.setScrollTop(scrollTop);
+            }
+          }
+
+          setTimeout(() => {
+            isIncomingRemoteChange.current = false;
+          }, 50);
+        }
+      }
+    });
+
+    const DEVNEX_COLORS = [
+      "#f43f5e", // Rose 500
+      "#3b82f6", // Blue 500
+      "#10b981", // Emerald 500
+      "#f59e0b", // Amber 500
+      "#8b5cf6", // Purple 500
+      "#06b6d4", // Cyan 500
+      "#ec4899", // Pink 500
+      "#14b8a6", // Teal 500
+    ];
+
+    const getUserColor = (socketId) => {
+      let sum = 0;
+      for (let i = 0; i < socketId.length; i++) {
+        sum += socketId.charCodeAt(i);
+      }
+      const colorIndex = sum % DEVNEX_COLORS.length;
+      return DEVNEX_COLORS[colorIndex];
+    };
+
+    socket.on(
+      "cursor:update",
+      ({ socketId, username, filePath, cursorPosition }) => {
+        if (!monacoRef.current || !editorRef.current) return;
+
+        const monacoInstance = monacoRef.current;
+        const editor = editorRef.current;
+
+        // 🎯 1. Target file ka exact Monaco Model nikalo
+        const fileUri = monacoInstance.Uri.file(filePath);
+        const targetModel = monacoInstance.editor.getModel(fileUri);
+
+        // Agar hamare paas wo file open hi nahi ha (tab nahi bana), toh skip karo
+        if (!targetModel) return;
+
+        const userColor = getUserColor(socketId);
+
+        // 🎯 2. Create decoration options
+        const newDecorations = [
+          {
+            range: new monacoInstance.Range(
+              cursorPosition.lineNumber,
+              cursorPosition.column,
+              cursorPosition.lineNumber,
+              cursorPosition.column,
+            ),
+            options: {
+              className: `remote-cursor-${socketId}`,
+              beforeContentClassName: `remote-cursor-tag-${socketId}`,
+              hoverMessage: { value: `**${username}** is editing here` },
+            },
+          },
+        ];
+
+        // Dynamic CSS injector (Wahi purana logic)
+        if (!document.getElementById(`style-${socketId}`)) {
+          const style = document.createElement("style");
+          style.id = `style-${socketId}`;
+          style.innerHTML = `
+      .remote-cursor-${socketId} { border-left: 2px solid ${userColor} !important; margin-left: -1px; animation: blink 1s infinite; }
+      .remote-cursor-tag-${socketId}::after { content: '${username}'; position: absolute; top: -14px; left: 0; background: ${userColor}; color: white; font-size: 9px; padding: 1px 4px; border-radius: 3px; white-space: nowrap; font-family: sans-serif; opacity: 0.8; z-index: 10; }
+    `;
+          document.head.appendChild(style);
+        }
+
+        // 🎯 3. Path ke mutabik tab memory initialize karo
+        if (!modelDecorationsRef.current[filePath]) {
+          modelDecorationsRef.current[filePath] = {};
+        }
+
+        const oldDecorations =
+          modelDecorationsRef.current[filePath][socketId] || [];
+
+        // 🔥 CORE CHANGE: Editor par lagane ki bajay direct us SPECIFIC MODEL par decoration lagao!
+        modelDecorationsRef.current[filePath][socketId] =
+          targetModel.deltaDecorations(oldDecorations, newDecorations);
+      },
+    );
+
+    socket.on("cursor:remove", ({ socketId }) => {
+      if (!monacoRef.current) return;
+
+      const monacoInstance = monacoRef.current;
+
+      // Saare open paths ko scan karo jahan is user ka cursor ho sakta ha
+      Object.keys(modelDecorationsRef.current).forEach((filePath) => {
+        const fileUri = monacoInstance.Uri.file(filePath);
+        const model = monacoInstance.editor.getModel(fileUri);
+
+        if (model && modelDecorationsRef.current[filePath][socketId]) {
+          // Model se clear karo
+          model.deltaDecorations(
+            modelDecorationsRef.current[filePath][socketId],
+            [],
+          );
+          delete modelDecorationsRef.current[filePath][socketId];
+        }
+      });
+
+      document.getElementById(`style-${socketId}`)?.remove();
+    });
+
+    return () => {
+      socket.off("code:update");
+      socket.off("cursor:update");
+      socket.off("cursor:remove");
+      socket.emit("file:leave", { projectId: slug, filePath: activeFilePath });
+    };
+  }, [activeFilePath, slug]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("project:port-allocated", ({ port }) => {
+      setProjectPort(port.toString());
+    });
+
+    return () => {
+      socket.off("project:port-allocated");
+    };
+  }, [socket]);
+
+  const saveFileContent = async () => {
+    if (!activeFilePath || !editorRef.current) return;
+
+    const currentContent = editorRef.current.getValue();
+
+    try {
+      const savePromise = axios.post("http://localhost:4002/api/files/save", {
+        path: activeFilePath,
+        content: currentContent,
+      });
+
+      await toast.promise(savePromise, {
+        loading: "Saving file...",
+        success: "File saved successfully!",
+        error: "Failed to save file.",
+      });
+    } catch (err) {
+      console.error("Save event failed:", err);
+    }
+  };
+
+  const user = localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null;
+
+  useEffect(() => {
+    if (!socket || !slug || !user) return;
+    socket.emit("project:join", {
+      projectId: slug,
+      username: user.full_name || user.name || "Developer",
+    });
+
+    socket.on("project:users-update", (usersInProject) => {
+      setActiveProjectUsers(usersInProject);
+    });
+
+    return () => {
+      // Component unmount stream handlers cleanup mapping
+      socket.off("project:users-update");
+      socket.emit("project:leave", { projectId: slug });
+    };
+  }, [slug, socket]);
+
+ const handleLocalFolderUpload = async () => {
+  try {
+    if (!window.showDirectoryPicker) {
+      toast.error("Your browser doesn't support local directory picking. Try Chrome/Edge!");
+      return;
+    }
+
+    const dirHandle = await window.showDirectoryPicker();
+    toast.loading(`Syncing ${dirHandle.name} with cloud runtime...`, { id: "upload" });
+
+    const localFilesObj = {};
+    const apiFilesPayload = []; // Backend payload array
+    
+    // Recursive scanner
+    const readDirectory = async (handle, currentPath, relativePathPrefix = "") => {
+      const children = [];
+      for await (const entry of handle.values()) {
+        const currentRelativePath = relativePathPrefix ? `${relativePathPrefix}/${entry.name}` : entry.name;
+        const virtualPath = `${currentPath}/${entry.name}`;
+
+        if (entry.kind === 'file') {
+          const file = await entry.getFile();
+          const textContent = await file.text();
+          
+          localFilesObj[entry.name] = textContent;
+          
+          // Payload build karo backend disk writer keliye
+          apiFilesPayload.push({
+            relativePath: currentRelativePath,
+            content: textContent
+          });
+          
+          children.push({ id: virtualPath, name: entry.name, type: "file", path: virtualPath });
+        } else if (entry.kind === 'directory') {
+          const dirChildren = await readDirectory(entry, virtualPath, currentRelativePath);
+          children.push({ id: virtualPath, name: entry.name, type: "folder", path: virtualPath, children: dirChildren });
+        }
+      }
+      return children;
+    };
+
+    const parsedChildren = await readDirectory(dirHandle, dirHandle.name);
+    
+    // 🚀 HIT THE BACKEND WRITER API: Files disk pr write krwao
+    await axios.post("http://localhost:4002/api/files/upload-local", {
+      projectId: slug || dirHandle.name, // Agar workspace slug ha toh use karo, nahi toh name
+      files: apiFilesPayload
+    });
+
+    // Sidebar Explorer state update
+    setProjectData({
+      id: dirHandle.name,
+      name: dirHandle.name,
+      type: "folder",
+      children: parsedChildren
+    });
+
+    setFileContents(prev => ({ ...prev, ...localFilesObj }));
+    setActiveProjectId(slug || dirHandle.name);
+    
+    // 🚀 RE-INIT TERMINAL: Terminal ko command do taake naye container mein local volume bind ho jaye
+    socket.emit("terminal:init", slug || dirHandle.name);
+
+    toast.success(`Successfully mounted & synced ${dirHandle.name}!`, { id: "upload" });
+  } catch (err) {
+    console.error(err);
+    toast.error("Syncing rejected.", { id: "upload" });
+  }
+};
+
+  const handleEditorDidMount = (editor, monacoInstance) => {
+    editorRef.current = editor;
+    monacoRef.current = monacoInstance;
+
+    editor.addCommand(
+      monacoInstance.KeyMod.CtrlCmd | monacoInstance.KeyCode.KeyS,
+      async () => {
+        if (!activeFilePath || !editorRef.current) return;
+
+        const currentContent = editorRef.current.getValue();
+
+        try {
+          const savePromise = axios.post(
+            "http://localhost:4002/api/files/save",
+            {
+              path: activeFilePath,
+              content: currentContent,
+            },
+          );
+
+          await toast.promise(savePromise, {
+            loading: "Saving file...",
+            success: "File saved successfully!",
+            error: "Failed to save file.",
+          });
+        } catch (err) {
+          console.error("Shortcut Save failed:", err);
+        }
+      },
+    );
+
+    const currentPos = editor.getPosition();
+    if (currentPos && activeFilePath && slug) {
+      socket.emit("cursor:move", {
+        projectId: slug,
+        filePath: activeFilePath,
+        cursorPosition: {
+          lineNumber: currentPos.lineNumber,
+          column: currentPos.column,
+        },
+      });
+    }
+
+    editor.onDidChangeCursorPosition((e) => {
+      if (isIncomingRemoteChange.current || !slug) return;
+      const currentModel = editor.getModel();
+      if (!currentModel) return;
+      const currentLivePath = currentModel.uri.fsPath;
+      if (!currentLivePath) return;
+
+      socket.emit("cursor:move", {
+        projectId: slug,
+        filePath: currentLivePath,
+        cursorPosition: {
+          lineNumber: e.position.lineNumber,
+          column: e.position.column,
+        },
+      });
+    });
+  };
+
+  const startDynamicProject = () => {
+    if (!activeProjectId) return;
+
+    socket.emit("project:init-runtime", {
+      projectId: slug,
+      userPort: projectPort,
+    });
+
+    socket.emit("terminal:write", "\x03");
+
+    setTimeout(() => {
+      let finalCommand = runCommand.trim();
+
+      // =================================================================
+      // 🚀 UNIVERSAL SMART TASK RUNNER MATRIX
+      // =================================================================
+
+      // ⚛️ 1. React / Vue / Svelte (Vite based projects)
+      if (
+        finalCommand === "npm run dev" ||
+        finalCommand === "vite" ||
+        finalCommand.includes("vite")
+      ) {
+        finalCommand = `npm run dev -- --port ${projectPort} --host 0.0.0.0`;
+      }
+
+      // 🚀 2. Next.js (Fullstack React)
+      else if (
+        finalCommand === "next dev" ||
+        finalCommand.includes("next dev")
+      ) {
+        finalCommand = `npx next dev -p ${projectPort} -H 0.0.0.0`;
+      }
+
+      // 🟢 3. Nuxt.js (Vue Fullstack)
+      else if (finalCommand === "nuxt" || finalCommand.includes("nuxt dev")) {
+        finalCommand = `npx nuxt dev --port ${projectPort} --host 0.0.0.0`;
+      }
+
+      // 🅰️ 4. Angular CLI
+      else if (
+        finalCommand === "ng serve" ||
+        finalCommand.includes("ng serve")
+      ) {
+        finalCommand = `npx ng serve --port ${projectPort} --host 0.0.0.0`;
+      }
+
+      // 📦 5. Standard Node.js Backend (Express / NestJS / Fastify)
+      // Node standard ports environment variable 'PORT' se pick karta hai jo humne docker env mein diya hua ha
+      else if (
+        finalCommand === "npm start" ||
+        finalCommand === "node server.js" ||
+        finalCommand === "node app.js"
+      ) {
+        finalCommand = `PORT=${projectPort} ${finalCommand}`;
+      }
+
+      // 🐍 6. Python (Django Framework)
+      else if (finalCommand.includes("manage.py runserver")) {
+        // Agar direct command likhi ho, toh override karein syntax matching format par
+        finalCommand = `python manage.py runserver 0.0.0.0:${projectPort}`;
+      }
+      // Python Flask Apps
+      else if (finalCommand.includes("flask run")) {
+        finalCommand = `flask run --host=0.0.0.0 --port=${projectPort}`;
+      }
+
+      // 🐘 7. PHP (Laravel Framework)
+      else if (
+        finalCommand === "php artisan serve" ||
+        finalCommand.includes("artisan serve")
+      ) {
+        finalCommand = `php artisan serve --host=0.0.0.0 --port=${projectPort}`;
+      }
+
+      // ☕ 8. Java (Spring Boot)
+      else if (finalCommand.includes("mvn spring-boot:run")) {
+        finalCommand = `mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=${projectPort}`;
+      }
+
+      // 🐹 9. Golang (Web Application)
+      else if (finalCommand.includes("go run")) {
+        // Go apps custom internal port read karti hain, env layer bind kar rahen hain yahan
+        finalCommand = `PORT=${projectPort} ${finalCommand}`;
+      }
+
+      // =================================================================
+
+      socket.emit("terminal:write", `${finalCommand}\n`);
+      toast.success(`🚀 Engine firing on port ${projectPort}`);
+    }, 200);
+  };
+
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
       {showExplorer && (
@@ -417,6 +878,14 @@ const IDEBody = () => {
             <span className="text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
               Explorer
             </span>
+
+            <button
+              onClick={handleLocalFolderUpload}
+              title="Open Local Folder from Computer"
+              className="flex items-center gap-1 text-[10px] bg-zinc-800 hover:bg-zinc-700 font-bold px-2 py-0.5 border border-zinc-700 rounded text-zinc-300 transition-all active:scale-95"
+            >
+              <Upload size={10} /> Browse
+            </button>
           </div>
           <div className="flex-1 overflow-y-auto py-2">
             <div className="flex items-center justify-between">
@@ -454,15 +923,15 @@ const IDEBody = () => {
                     onFileClick={openFile}
                     onAdd={addItem}
                     handleContextMenu={handleContextMenu}
-                    expandedFolders={expandedFolders} // Yahan pass kiya
-                    toggleFolder={toggleFolder} // Yahan pass kiya
+                    expandedFolders={expandedFolders}
+                    toggleFolder={toggleFolder}
                   />
                 ))
               ) : (
                 <div className="flex flex-col items-center justify-center gap-3 w-full p-4">
                   <button
                     onClick={() => {
-                      navigate("/dev/projects-dir");
+                      navigate(`/${user_role}/projects-dir`);
                     }}
                     className="bg-blue-600 text-white font-medium px-4 py-1 w-full"
                   >
@@ -486,90 +955,169 @@ const IDEBody = () => {
               <SidebarIcon size={18} />
             </button>
 
-            <div className="flex items-center gap-2 px-3 py-1 bg-zinc-800/40 border border-zinc-700/30 rounded-full">
-              <div className="flex -space-x-1.5">
-                {[1, 2, 3].map((i) => (
-                  <img
-                    key={i}
-                    className="w-5 h-5 rounded-full border border-zinc-900 shadow-sm"
-                    src={`https://i.pravatar.cc/150?u=${i + 25}`}
-                    alt="u"
-                  />
-                ))}
+            {activeProjectUsers && activeProjectUsers.length > 0 && (
+              <div className="flex items-center gap-2.5 px-3 py-1 bg-zinc-900/40 border border-zinc-800/60 rounded-full animate-in fade-in duration-200">
+                {/* Avatars Stack Container */}
+                <div className="flex -space-x-1.5 overflow-hidden">
+                  {activeProjectUsers.slice(0, 5).map((u, idx) => {
+                    // Safe check for display identity
+                    const displayName = u.name || "Dev";
+                    const firstLetter = displayName.charAt(0).toUpperCase();
+
+                    // Dynamic vibrant background palettes
+                    const colors = [
+                      "bg-rose-500 shadow-rose-500/10",
+                      "bg-blue-500 shadow-blue-500/10",
+                      "bg-emerald-500 shadow-emerald-500/10",
+                      "bg-amber-500 shadow-amber-500/10",
+                      "bg-purple-500 shadow-purple-500/10",
+                    ];
+                    const colorClass = colors[idx % colors.length];
+
+                    return (
+                      <div
+                        key={u.id || u.socketId || idx}
+                        title={`${displayName} (Active in Project)`}
+                        className={`w-6 h-6 rounded-full ${colorClass} text-white flex items-center justify-center text-[10px] font-black uppercase tracking-wider border-2 border-[#0c0c0e] shadow-sm relative group cursor-pointer transition-all duration-150 hover:-translate-y-0.5 hover:z-20`}
+                      >
+                        {firstLetter}
+
+                        {/* Tiny live green dot status badge */}
+                        <span className="absolute bottom-0 right-0 block h-1.5 w-1.5 rounded-full bg-emerald-400 ring-[1px] ring-[#0c0c0e]" />
+                      </div>
+                    );
+                  })}
+
+                  {/* Overflow Count Counter Layout */}
+                  {activeProjectUsers.length > 5 && (
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 text-zinc-400 border-2 border-[#0c0c0e] flex items-center justify-center font-bold text-[9px] z-10 shadow-sm">
+                      +{activeProjectUsers.length - 5}
+                    </div>
+                  )}
+                </div>
+
+                {/* Dynamic Count Text Status Indicator */}
+                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-wider pr-0.5">
+                  {activeProjectUsers.length} Live
+                </span>
               </div>
-              <span className="text-[10px] font-bold text-zinc-500 uppercase">
-                3 Online
-              </span>
-            </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              onClick={saveFileContent}
               className={`px-4 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold transition-all bg-zinc-800 text-zinc-400 hover:text-white`}
             >
-              <Save size={14} /> Save
+              <Save size={14} />
+              {!isPreviewMaximized && <span></span>}
             </button>
+{/* 
+            {activeProjectId && (
+              <div className="flex items-center gap-2 bg-zinc-900/60 p-1 rounded-lg border border-zinc-800/80">
+                <div className="flex items-center gap-1 pl-1">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Cmd:
+                  </span>
+                  <input
+                    type="text"
+                    value={runCommand}
+                    onChange={(e) => setRunCommand(e.target.value)}
+                    className="w-36 bg-zinc-800 border border-zinc-700/50 rounded px-2 text-xs text-zinc-300 font-mono py-1 focus:outline-none focus:border-blue-500 transition-all"
+                    placeholder="npm run dev"
+                  />
+                </div>
 
-            <button
-              className={`px-4 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold transition-all bg-zinc-800 text-zinc-400 hover:text-white`}
-            >
-              <SaveAll size={14} /> Save All
-            </button>
+                <div className="flex items-center gap-1 border-l border-zinc-800 pl-2">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Port:
+                  </span>
+                  <input
+                    type="text"
+                    value={projectPort}
+                    onChange={(e) => setProjectPort(e.target.value)}
+                    className="w-14 bg-zinc-800 border border-zinc-700/50 rounded text-center text-xs text-white font-black py-1 focus:outline-none focus:border-blue-500 transition-all"
+                    placeholder="5174"
+                  />
+                </div>
+
+                <button
+                  onClick={startDynamicProject}
+                  className="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs px-3 py-1 rounded transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/10"
+                >
+                  <TerminalIcon size={12} />
+                  <span>Run</span>
+                </button>
+              </div>
+            )} */}
+
+            {activeProjectId && (
+              <button
+                onClick={() =>
+                  setRightPanel(rightPanel === "PREVIEW" ? null : "PREVIEW")
+                }
+                className={`px-4 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold transition-all ${
+                  rightPanel === "PREVIEW"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                    : "bg-zinc-800 text-zinc-400 hover:text-white"
+                }`}
+              >
+                <Activity size={14} />
+                {!isPreviewMaximized && <span></span>}
+              </button>
+            )}
 
             <button
               onClick={() => setRightPanel(rightPanel === "AI" ? null : "AI")}
               className={`px-4 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold transition-all ${rightPanel === "AI" ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
             >
-              <div
-                className={`w-1.5 h-1.5 rounded-full ${rightPanel === "AI" ? "bg-white animate-pulse" : "bg-zinc-500"}`}
-              />{" "}
-              AI Assistant
+              <Bot size={14} />
+              {!isPreviewMaximized && <span></span>}
             </button>
-            {/* <button
-              onClick={() =>
-                setRightPanel(rightPanel === "Context" ? null : "Context")
-              }
-              className={`px-4 py-1.5 rounded-md flex items-center gap-2 text-xs font-bold transition-all ${rightPanel === "Context" ? "bg-zinc-100 text-zinc-900 shadow-lg shadow-white/10" : "bg-zinc-800 text-zinc-400 hover:text-white"}`}
-            >
-              Context
-            </button> */}
           </div>
         </div>
 
-        {/* Dynamic Tab Bar */}
         <div className="flex bg-[#0c0c0e] border-b border-zinc-800 overflow-x-auto no-scrollbar">
-          {openTabs.map((tab) => (
-            <div
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`group flex items-center gap-2 px-4 py-2.5 border-r border-zinc-800 text-[11px] min-w-[140px] cursor-pointer transition-all ${activeTab === tab ? "bg-[#09090b] text-blue-400 border-t-2 border-t-blue-500" : "text-zinc-500 hover:bg-zinc-800/40"}`}
-            >
-              <FileCode
-                size={14}
-                className={
-                  activeTab === tab ? "text-blue-400" : "text-zinc-600"
-                }
-              />
-              <span className="truncate flex-1">{tab}</span>
-              <X
-                size={12}
-                className="opacity-0 group-hover:opacity-100 hover:bg-zinc-700 p-0.5 rounded transition-all"
-                onClick={(e) => closeTab(e, tab)}
-              />
-            </div>
-          ))}
+          {openTabs.map((tab) => {
+            const tabName = typeof tab === "object" ? tab.name : tab;
+            const tabPath = typeof tab === "object" ? tab.path : activeFilePath;
+
+            return (
+              <div
+                key={tabName}
+                onClick={() => openFile(tabPath, tabName)}
+                className={`group flex items-center gap-2 px-4 py-2.5 border-r border-zinc-800 text-[11px] min-w-[140px] cursor-pointer transition-all ${
+                  activeTab === tabName
+                    ? "bg-[#09090b] text-blue-400 border-t-2 border-t-blue-500"
+                    : "text-zinc-500 hover:bg-zinc-800/40"
+                }`}
+              >
+                <FileCode
+                  size={14}
+                  className={
+                    activeTab === tabName ? "text-blue-400" : "text-zinc-600"
+                  }
+                />
+                <span className="truncate flex-1">{tabName}</span>
+                <X
+                  size={12}
+                  className="opacity-0 group-hover:opacity-100 hover:bg-zinc-700 p-0.5 rounded transition-all"
+                  onClick={(e) => closeTab(e, tabName)}
+                />
+              </div>
+            );
+          })}
         </div>
 
-        {/* Code Editor Body */}
         <div className="flex-1 overflow-auto font-mono text-[13px] leading-relaxed bg-[#09090b]">
           {activeTab && openTabs.length > 0 ? (
             <Editor
               height="100%"
               theme="vs-dark"
               language={getLanguage(activeTab)}
-              value={fileContents[activeTab]}
+              defaultValue={fileContents[activeTab]}
               onChange={handleEditorChange}
-              // onMount={handleEditorDidMount} // Ye zaroori hai!
+              onMount={handleEditorDidMount}
               options={{
                 fontSize: 14,
                 num_predict: 50,
@@ -580,16 +1128,10 @@ const IDEBody = () => {
                   mode: "prefix",
                   showToolbar: "always",
                 },
-                // suggestOnTriggerCharacters: true,
-                // quickSuggestions: {
-                //   other: true,
-                //   comments: true,
-                //   strings: true,
-                // },
                 padding: { top: 20 },
                 smoothScrolling: true,
                 cursorSmoothCaretAnimation: "on",
-                automaticLayout: true, // Window resize par auto-adjust hoga
+                automaticLayout: true,
               }}
             />
           ) : (
@@ -601,10 +1143,7 @@ const IDEBody = () => {
             </div>
           )}
         </div>
-        {/* <div>
-          <GitGraphView projectId={slug} />
-        </div> */}
-        {/* Bottom Terminal Section */}
+
         <div className="h-60 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
           <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -615,7 +1154,6 @@ const IDEBody = () => {
             </div>
           </div>
 
-          {/* Yahan humara real terminal aayega */}
           <div className="flex-1 overflow-hidden p-2">
             <TerminalComponent socket={socket} />
           </div>
@@ -633,6 +1171,178 @@ const IDEBody = () => {
         />
       )}
 
+      {rightPanel === "PREVIEW" &&
+        (() => {
+          const isLocal =
+            window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1";
+
+          const previewUrl = isLocal
+            ? `http://localhost:${projectPort}/`
+            : `${window.location.protocol}//${window.location.host}/preview/${slug}/`;
+
+          return (
+            <div
+              style={{
+                width: isPreviewMaximized ? "60%" : `${previewWidth}px`,
+                zIndex: isPreviewMaximized ? 40 : 10,
+              }}
+              className={`relative border-l border-zinc-800 bg-[#0c0c0e] flex flex-col transition-all duration-300 shrink-0 overflow-hidden ${
+                isPreviewMaximized ? "absolute inset-y-0 right-0 h-full" : ""
+              }`}
+            >
+              {!isPreviewMaximized && (
+                <div
+                  onMouseDown={startResizing}
+                  className={`absolute top-0 left-0 bottom-0 w-1.5 -ml-1 cursor-ew-resize z-50 transition-colors duration-150 ${
+                    isResizing ? "bg-emerald-500/50" : "hover:bg-emerald-500/30"
+                  }`}
+                />
+              )}
+
+              <div
+                className={`flex flex-col h-full w-full overflow-hidden ${isResizing ? "pointer-events-none select-none" : ""}`}
+              >
+                <div className="h-12 border-b border-zinc-800 flex items-center justify-between px-4 bg-[#09090b] shrink-0 overflow-hidden gap-4">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0"></span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 truncate">
+                      {isPreviewMaximized
+                        ? "Full Preview Workspace"
+                        : "Web Sandbox"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => {
+                        setIsPreviewMaximized(false);
+                        setRightPanel(null);
+                      }}
+                      title="Minimize"
+                      className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 p-1.5 rounded transition-all flex items-center justify-center"
+                    >
+                      <span className="block w-3 h-0.5 bg-current rounded-sm"></span>
+                    </button>
+
+                    <button
+                      onClick={() => setIsPreviewMaximized(!isPreviewMaximized)}
+                      title={
+                        isPreviewMaximized ? "Restore Size" : "Maximize View"
+                      }
+                      className="text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/60 p-1 rounded transition-all flex items-center justify-center"
+                    >
+                      {isPreviewMaximized ? (
+                        <svg
+                          className="w-3.5 h-3.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2.5"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      ) : (
+                        <span className="block w-3 h-3 border-2 border-current rounded-sm"></span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsPreviewMaximized(false);
+                        setRightPanel(null);
+                      }}
+                      title="Close"
+                      className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 p-1 rounded transition-all"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-2 bg-[#0c0c0e] border-b border-zinc-800/60 flex items-center gap-2 shrink-0 overflow-hidden">
+                  <div className="bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400 rounded-md px-3 py-1 flex-1 min-w-0 truncate font-mono">
+                    {previewUrl}
+                  </div>
+
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white px-2.5 py-1 rounded transition-all shrink-0 whitespace-nowrap"
+                  >
+                    Open Tab
+                  </a>
+
+                  <button
+                    onClick={() => {
+                      const iframe = document.getElementById(
+                        "ucollyx-sandbox-frame",
+                      );
+                      if (iframe) iframe.src = iframe.src;
+                    }}
+                    className="text-xs font-bold text-zinc-400 bg-zinc-800 hover:bg-zinc-700 px-2.5 py-1 rounded transition-all shrink-0 whitespace-nowrap"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                <div className="flex-1 w-full bg-white relative overflow-hidden">
+                  <iframe
+                    id="ucollyx-sandbox-frame"
+                    src={previewUrl}
+                    title="UCollyx Application Core Sandbox"
+                    className="absolute inset-0 w-full h-full border-none"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+                  />
+                </div>
+              </div>
+
+               {activeProjectId && (
+              <div className="flex items-center gap-2 bg-zinc-900/60 p-1 rounded-lg border border-zinc-800/80">
+                <div className="flex items-center gap-1 pl-1">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Cmd:
+                  </span>
+                  <input
+                    type="text"
+                    value={runCommand}
+                    onChange={(e) => setRunCommand(e.target.value)}
+                    className="w-36 bg-zinc-800 border border-zinc-700/50 rounded px-2 text-xs text-zinc-300 font-mono py-1 focus:outline-none focus:border-blue-500 transition-all"
+                    placeholder="npm run dev"
+                  />
+                </div>
+
+                <div className="flex items-center gap-1 border-l border-zinc-800 pl-2">
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                    Port:
+                  </span>
+                  <input
+                    type="text"
+                    value={projectPort}
+                    onChange={(e) => setProjectPort(e.target.value)}
+                    className="w-14 bg-zinc-800 border border-zinc-700/50 rounded text-center text-xs text-white font-black py-1 focus:outline-none focus:border-blue-500 transition-all"
+                    placeholder="5174"
+                  />
+                </div>
+
+                <button
+                  onClick={startDynamicProject}
+                  className="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs px-3 py-1 rounded transition-all flex items-center gap-1.5 shadow-md shadow-blue-600/10"
+                >
+                  <TerminalIcon size={12} />
+                  <span>Run</span>
+                </button>
+              </div>
+            )}
+            </div>
+          );
+        })()}
+
       {menuPos.visible && (
         <div
           className="fixed z-50 bg-[#121214]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-lg py-1 w-44 animate-in fade-in zoom-in duration-150"
@@ -649,8 +1359,6 @@ const IDEBody = () => {
             <FilePlus size={14} /> New File
           </button>
 
-          {/* ... baqi buttons ... */}
-
           <button
             onClick={() => {
               deleteItem(menuPos.targetId);
@@ -665,48 +1373,5 @@ const IDEBody = () => {
     </div>
   );
 };
-
-// --- Context Panel ---
-// const ContextPanel = ({ onClose }) => (
-//   <aside className="w-80 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl">
-//     <div className="p-4 bg-zinc-900/40 border-b border-zinc-800 flex justify-between items-center">
-//       <div className="flex items-center gap-2">
-//         <Activity size={16} className="text-zinc-500" />
-//         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-//           Context
-//         </span>
-//       </div>
-//       <X
-//         size={18}
-//         className="cursor-pointer text-zinc-500 hover:text-white"
-//         onClick={onClose}
-//       />
-//     </div>
-//     <div className="p-4 space-y-6">
-//       <div>
-//         <h4 className="text-[10px] font-black uppercase text-zinc-600 mb-3 tracking-widest">
-//           Project Health
-//         </h4>
-//         <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-//           <div className="h-full w-3/4 bg-emerald-500" />
-//         </div>
-//         <p className="text-[10px] mt-2 text-zinc-500">
-//           All systems operational
-//         </p>
-//       </div>
-//       <div className="space-y-2">
-//         {["Environment", "Git History", "Deployment"].map((item) => (
-//           <div
-//             key={item}
-//             className="flex justify-between items-center p-3 bg-zinc-800/20 border border-zinc-800/40 rounded-lg hover:border-zinc-700 cursor-pointer"
-//           >
-//             <span className="text-xs">{item}</span>
-//             <ChevronRight size={14} className="text-zinc-700" />
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   </aside>
-// );
 
 export default IDEBody;
