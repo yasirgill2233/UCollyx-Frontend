@@ -63,6 +63,7 @@ const IDEBody = () => {
 
   const slug = localStorage.getItem("slug");
   const user_role = JSON.parse(localStorage.getItem("user")).role;
+  const user_id = JSON.parse(localStorage.getItem("user")).id;
 
   const [showExplorer, setShowExplorer] = useState(true);
   const [rightPanel, setRightPanel] = useState("AI");
@@ -81,6 +82,9 @@ const IDEBody = () => {
   const [activeFileUsers, setActiveFileUsers] = useState([]);
   const [activeProjectUsers, setActiveProjectUsers] = useState([]);
 
+  const [isBrowsedProject, setIsBrowsedProject] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
   const modelDecorationsRef = useRef({});
 
   const loadProject = async (id) => {
@@ -88,15 +92,31 @@ const IDEBody = () => {
     await refreshTree(id ? id : "No Project");
   };
 
-  useEffect(() => {
-    if (activeProjectId) {
-      socket.emit("terminal:init", activeProjectId);
-    }
+  // useEffect(() => {
+  //   if (activeProjectId) {
+  //     socket.emit("terminal:init", activeProjectId);
+  //   }
 
-    return () => {
-      socket.emit("terminal:close");
-    };
-  }, [activeProjectId]);
+  //   return () => {
+  //     socket.emit("terminal:close");
+  //   };
+  // }, [activeProjectId]);
+
+  useEffect(() => {
+  if (activeProjectId) {
+    console.log(`🚀 Triggering terminal init for: ${activeProjectId}, isBrowsed: ${isBrowsedProject}`);
+    
+    // Server ko metadata object bhej rahe hain taake switch catch kar sakay
+    socket.emit("terminal:init", {
+      projectId: activeProjectId,
+      isBrowsed: isBrowsedProject
+    });
+  }
+
+  return () => {
+    socket.emit("terminal:close");
+  };
+}, [activeProjectId, isBrowsedProject]);
 
   const [menuPos, setMenuPos] = useState({
     x: 0,
@@ -257,10 +277,10 @@ const IDEBody = () => {
   }, [isResizing, resize, stopResizing]);
 
   const deleteItem = async (path) => {
-    if (window.confirm("Are you sure you want to delete this?")) {
+    // if (window.confirm("Are you sure you want to delete this?")) {
       await axios.post("http://localhost:4002/api/files/delete", { path });
-      refreshTree();
-    }
+      refreshTree(slug);
+    // }
   };
 
   const openFile = async (path, name) => {
@@ -353,6 +373,10 @@ const IDEBody = () => {
   };
 
   const addItem = async (parentId, type) => {
+
+    alert(parentId, "par add karna ha", type);
+
+    // alert(parentId, "par add karna ha", type);
     const name = prompt(`Enter ${type} name:`);
     if (!name) return;
 
@@ -646,7 +670,151 @@ const IDEBody = () => {
     };
   }, [slug, socket]);
 
- const handleLocalFolderUpload = async () => {
+const executeFolderUpload = async (uploadType) => {
+  setIsUploadModalOpen(false);
+
+  const targetProjectId = slug; 
+  if (!targetProjectId) {
+    toast.error("Project identity missing (slug is null).");
+    return;
+  }
+
+  // =========================================================================
+  // 🔄 CASE 1: JUST SWITCH TO LOCAL WORKSPACE (No Picker Window)
+  // =========================================================================
+  if (uploadType === 'local_switch') {
+    try {
+      toast.loading("Switching to Local Workspace environment...", { id: "upload" });
+
+      await axios.post("http://localhost:4002/api/files/upload-local", {
+        projectId: targetProjectId,
+        files: [], // Khali array kyunki sirf path badalna ha, file upload nahi karni
+        userId: user_id,
+        uploadSource: 'local' // Backend ko pata chalay ga 'user_browsed_projects' set krna ha
+      });
+
+      setIsBrowsedProject(true); 
+      
+      // Force trigger terminal state sync
+      // setActiveProjectId(""); 
+      // setTimeout(() => { setActiveProjectId(targetProjectId); }, 50);
+
+      refreshTree(slug)
+
+      toast.success("Successfully switched to Local Workspace!", { id: "upload" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to switch to Local Workspace.", { id: "upload" });
+    }
+  }
+
+  // =========================================================================
+  // 📂 CASE 2: FRESH UPLOAD & SYNC LOCAL FOLDER (With Directory Picker)
+  // =========================================================================
+  else if (uploadType === 'local_upload') {
+    try {
+      if (!window.showDirectoryPicker) {
+        toast.error("Your browser doesn't support local directory picking. Try Chrome/Edge!");
+        return;
+      }
+
+      const dirHandle = await window.showDirectoryPicker();
+      toast.loading(`Syncing & uploading complete structure of ${dirHandle.name}...`, { id: "upload" });
+
+      const localFilesObj = {};
+      const apiFilesPayload = []; // 🚀 Is dabbe me ab explicit files aur folders dono ka data jayega
+      
+      const readDirectory = async (handle, currentPath, relativePathPrefix = "") => {
+        const children = [];
+        for await (const entry of handle.values()) {
+          const currentRelativePath = relativePathPrefix ? `${relativePathPrefix}/${entry.name}` : entry.name;
+          const virtualPath = `${currentPath}/${entry.name}`;
+
+          if (entry.kind === 'file') {
+            const file = await entry.getFile();
+            const textContent = await file.text();
+            
+            localFilesObj[entry.name] = textContent;
+            
+            // 🎯 FILE DATA INJECTION
+            apiFilesPayload.push({ 
+              type: "file", // Explicit type flag
+              relativePath: currentRelativePath, 
+              content: textContent 
+            });
+            
+            children.push({ id: virtualPath, name: entry.name, type: "file", path: virtualPath });
+          } 
+          else if (entry.kind === 'directory') {
+            // 🎯 FOLDER METADATA INJECTION: Khali ho ya bhara hua, structural entry lazmi push hogi
+            apiFilesPayload.push({
+              type: "folder", // Explicit type flag
+              relativePath: currentRelativePath,
+              content: null
+            });
+
+            const dirChildren = await readDirectory(entry, virtualPath, currentRelativePath);
+            children.push({ id: virtualPath, name: entry.name, type: "folder", path: virtualPath, children: dirChildren });
+          }
+        }
+        return children;
+      };
+
+      const parsedChildren = await readDirectory(dirHandle, dirHandle.name);
+      
+      // 🚀 HIT THE BACKEND WRITER API: Structural payload goes out
+      await axios.post("http://localhost:4002/api/files/upload-local", {
+        projectId: targetProjectId,
+        files: apiFilesPayload, // Pura array structure metadata ke sath dispatch ho gaya
+        userId: user_id,
+        uploadSource: 'local'
+      });
+
+      // Sidebar Explorer state configuration updates
+      setProjectData({ id: dirHandle.name, name: dirHandle.name, type: "folder", children: parsedChildren });
+      setFileContents(prev => ({ ...prev, ...localFilesObj }));
+
+      // 🎯 REAL-TIME IMMEDIATE REFRESH
+      refreshTree(slug);
+
+      toast.success(`Successfully uploaded & synced ${dirHandle.name}!`, { id: "upload" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Syncing local folder rejected.", { id: "upload" });
+    }
+  }
+
+  // =========================================================================
+  // 💼 CASE 3: SWITCH TO MANAGER ASSIGNED (No Picker Window)
+  // =========================================================================
+  else if (uploadType === 'assigned') {
+    try {
+      toast.loading("Configuring Manager Assigned workspace...", { id: "upload" });
+
+      await axios.post("http://localhost:4002/api/files/upload-local", {
+        projectId: targetProjectId,
+        files: [], 
+        userId: user_id,
+        uploadSource: 'assigned' // Backend table folder_path ko 'user_projects/' kr dega
+      });
+
+      setIsBrowsedProject(false); 
+      
+      // setActiveProjectId(""); 
+      // setTimeout(() => { setActiveProjectId(targetProjectId); }, 50);
+
+      refreshTree(slug)
+
+      toast.success("Manager workspace verified successfully!", { id: "upload" });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to switch workspace context.", { id: "upload" });
+    }
+  }
+};
+
+
+const handleLocalFolderUpload = async () => {
   try {
     if (!window.showDirectoryPicker) {
       toast.error("Your browser doesn't support local directory picking. Try Chrome/Edge!");
@@ -657,9 +825,8 @@ const IDEBody = () => {
     toast.loading(`Syncing ${dirHandle.name} with cloud runtime...`, { id: "upload" });
 
     const localFilesObj = {};
-    const apiFilesPayload = []; // Backend payload array
+    const apiFilesPayload = [];
     
-    // Recursive scanner
     const readDirectory = async (handle, currentPath, relativePathPrefix = "") => {
       const children = [];
       for await (const entry of handle.values()) {
@@ -672,7 +839,6 @@ const IDEBody = () => {
           
           localFilesObj[entry.name] = textContent;
           
-          // Payload build karo backend disk writer keliye
           apiFilesPayload.push({
             relativePath: currentRelativePath,
             content: textContent
@@ -689,10 +855,13 @@ const IDEBody = () => {
 
     const parsedChildren = await readDirectory(dirHandle, dirHandle.name);
     
-    // 🚀 HIT THE BACKEND WRITER API: Files disk pr write krwao
+    const targetProjectId = slug || dirHandle.name;
+
+    // 🚀 HIT THE BACKEND WRITER API: Ab yeh routes -> controller -> service ke mutabik 'user_browsed_projects' me save karega
     await axios.post("http://localhost:4002/api/files/upload-local", {
-      projectId: slug || dirHandle.name, // Agar workspace slug ha toh use karo, nahi toh name
-      files: apiFilesPayload
+      projectId: targetProjectId,
+      files: apiFilesPayload,
+      userId: user_id // Reference locking logic for DB
     });
 
     // Sidebar Explorer state update
@@ -704,10 +873,14 @@ const IDEBody = () => {
     });
 
     setFileContents(prev => ({ ...prev, ...localFilesObj }));
-    setActiveProjectId(slug || dirHandle.name);
     
-    // 🚀 RE-INIT TERMINAL: Terminal ko command do taake naye container mein local volume bind ho jaye
-    socket.emit("terminal:init", slug || dirHandle.name);
+    // 🎯 CRITICAL SYNCHRONIZATION STEP:
+    // Pehle context state update karenge phir Project ID trigger lagayenge
+    setIsBrowsedProject(true); 
+    setActiveProjectId(targetProjectId);
+    
+    // 🔕 NOTE: Yahan se 'socket.emit("terminal:init")' ko DELETE kar diya hai,
+    // kyunki upar wala useEffect ab automatically execution catch kar lega!
 
     toast.success(`Successfully mounted & synced ${dirHandle.name}!`, { id: "upload" });
   } catch (err) {
@@ -715,6 +888,7 @@ const IDEBody = () => {
     toast.error("Syncing rejected.", { id: "upload" });
   }
 };
+
 
   const handleEditorDidMount = (editor, monacoInstance) => {
     editorRef.current = editor;
@@ -880,7 +1054,7 @@ const IDEBody = () => {
             </span>
 
             <button
-              onClick={handleLocalFolderUpload}
+              onClick={setIsUploadModalOpen}
               title="Open Local Folder from Computer"
               className="flex items-center gap-1 text-[10px] bg-zinc-800 hover:bg-zinc-700 font-bold px-2 py-0.5 border border-zinc-700 rounded text-zinc-300 transition-all active:scale-95"
             >
@@ -1349,7 +1523,7 @@ const IDEBody = () => {
           style={{ top: menuPos.y, left: menuPos.x }}
           onMouseLeave={closeMenu}
         >
-          <button
+          {/* <button
             onClick={() => {
               addItem(menuPos.targetId, "file");
               closeMenu();
@@ -1357,7 +1531,7 @@ const IDEBody = () => {
             className="w-full flex items-center gap-3 px-3 py-2 text-xs text-zinc-300 hover:bg-blue-600 hover:text-white transition-colors"
           >
             <FilePlus size={14} /> New File
-          </button>
+          </button> */}
 
           <button
             onClick={() => {
@@ -1370,6 +1544,82 @@ const IDEBody = () => {
           </button>
         </div>
       )}
+
+      {/* 🎯 UCOLLYX DYNAMIC WORKSPACE SELECTOR MODAL */}
+{isUploadModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl w-full max-w-md shadow-2xl relative">
+      
+      <button 
+        onClick={() => setIsUploadModalOpen(false)}
+        className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300 transition"
+      >
+        ✕
+      </button>
+
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold text-zinc-100">Workspace Control Panel</h3>
+        <p className="text-xs text-zinc-500 mt-1">Choose your workspace execution environment or upload configurations.</p>
+      </div>
+
+      <div className="space-y-3">
+        
+        {/* OPTION 1: JUST SWITCH TO LOCAL */}
+        <div 
+          onClick={() => executeFolderUpload('local_switch')}
+          className="group cursor-pointer border border-zinc-800 bg-zinc-900/40 p-4 rounded-lg hover:border-blue-500/50 hover:bg-zinc-900 transition flex items-start space-x-3"
+        >
+          <div className="p-2 rounded-md bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition mt-0.5">
+            🔀
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-zinc-200 group-hover:text-blue-400 transition">Switch to Local Environment</h4>
+            <p className="text-xs text-zinc-500 mt-0.5">Just point terminal to <code className="bg-zinc-950 p-0.5 rounded text-zinc-400">user_browsed_projects/</code>. No directory picker prompt.</p>
+          </div>
+        </div>
+
+        {/* OPTION 2: FRESH UPLOAD TO LOCAL */}
+        <div 
+          onClick={() => executeFolderUpload('local_upload')}
+          className="group cursor-pointer border border-zinc-800 bg-zinc-900/40 p-4 rounded-lg hover:border-amber-500/50 hover:bg-zinc-900 transition flex items-start space-x-3"
+        >
+          <div className="p-2 rounded-md bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition mt-0.5">
+            📤
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-zinc-200 group-hover:text-amber-400 transition">Upload & Sync Fresh Folder</h4>
+            <p className="text-xs text-zinc-500 mt-0.5">Opens directory picker to scan, upload, and track new files from your device.</p>
+          </div>
+        </div>
+
+        {/* OPTION 3: MANAGER ASSIGNED */}
+        <div 
+          onClick={() => executeFolderUpload('assigned')}
+          className="group cursor-pointer border border-zinc-800 bg-zinc-900/40 p-4 rounded-lg hover:border-emerald-500/50 hover:bg-zinc-900 transition flex items-start space-x-3"
+        >
+          <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-400 group-hover:bg-emerald-500/20 transition mt-0.5">
+            💼
+          </div>
+          <div>
+            <h4 className="text-sm font-medium text-zinc-200 group-hover:text-emerald-400 transition">Switch to Manager Workspace</h4>
+            <p className="text-xs text-zinc-500 mt-0.5">Reverts environment back to default manager assigned paths inside <code className="bg-zinc-950 p-0.5 rounded text-zinc-400">user_projects/</code>.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div className="mt-6 flex justify-end">
+        <button
+          onClick={() => setIsUploadModalOpen(false)}
+          className="px-4 py-2 text-xs font-medium text-zinc-400 bg-zinc-900 hover:bg-zinc-800 rounded-md border border-zinc-800 transition"
+        >
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 };

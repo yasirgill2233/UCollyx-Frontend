@@ -40,6 +40,8 @@ import SelectWorkspace from "../pages/auth/SelectWorkspace";
 import ProtectedRoute from "./ProtectedRoute";
 import AccessDenied from "../pages/auth/AccessDenied";
 import AwaitingRole from "../pages/auth/AwaitingRole";
+import Unauthorized from "../pages/auth/illustrations/Unauthorized";
+import Forbidden from "../pages/auth/illustrations/Forbidden";
 
 // const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 
@@ -50,6 +52,8 @@ function AppRoutes() {
         {/* --- PUBLIC / AUTH ROUTES --- */}
         <Route path="/">
           <Route index element={<Login />} />
+          <Route path="unauthorized" element={<Unauthorized />} />
+          <Route path="forbidden" element={<Forbidden />} />
           <Route path="register" element={<Register />} />
           <Route path="verify" element={<Verify />} />
           <Route path="set-password" element={<SetPassword />} />
