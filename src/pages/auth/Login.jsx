@@ -438,6 +438,8 @@ export default function Login() {
   const [token, setToken] = useLocalStorage('token', null);
   const queryClient = useQueryClient();
 
+  console.log("User from localStorage:", user);
+
   // React Query Mutations
   const loginMutation = useLoginMutation();
   const googleMutation = useGoogleLoginMutation();
@@ -501,6 +503,7 @@ export default function Login() {
 
     loginMutation.mutate({ email, password }, {
       onSuccess: (data) => {
+        localStorage.clear(); // Clear localStorage to prevent stale data
         queryClient.clear();
         setUser(data.user);
         setToken(data.token);

@@ -1,24 +1,82 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import useLocalStorage from "../../hooks/custom/useLocalStorage";
+import { useLoginMutation } from "../../hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import axios from "axios";
+import API from "../../api/axios";
 
 export default function SelectWorkspace() {
   const location = useLocation();
+  const [user, setUser] = useLocalStorage('user', null);
+  const [token, setToken] = useLocalStorage('token', null);
+    const queryClient = useQueryClient();
   const navigate = useNavigate();
+
   const workspaces = location.state?.workspaces || [];
-  const user = JSON.parse(localStorage.getItem("user"));
+  const loginMutation = useLoginMutation();
 
-  console.log(user);
+    const email = user.email
+    const password = user.password
 
-  const handleEnterWorkspace = (ws) => {
-    if (user.role === "dev") {
+  
+  console.log(":::",user);
+  
+  const handleEnterWorkspace = async (ws) => {
+
+    try {
+      toast.loading("Initializing workspace session...", { id: "ws-auth" });
+
+    const response = await API.post(
+        "/auth/select-workspace", 
+        {
+          workspaceId: ws.id,
+          role: ws.role 
+        },
+      );
+
+      if (response.data && response.data.success) {
+        // React Query ka purana cache clear karo taake naye workspace ka data fetch ho ske
+        queryClient.clear();
+        
+        // 1. Naya JWT Token aur user state update karo (Bina password ke)
+        setToken(response.data.newToken);
+        setUser({
+          ...user, 
+          workspace_id: ws.id, 
+          role: ws.role
+        });
+
+        // 2. Axios instance ke default header ko foran update karo taake agli api calls me naya token jaye
+        // axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.newToken}`;
+
+        toast.success(`Welcome to ${ws.name}`, { id: "ws-auth" });
+
+    // alert(`${email} " " ${password}`);
+    // loginMutation.mutate({ email, password }, {
+    //     onSuccess: (data) => {
+    //       queryClient.clear();
+    //       setUser({...data.user, workspace_id: ws.id, role: ws.role});
+    //       setToken(data.token);
+    //     },
+    //   });
+    console.log("Selected workspace:", user);
+    if (ws.role === "dev") {
       navigate(`/dev/dashboard`);
-    } else if (user.role === "qa") {
+    } else if (ws.role === "qa") {
       navigate(`/qa/dashboard`);
-    } else if (user.role === "manager") {
+    } else if (ws.role === "manager") {
       navigate(`/manager/portfolio`);
-    } else if (user.role === "org_admin") {
+    } else if (ws.role === "org_admin") {
       navigate(`/org-admin/dashboard`);
+    } else if (ws.role === "member") {
+      navigate(`/awaiting-role`);
     } else {
       navigate(`/admin/dashboard`);
+    }
+    }} catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Failed to enter workspace. Please try again.");
     }
   };
 
