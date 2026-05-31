@@ -418,6 +418,7 @@ import {
   LogIn,
   Loader2,
   Sparkles,
+  ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
@@ -540,18 +541,14 @@ export default function Login() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#f3f5fa] p-4 relative overflow-hidden font-sans">
       
-      {/* Dynamic Aura Background Colors (Jo image me background canvas par smooth khel rahe hain) */}
       <div className="absolute top-[-10%] left-[-10%] w-[550px] h-[550px] bg-gradient-to-tr from-[#3b59ff]/20 to-[#00f2fe]/30 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[6s]" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-bl from-[#9d4edd]/20 to-[#00f2fe]/20 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[8s]" />
       <div className="absolute top-[35%] left-[40%] w-[350px] h-[350px] bg-[#9d4edd]/15 rounded-full blur-[90px] pointer-events-none" />
 
-      {/* Main Container: Light Mode Translucent Glassmorphism */}
       <div className="flex flex-row w-full max-w-[1050px] h-[720px] bg-white/70 backdrop-blur-2xl rounded-[32px] border border-white/60 shadow-[0_20px_50px_rgba(31,38,135,0.08)] overflow-hidden z-10">
         
-        {/* Left Side: Login Form */}
         <div className="w-full md:w-1/2 p-14 flex flex-col justify-center relative bg-white/40">
           
-          {/* Logo Brand Title */}
           <div className="absolute top-8 left-14 flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3b59ff] to-[#00f2fe] flex items-center justify-center font-black text-white shadow-[0_4px_12px_rgba(59,89,255,0.3)] text-sm">
               U
@@ -643,14 +640,11 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Right Side: Showcase Panel (Light Grid Match) */}
         <div className="hidden md:flex w-1/2 bg-gradient-to-b from-[#f8fafc]/90 to-[#edf2f7]/90 border-l border-gray-100 flex-col items-center justify-center p-12 text-center relative">
           
-          {/* Light Grid Lines Overlay pattern */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.015)_1px,transparent_1px)] bg-[size:30px_30px] opacity-100 pointer-events-none" />
           
           <div className="relative mb-6 transform hover:scale-[1.02] transition-transform duration-700">
-            {/* Elegant Soft white/cyan glow beneath image */}
             <div className="absolute inset-0 bg-gradient-to-tr from-[#00f2fe]/30 to-[#3b59ff]/10 rounded-full blur-3xl opacity-70" />
             
             <img
@@ -667,7 +661,6 @@ export default function Login() {
             Real-time multi-user IDE execution, contextual chat tracking, and smart local automated workflows.
           </p>
 
-          {/* Slider Fluid-Style Active Dots */}
           <div className="flex gap-2.5 mt-8 z-10">
             <div className="w-6 h-1.5 bg-[#3b59ff] rounded-full shadow-[0_2px_8px_rgba(59,89,255,0.4)]"></div>
             <div className="w-2 h-1.5 bg-gray-300 rounded-full"></div>

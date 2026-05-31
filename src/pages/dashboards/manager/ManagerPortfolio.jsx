@@ -63,19 +63,19 @@ const ManagerPortfolio = () => {
   }
 
   // --- ERROR HANDLING PORTAL ---
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F8FAFC] text-center p-6">
-        <div className="bg-white border border-red-100 p-8 rounded-3xl shadow-sm max-w-md">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={32} />
-          <h3 className="font-black text-slate-800 text-lg mb-1">Ecosystem Interrupted</h3>
-          <p className="text-xs text-slate-400 font-medium mb-4">
-            {error?.response?.data?.message || "Failed to establish secure gateway context."}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen bg-[#F8FAFC] text-center p-6">
+  //       <div className="bg-white border border-red-100 p-8 rounded-3xl shadow-sm max-w-md">
+  //         <AlertCircle className="text-red-500 mx-auto mb-4" size={32} />
+  //         <h3 className="font-black text-slate-800 text-lg mb-1">Ecosystem Interrupted</h3>
+  //         <p className="text-xs text-slate-400 font-medium mb-4">
+  //           {error?.response?.data?.message || "Failed to establish secure gateway context."}
+  //         </p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans selection:bg-blue-100 text-left">
