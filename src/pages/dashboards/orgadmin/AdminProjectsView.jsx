@@ -873,9 +873,22 @@ const AdminProjectsView = () => {
             <div
               key={id}
               title={user?.full_name}
-              className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-white shadow-sm ring-1 ring-black/5 ${user?.color || "bg-slate-400"}`}
+              className={`w-9 h-9 rounded-full overflow-hidden border-white flex items-center justify-center text-[9px] font-bold text-white shadow-sm ring-1 ring-slate-200 ${user?.color || "bg-slate-400"}`}
             >
-              {user?.avatar || user?.full_name?.charAt(0).toUpperCase() || "?"}
+              {/* <div  className="rounded-full border border-blue-100 bg-blue-600 w-full h-full flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden"> */}
+                {user.avatar_url ? (
+                  <img
+                    src={import.meta.env.VITE_API_URL + user.avatar_url}
+                    alt="Avatar"
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover"
+                  />
+                ) : user.full_name ? (
+                  user.full_name[0].toUpperCase()
+                ) : (
+                  "U"
+                )}
+              {/* </div> */}
             </div>
           );
         })}

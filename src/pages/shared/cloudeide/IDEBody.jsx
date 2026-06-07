@@ -92,16 +92,6 @@ const IDEBody = () => {
     await refreshTree(id ? id : "No Project");
   };
 
-  // useEffect(() => {
-  //   if (activeProjectId) {
-  //     socket.emit("terminal:init", activeProjectId);
-  //   }
-
-  //   return () => {
-  //     socket.emit("terminal:close");
-  //   };
-  // }, [activeProjectId]);
-
   useEffect(() => {
   if (activeProjectId) {
     console.log(`🚀 Triggering terminal init for: ${activeProjectId}, isBrowsed: ${isBrowsedProject}`);
@@ -116,7 +106,7 @@ const IDEBody = () => {
   return () => {
     socket.emit("terminal:close");
   };
-}, [activeProjectId, isBrowsedProject]);
+}, [activeProjectId]);
 
   const [menuPos, setMenuPos] = useState({
     x: 0,
@@ -628,7 +618,7 @@ const IDEBody = () => {
     return () => {
       socket.off("project:port-allocated");
     };
-  }, [socket]);
+  }, []);
 
   const saveFileContent = async () => {
     if (!activeFilePath || !editorRef.current) return;
@@ -671,7 +661,7 @@ const IDEBody = () => {
       socket.off("project:users-update");
       socket.emit("project:leave", { projectId: slug });
     };
-  }, [slug, socket]);
+  }, [slug]);
 
 const executeFolderUpload = async (uploadType) => {
   setIsUploadModalOpen(false);
@@ -815,83 +805,6 @@ const executeFolderUpload = async (uploadType) => {
     }
   }
 };
-
-
-const handleLocalFolderUpload = async () => {
-  try {
-    if (!window.showDirectoryPicker) {
-      toast.error("Your browser doesn't support local directory picking. Try Chrome/Edge!");
-      return;
-    }
-
-    const dirHandle = await window.showDirectoryPicker();
-    toast.loading(`Syncing ${dirHandle.name} with cloud runtime...`, { id: "upload" });
-
-    const localFilesObj = {};
-    const apiFilesPayload = [];
-    
-    const readDirectory = async (handle, currentPath, relativePathPrefix = "") => {
-      const children = [];
-      for await (const entry of handle.values()) {
-        const currentRelativePath = relativePathPrefix ? `${relativePathPrefix}/${entry.name}` : entry.name;
-        const virtualPath = `${currentPath}/${entry.name}`;
-
-        if (entry.kind === 'file') {
-          const file = await entry.getFile();
-          const textContent = await file.text();
-          
-          localFilesObj[entry.name] = textContent;
-          
-          apiFilesPayload.push({
-            relativePath: currentRelativePath,
-            content: textContent
-          });
-          
-          children.push({ id: virtualPath, name: entry.name, type: "file", path: virtualPath });
-        } else if (entry.kind === 'directory') {
-          const dirChildren = await readDirectory(entry, virtualPath, currentRelativePath);
-          children.push({ id: virtualPath, name: entry.name, type: "folder", path: virtualPath, children: dirChildren });
-        }
-      }
-      return children;
-    };
-
-    const parsedChildren = await readDirectory(dirHandle, dirHandle.name);
-    
-    const targetProjectId = slug || dirHandle.name;
-
-    // 🚀 HIT THE BACKEND WRITER API: Ab yeh routes -> controller -> service ke mutabik 'user_browsed_projects' me save karega
-    await axios.post("http://localhost:4002/api/files/upload-local", {
-      projectId: targetProjectId,
-      files: apiFilesPayload,
-      userId: user_id // Reference locking logic for DB
-    });
-
-    // Sidebar Explorer state update
-    setProjectData({
-      id: dirHandle.name,
-      name: dirHandle.name,
-      type: "folder",
-      children: parsedChildren
-    });
-
-    setFileContents(prev => ({ ...prev, ...localFilesObj }));
-    
-    // 🎯 CRITICAL SYNCHRONIZATION STEP:
-    // Pehle context state update karenge phir Project ID trigger lagayenge
-    setIsBrowsedProject(true); 
-    setActiveProjectId(targetProjectId);
-    
-    // 🔕 NOTE: Yahan se 'socket.emit("terminal:init")' ko DELETE kar diya hai,
-    // kyunki upar wala useEffect ab automatically execution catch kar lega!
-
-    toast.success(`Successfully mounted & synced ${dirHandle.name}!`, { id: "upload" });
-  } catch (err) {
-    console.error(err);
-    toast.error("Syncing rejected.", { id: "upload" });
-  }
-};
-
 
   const handleEditorDidMount = (editor, monacoInstance) => {
     editorRef.current = editor;

@@ -40,7 +40,7 @@ const queryClient = new QueryClient({
 });
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  <>
     {/* 3. QueryClientProvider se wrap karein */}
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -52,5 +52,5 @@ createRoot(document.getElementById('root')).render(
       {/* 4. Devtools: Ye sirf development mein nazar aayenge aur debugging asaan kar denge */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  </StrictMode>
+  </>
 )

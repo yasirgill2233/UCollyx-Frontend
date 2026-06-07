@@ -27,6 +27,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskService } from "../../../../api/services/taskService";
 import { useProjectsData } from "../../../../hooks/useProjects";
 
+import socket from "../../../../context/SocketContext";
+import toast from "react-hot-toast";
+import { triggerToast } from "../../../../utils/toastHelper";
+
 const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
 
   const [selectedTask, setSelectedTask] = useState(null);
@@ -47,8 +51,9 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
     enabled: !!projectId,
   });
 
+  console.log("HELLO HELLO HELLO #####################################################3",data)
   const dragMutation = useMutation({
-    mutationFn: (vars) => taskService.updateTaskPosition(vars.id, vars.data),
+    mutationFn: (vars) => console.log(vars) || taskService.updateTaskPosition(vars.id, vars.data),
     onMutate: async (newVars) => {
       await queryClient.cancelQueries(["board", projectId]);
       const previousData = queryClient.getQueryData(["board", projectId]);
@@ -97,6 +102,7 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
       data: {
         status: destination.droppableId,
         position: destination.index,
+        project_id: Number(projectId),
       },
     });
   };
@@ -187,6 +193,47 @@ const handleLinkEpic = (taskId, epicId) => {
 const handleRemoveEpic = (taskId) => {
   updateEpicMutation.mutate({ taskId, epicId: null });
 };
+
+
+// useEffect(() => {
+//   if (!socket || !projectId) return;
+
+//   // 1. Project Room join karein taake is project ke live events milein
+//   socket.emit("project:join_room", { project_id: projectId });
+
+//   // 2. LISTEN: Jab koi dusra user task move kare
+//   socket.on("board:task_moved_received", (data) => {
+
+//     // 🔔 GLOBAL TOASTER ALIGNMENT
+//     triggerToast(`Task #${data.task_id} status updated to "${data.status.toUpperCase()}"`, 'success');
+
+//     queryClient.invalidateQueries(["board", projectId]);
+//   });
+
+//   // 3. LISTEN: Jab naya task create ho
+//   socket.on("board:task_created_received", (data) => {
+
+//     triggerToast(`New Task Created: "${data.task?.title || 'Task'}"`, 'success');
+
+//     queryClient.invalidateQueries(["board", projectId]);
+//   });
+
+//   // 4. LISTEN: Jab task update ho (Title, description, etc.)
+//   socket.on("board:task_updated_received", () => {
+
+//     triggerToast(`Task updates synchronized in this workspace`, 'success');
+    
+//     queryClient.invalidateQueries(["board", projectId]);
+//     queryClient.invalidateQueries(["projectEpics", projectId]);
+//   });
+
+//   // Clean up listeners on unmount
+//   return () => {
+//     socket.off("board:task_moved_received");
+//     socket.off("board:task_created_received");
+//     socket.off("board:task_updated_received");
+//   };
+// }, [ projectId, queryClient]);
 
   if (isLoading) return <div>Loading Board...</div>;
 

@@ -15,7 +15,10 @@ import TaskModal from "./TaskModal";
 import ChatModal from "./ChatModal";
 import MeetingModal from "./MeetingModal";
 import { useMyProjects } from "../../../../hooks/useProjects";
+import socket from "../../../../context/SocketContext";
 import { useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { triggerToast } from "../../../../utils/toastHelper";
 
 const KanbanBoard = () => {
   const queryClient = useQueryClient();
@@ -43,16 +46,61 @@ const KanbanBoard = () => {
     }
   }, [projects, queryProjectId]);
 
+
+// useEffect(() => {
+//   if (!socket || !projectId) return;
+
+//   // 1. Project Room join karein taake is project ke live events milein
+//   socket.emit("project:join_room", { project_id: projectId });
+
+//   // 2. LISTEN: Jab koi dusra user task move kare
+//   socket.on("board:task_moved_received", (data) => {
+
+//     // 🔔 GLOBAL TOASTER ALIGNMENT
+//     triggerToast(`Task #${data.task_id} status updated to "${data.status.toUpperCase()}"`,'success')
+
+//     queryClient.invalidateQueries(["board", projectId]);
+//   });
+
+//   // 3. LISTEN: Jab naya task create ho
+//   socket.on("board:task_created_received", (data) => {
+
+//     triggerToast(`New Task Created: "${data.task?.title || 'Task'}"`,'success')
+
+//     queryClient.invalidateQueries(["board", projectId]);
+//   });
+
+//   // 4. LISTEN: Jab task update ho (Title, description, etc.)
+//   socket.on("board:task_updated_received", () => {
+
+//     triggerToast(`Task updates synchronized in this workspace`,'success')
+    
+//     queryClient.invalidateQueries(["board", projectId]);
+//     queryClient.invalidateQueries(["projectEpics", projectId]);
+//   });
+
+//   // Clean up listeners on unmount
+//   return () => {
+//     socket.off("board:task_moved_received");
+//     socket.off("board:task_created_received");
+//     socket.off("board:task_updated_received");
+//   };
+// }, [ projectId, queryClient]);
+
   const { data: boardData, isLoading } = useQuery({
     queryKey: ["board", projectId],
     queryFn: () => taskService.getAssignedBoard(projectId),
     enabled: !!projectId,
   });
 
+
+  console.log("KANBAN BOARD DATA FETCHED:###########################################################", boardData);
+
   // Drag optimization hook pipeline matrix
   const updateStatusMutation = useMutation({
-    mutationFn: ({ taskId, status }) =>
-      taskService.updateTaskStatus(taskId, status),
+    mutationFn: (vars) =>
+      console.log("Updating Task Position with:", vars.id, vars.data) ||
+      taskService.updateTaskPosition(vars.id, vars.data),
     onMutate: async ({
       taskId,
       status,
@@ -122,19 +170,14 @@ const KanbanBoard = () => {
   const onDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    )
-      return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
     updateStatusMutation.mutate({
-      taskId: draggableId,
-      status: destination.droppableId,
-      sourceCol: source.droppableId,
-      destCol: destination.droppableId,
-      sourceIndex: source.index,
-      destIndex: destination.index,
+      id: draggableId,
+      data: {
+        status: destination.droppableId,
+        position: destination.index,
+      },
     });
   };
 

@@ -4,7 +4,12 @@ import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "react-hot-toast"; // 1. Import karein
 import API from "./api/axios";
 
+import GlobalSocketWrapper from "./components/layout/GlobalSocketWrapper";
+
 export default function App() {
+
+  const currentUserId = localStorage.getItem("user").id; // Example extract
+  const activeChat = null;
 
   return (
     <>
@@ -19,7 +24,9 @@ export default function App() {
           },
         }}
       />
-      <AppRoutes />
+      <GlobalSocketWrapper currentUserId={currentUserId} activeChat={activeChat}>
+        <AppRoutes />
+      </GlobalSocketWrapper>
     </>
   );
 }
