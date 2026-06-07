@@ -8,7 +8,7 @@ import GlobalSocketWrapper from "./components/layout/GlobalSocketWrapper";
 
 export default function App() {
 
-  const currentUserId = localStorage.getItem("user").id; // Example extract
+  const currentUserId = localStorage.getItem("user")?.id; // Example extract
   const activeChat = null;
 
   return (
