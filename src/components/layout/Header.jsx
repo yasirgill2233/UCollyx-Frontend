@@ -16,7 +16,7 @@ const Header = () => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  console.log("Current User in Header:", currentUser.avatar_url);
+  console.log("Current User in Header:", currentUser?.avatar_url);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -70,9 +70,9 @@ const Header = () => {
             >
               {/* Circular Avatar using first letters of Full Name */}
               <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                {currentUser.avatar_url ? (
+                {currentUser?.avatar_url ? (
                   <img
-                    src={import.meta.env.VITE_SERVER_URL + currentUser.avatar_url}
+                    src={import.meta.env.VITE_SERVER_URL + currentUser?.avatar_url}
                     alt="Avatar"
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover"

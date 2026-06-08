@@ -270,9 +270,9 @@ const SubtasksContent = ({ subtasks, task, onToggleSubtask }) => {
                   title={user.full_name}
                   className="rounded-full border-2 border-white bg-blue-600 w-6 h-6 flex items-center justify-center text-white font-black text-[9px] shadow-sm uppercase overflow-hidden shrink-0"
                 >
-                  {user.avatar_url ? (
+                  {user?.avatar_url ? (
                     <img
-                      src={import.meta.env.VITE_SERVER_URL + user.avatar_url}
+                      src={import.meta.env.VITE_SERVER_URL + user?.avatar_url}
                       alt="Avatar"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover"
@@ -314,7 +314,7 @@ const CommentsContent = ({
                   {comment.User?.avatar_url ? (
                     <img
                       src={
-                        import.meta.env.VITE_SERVER_URL + comment.User.avatar_url
+                        import.meta.env.VITE_SERVER_URL + comment.User?.avatar_url
                       }
                       alt="Avatar"
                       crossOrigin="anonymous"

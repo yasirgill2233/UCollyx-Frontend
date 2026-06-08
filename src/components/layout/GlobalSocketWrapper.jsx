@@ -156,8 +156,8 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
           ? "Group Channel"
           : "Direct Message";
 
-        const avatarUrl = newIncomingMessage.Sender.avatar_url
-          ? `${import.meta.env.VITE_SERVER_URL}${newIncomingMessage.Sender.avatar_url}`
+        const avatarUrl = newIncomingMessage.Sender?.avatar_url
+          ? `${import.meta.env.VITE_SERVER_URL}${newIncomingMessage.Sender?.avatar_url}`
           : null;
 
         toast(

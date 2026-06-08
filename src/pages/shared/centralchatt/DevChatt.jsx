@@ -865,10 +865,10 @@ const slugify = (text) => {
                   >
                     <div className="relative flex-shrink-0">
                       <div className="w-8 h-8 rounded-full bg-slate-200 backdrop-blur-md border border-white/20 flex items-center justify-center text-[11px] font-bold text-slate-600 overflow-hidden">
-                        {member.avatar_url ? (
+                        {member?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL + member.avatar_url
+                              import.meta.env.VITE_SERVER_URL + member?.avatar_url
                             }
                             alt="Avatar"
                             crossOrigin="anonymous"
@@ -963,10 +963,10 @@ const slugify = (text) => {
                         key={i.User.id || i}
                         className="w-7 h-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold overflow-hidden uppercase text-slate-600"
                       >
-                        {i.User.avatar_url ? (
+                        {i.User?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL + i.User.avatar_url
+                              import.meta.env.VITE_SERVER_URL + i.User?.avatar_url
                             }
                             alt={i.User.full_name}
                             crossOrigin="anonymous"
@@ -1078,10 +1078,10 @@ const slugify = (text) => {
                                 : "bg-slate-800 text-white"
                             }`}
                           >
-                            {msg.avatar_url ? (
+                            {msg?.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_SERVER_URL + msg.avatar_url
+                                  import.meta.env.VITE_SERVER_URL + msg?.avatar_url
                                 }
                                 alt="Avatar"
                                 crossOrigin="anonymous"
@@ -1396,11 +1396,11 @@ const slugify = (text) => {
                         className="flex items-center gap-2.5 px-3 py-2 hover:bg-blue-50 cursor-pointer transition-all border-b border-slate-50 last:border-0"
                       >
                         <div className="rounded-full border border-blue-100 bg-blue-600 w-7 h-7 flex items-center justify-center text-white font-black text-[10px] uppercase overflow-hidden flex-shrink-0">
-                          {user?.User.avatar_url ? (
+                          {user?.User?.avatar_url ? (
                             <img
                               src={
                                 import.meta.env.VITE_SERVER_URL +
-                                user?.User.avatar_url
+                                user?.User?.avatar_url
                               }
                               alt="Avatar"
                               crossOrigin="anonymous"

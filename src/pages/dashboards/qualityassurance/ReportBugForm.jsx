@@ -268,7 +268,7 @@ const ReportBugForm = () => {
                   {selectedAssignee ? (
                     <>
                       <div className="w-5 h-5 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white text-[9px] font-black shrink-0">
-                        {selectedAssignee.avatar_url ? (
+                        {selectedAssignee?.avatar_url ? (
                           <img src={import.meta.env.VITE_SERVER_URL + selectedAssignee?.avatar_url} alt="Avatar" crossOrigin="anonymous" className="w-full h-full object-cover" />
                         ) : selectedAssignee.full_name?.[0] || "U"}
                       </div>
@@ -295,8 +295,8 @@ const ReportBugForm = () => {
                         className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left"
                       >
                         <div className="w-5 h-5 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white text-[9px] font-black shrink-0 border border-slate-100">
-                          {u.avatar_url ? (
-                            <img src={import.meta.env.VITE_SERVER_URL + u.avatar_url} alt="Avatar" crossOrigin="anonymous" className="w-full h-full object-cover" />
+                          {u?.avatar_url ? (
+                            <img src={import.meta.env.VITE_SERVER_URL + u?.avatar_url} alt="Avatar" crossOrigin="anonymous" className="w-full h-full object-cover" />
                           ) : u.full_name?.[0] || "U"}
                         </div>
                         <span className="text-xs font-bold text-slate-700 truncate">{u.full_name}</span>

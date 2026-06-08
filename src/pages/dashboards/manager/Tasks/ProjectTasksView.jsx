@@ -290,11 +290,11 @@ const ProjectTasksView = () => {
                             {task.assignees && task.assignees.length > 0 ? (
                               task.assignees.map((user) => (
                                 <div className="rounded-full border border-blue-100 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                                  {user.avatar_url ? (
+                                  {user?.avatar_url ? (
                                     <img
                                       src={
                                         import.meta.env.VITE_SERVER_URL +
-                                        user.avatar_url
+                                        user?.avatar_url
                                       }
                                       alt="Avatar"
                                       crossOrigin="anonymous"
@@ -377,11 +377,11 @@ const ProjectTasksView = () => {
                             {task.assignees && task.assignees.length > 0 ? (
                               task.assignees.map((user) => (
                                 <div className="rounded-full border border-blue-100 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                                  {user.avatar_url ? (
+                                  {user?.avatar_url ? (
                                     <img
                                       src={
                                         import.meta.env.VITE_SERVER_URL +
-                                        user.avatar_url
+                                        user?.avatar_url
                                       }
                                       alt="Avatar"
                                       crossOrigin="anonymous"
@@ -451,11 +451,11 @@ const ProjectTasksView = () => {
                           <div className="flex items-center -space-x-2 overflow-hidden grayscale">
                             {task.assignees?.map((user) => (
                               <div className="rounded-full border border-blue-100 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                                {user.avatar_url ? (
+                                {user?.avatar_url ? (
                                   <img
                                     src={
                                       import.meta.env.VITE_SERVER_URL +
-                                      user.avatar_url
+                                      user?.avatar_url
                                     }
                                     alt="Avatar"
                                     crossOrigin="anonymous"

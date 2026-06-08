@@ -45,9 +45,9 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                 <div key={i} className="flex items-center gap-3 px-2 group cursor-pointer hover:bg-slate-50 p-1 rounded-lg transition-all">
                   <div className="relative">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs`}>
-                      {member.User.avatar_url ? (
+                      {member.User?.avatar_url ? (
                       <img
-                        src={import.meta.env.VITE_SERVER_URL + member.User.avatar_url}
+                        src={import.meta.env.VITE_SERVER_URL + member.User?.avatar_url}
                         alt="Avatar"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover rounded-2xl"
@@ -83,9 +83,9 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                 <div key={i} className="flex items-center gap-3 px-2 opacity-60">
                   <div className="relative">
                     <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs grayscale`}>
-                      {member.User.avatar_url ? (
+                      {member.User?.avatar_url ? (
                       <img
-                        src={import.meta.env.VITE_SERVER_URL + member.User.avatar_url}
+                        src={import.meta.env.VITE_SERVER_URL + member.User?.avatar_url}
                         alt="Avatar"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover rounded-2xl"

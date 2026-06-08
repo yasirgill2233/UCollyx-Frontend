@@ -17,7 +17,7 @@ const ProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
-  console.log("Current User in Profile Modal:", currentUser.avatar_url);
+  console.log("Current User in Profile Modal:", currentUser?.avatar_url);
 
   if (!isOpen) return null;
 
@@ -52,7 +52,7 @@ const ProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
 
       if (res.data.success) {
         // Backend hamesha humein naye file ka avatar_url return karega
-        const serverAvatarUrl = res.data.data.avatar_url;
+        const serverAvatarUrl = res.data.data?.avatar_url;
 
         const updatedUser = {
           ...user,
@@ -97,7 +97,7 @@ const ProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                   src={
                     avatarPreview
                       ? avatarPreview
-                      : import.meta.env.VITE_SERVER_URL + currentUser.avatar_url
+                      : import.meta.env.VITE_SERVER_URL + currentUser?.avatar_url
                   }
                   alt="Profile Preview"
                   crossOrigin="anonymous"

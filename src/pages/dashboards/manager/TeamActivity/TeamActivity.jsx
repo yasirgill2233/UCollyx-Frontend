@@ -81,7 +81,7 @@ const TeamActivity = () => {
               id: assignee.id,
               name: assignee.full_name || "Unknown Developer",
               email: assignee.email,
-              avatar: assignee.avatar_url,
+              avatar: assignee?.avatar_url,
               role: assignee.email.includes('admin') ? "Admin" : "Full Stack", // Dummy role dynamic match
               projects: [projectName],
               tasks: `${doneTasks}/${totalAssignedTasks}`,

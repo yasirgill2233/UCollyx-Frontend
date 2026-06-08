@@ -601,11 +601,11 @@ const IssuesDashboard = () => {
                       <td className="px-8 py-6 max-w-md">
                         <div className="flex gap-2  items-center">
                         <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                          {issue.reporter.avatar_url ? (
+                          {issue.reporter?.avatar_url ? (
                             <img
                               src={
                                 import.meta.env.VITE_SERVER_URL +
-                                issue.reporter.avatar_url
+                                issue.reporter?.avatar_url
                               }
                               alt="Avatar"
                               crossOrigin="anonymous"
