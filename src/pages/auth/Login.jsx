@@ -504,6 +504,7 @@ export default function Login() {
 
     loginMutation.mutate({ email, password }, {
       onSuccess: (data) => {
+        alert("LOGIN RESPONSE:", data);
         localStorage.clear(); // Clear localStorage to prevent stale data
         queryClient.clear();
         setUser(data.user);
