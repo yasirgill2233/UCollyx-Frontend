@@ -106,7 +106,7 @@ const DevChat = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const currentUserId = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user")).id
+    ? JSON.parse(localStorage.getItem("user"))?.id
     : null;
 
   // Component ke andar

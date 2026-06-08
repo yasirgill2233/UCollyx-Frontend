@@ -62,8 +62,8 @@ const IDEBody = () => {
   const monaco = useMonaco();
 
   const slug = localStorage.getItem("slug");
-  const user_role = JSON.parse(localStorage.getItem("user")).role;
-  const user_id = JSON.parse(localStorage.getItem("user")).id;
+  const user_role = JSON.parse(localStorage.getItem("user"))?.role;
+  const user_id = JSON.parse(localStorage.getItem("user"))?.id;
 
   const [showExplorer, setShowExplorer] = useState(true);
   const [rightPanel, setRightPanel] = useState("AI");

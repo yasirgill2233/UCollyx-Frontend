@@ -11,7 +11,7 @@ import API from "../../../../api/axios";
 const ProjectsPage = () => {
   const navigate = useNavigate();
 
-  const user_role = JSON.parse(localStorage.getItem("user")).role;
+  const user_role = JSON.parse(localStorage.getItem("user"))?.role;
   
   // 1. Full Nested State (Aap isay mazeed folders se bhar sakte hain)
   const [fileSystem, setFileSystem] = useState([

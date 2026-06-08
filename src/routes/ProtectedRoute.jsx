@@ -8,14 +8,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log(location, allowedRoles)
   
   const token = localStorage.getItem("token");
-  // const user = JSON.parse(localStorage.getItem("user")); // User object jisme role aur workspaceCount ho
 
   if (!token || !user) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />; // Ya login par bhej dein
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return children ? children : <Outlet />;

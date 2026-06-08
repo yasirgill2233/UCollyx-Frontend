@@ -591,7 +591,7 @@ export default function WorkspaceSetup() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user?.email) setOwnerEmail(user.email);
+    if (user?.email) setOwnerEmail(user?.email);
   }, []);
 
   const handleNameChange = (e) => {
@@ -650,7 +650,7 @@ export default function WorkspaceSetup() {
     inviteMutation.mutate({
       workspaceSlug: slug,
       emails: validEmails,
-      inviterName: user.full_name,
+      inviterName: user?.full_name,
     }, {
       onSuccess: () => {
         triggerToast("Invitations sent successfully!", "success");
