@@ -648,7 +648,7 @@ export default function Login() {
             <div className="absolute inset-0 bg-gradient-to-tr from-[#00f2fe]/30 to-[#3b59ff]/10 rounded-full blur-3xl opacity-70" />
             
             <img
-              src="../../../public/image.png"
+              src="/image.png"
               alt="Project Progress"
               className="w-[340px] relative z-10 drop-shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
             />
