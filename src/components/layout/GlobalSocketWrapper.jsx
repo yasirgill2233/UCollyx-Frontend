@@ -133,7 +133,7 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
                   Number(currentActiveNumericId)))));
 
       if (!isSenderMe && !isCurrentChatOpen) {
-        const senderName = newIncomingMessage.Sender.full_name || "Team Member";
+        const senderName = newIncomingMessage.Sender?.full_name || "Team Member";
         let messagePreview = "";
 
         const hasContent = Boolean(newIncomingMessage.content?.trim());

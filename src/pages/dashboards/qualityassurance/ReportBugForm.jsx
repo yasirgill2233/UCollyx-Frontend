@@ -270,7 +270,7 @@ const ReportBugForm = () => {
                       <div className="w-5 h-5 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white text-[9px] font-black shrink-0">
                         {selectedAssignee?.avatar_url ? (
                           <img src={import.meta.env.VITE_SERVER_URL + selectedAssignee?.avatar_url} alt="Avatar" crossOrigin="anonymous" className="w-full h-full object-cover" />
-                        ) : selectedAssignee.full_name?.[0] || "U"}
+                        ) : selectedAssignee?.full_name?.[0] || "U"}
                       </div>
                       <span className="truncate">{selectedAssignee?.full_name}</span>
                     </>
@@ -297,9 +297,9 @@ const ReportBugForm = () => {
                         <div className="w-5 h-5 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white text-[9px] font-black shrink-0 border border-slate-100">
                           {u?.avatar_url ? (
                             <img src={import.meta.env.VITE_SERVER_URL + u?.avatar_url} alt="Avatar" crossOrigin="anonymous" className="w-full h-full object-cover" />
-                          ) : u.full_name?.[0] || "U"}
+                          ) : u?.full_name?.[0] || "U"}
                         </div>
-                        <span className="text-xs font-bold text-slate-700 truncate">{u.full_name}</span>
+                        <span className="text-xs font-bold text-slate-700 truncate">{u?.full_name}</span>
                       </button>
                     ))
                   ) : (

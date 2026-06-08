@@ -378,8 +378,8 @@ const TaskModal = ({
                                 crossOrigin="anonymous"
                                 className="w-full h-full object-cover"
                               />
-                            ) : user.full_name ? (
-                              user.full_name[0]
+                            ) : user?.full_name ? (
+                              user?.full_name[0]
                             ) : (
                               "U"
                             )}
@@ -451,7 +451,7 @@ const TaskModal = ({
                                             className="w-full h-full object-cover"
                                           />
                                         ) : user?.full_name ? (
-                                          user.full_name[0]
+                                          user?.full_name[0]
                                         ) : (
                                           "U"
                                         )}
@@ -749,8 +749,8 @@ const TaskModal = ({
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"
                             />
-                          ) : comment.User.full_name ? (
-                            comment.User.full_name[0]
+                          ) : comment.User?.full_name ? (
+                            comment.User?.full_name[0]
                           ) : (
                             "U"
                           )}

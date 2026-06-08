@@ -883,8 +883,8 @@ const AdminProjectsView = () => {
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover"
                   />
-                ) : user.full_name ? (
-                  user.full_name[0].toUpperCase()
+                ) : user?.full_name ? (
+                  user?.full_name[0].toUpperCase()
                 ) : (
                   "U"
                 )}

@@ -875,13 +875,13 @@ const slugify = (text) => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          member.full_name[0].toUpperCase()
+                          member?.full_name[0].toUpperCase()
                         )}
                       </div>
                       <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                     </div>
                     <span className="font-semibold truncate">
-                      {member.full_name}
+                      {member?.full_name}
                     </span>
                   </div>
                 );
@@ -956,7 +956,7 @@ const slugify = (text) => {
                   onClick={() => setIsMembersOpen(true)}
                 >
                   {channelMembers
-                    ?.filter((member) => member.User.status === "active")
+                    ?.filter((member) => member.User?.status === "active")
                     .slice(0, 4)
                     .map((i) => (
                       <div
@@ -968,21 +968,21 @@ const slugify = (text) => {
                             src={
                               import.meta.env.VITE_SERVER_URL + i.User?.avatar_url
                             }
-                            alt={i.User.full_name}
+                            alt={i.User?.full_name}
                             crossOrigin="anonymous"
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span>{i.full_name?.charAt(0) || "U"}</span>
+                          <span>{i?.full_name?.charAt(0) || "U"}</span>
                         )}
                       </div>
                     ))}
 
-                  {channelMembers?.filter((m) => m.User.status === "active")
+                  {channelMembers?.filter((m) => m.User?.status === "active")
                     .length > 4 && (
                     <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
                       +
-                      {channelMembers.filter((m) => m.User.status === "active")
+                      {channelMembers.filter((m) => m.User?.status === "active")
                         .length - 4}
                     </div>
                   )}
@@ -1088,7 +1088,7 @@ const slugify = (text) => {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              msg.user[0].toUpperCase()
+                              msg?.user[0].toUpperCase()
                             )}
                           </div>
 
@@ -1406,8 +1406,8 @@ const slugify = (text) => {
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"
                             />
-                          ) : user?.User.full_name ? (
-                            user?.User.full_name[0]
+                          ) : user?.User?.full_name ? (
+                            user?.User?.full_name[0]
                           ) : (
                             "U"
                           )}

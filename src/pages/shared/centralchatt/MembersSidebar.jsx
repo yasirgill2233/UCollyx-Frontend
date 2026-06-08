@@ -53,19 +53,19 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User.full_name[0].toUpperCase()}</div>
+                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User?.full_name[0].toUpperCase()}</div>
                     )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-slate-800">{member.User.full_name}</span>
+                      <span className="text-sm font-bold text-slate-800">{member?.User?.full_name}</span>
                       {member.isMe && (
                         <span className="text-[8px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-md font-black uppercase">you</span>
                       )}
                     </div>
-                    <p className="text-[10px] text-gray-400 font-medium">{member.role_in_channel || 'Member'}</p>
+                    <p className="text-[10px] text-gray-400 font-medium">{member?.role_in_channel || 'Member'}</p>
                   </div>
                 </div>
               ))}
@@ -91,14 +91,14 @@ const MembersSidebar = ({ isOpen, onClose, channelName, members = [], onAddMembe
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
-                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User.full_name[0].toUpperCase()}</div>
+                      <div className='w-full h-full bg-black rounded-2xl flex justify-center items-center'>{member?.User?.full_name[0].toUpperCase()}</div>
                     )}
                     </div>
                     <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-gray-300 rounded-full border-2 border-white" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-800">{member.User.full_name}</h4>
-                    <p className="text-[10px] text-gray-400 font-medium">{member.role_in_channel || 'Member'}</p>
+                    <h4 className="text-sm font-bold text-slate-800">{member?.User?.full_name}</h4>
+                    <p className="text-[10px] text-gray-400 font-medium">{member?.role_in_channel || 'Member'}</p>
                   </div>
                 </div>
               ))}

@@ -63,7 +63,7 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
                           <img
                             src={
                               import.meta.env.VITE_SERVER_URL +
-                              member.User?.avatar_url
+                              member?.User?.avatar_url
                             }
                             alt="Avatar"
                             crossOrigin="anonymous"
@@ -71,7 +71,7 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
                           />
                         ) : (
                           <div className="text-black w-10 h-10 rounded-xl bg-gray-200 flex items-center justify-center">
-                            {member.User.full_name[0].toUpperCase()}
+                            {member?.User?.full_name[0].toUpperCase()}
                           </div>
                         )}
                       </div>
@@ -82,7 +82,7 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
 
                     <div>
                       <h4 className="text-[13px] font-bold text-slate-800">
-                        {member.User.full_name}
+                        {member?.User?.full_name}
                       </h4>
                       <p className="text-[10px] text-gray-400 font-medium">
                         {member.role} •{" "}

@@ -77,8 +77,8 @@ const Header = () => {
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover"
                   />
-                ) : currentUser.full_name ? (
-                  currentUser.full_name[0]
+                ) : currentUser?.full_name ? (
+                  currentUser?.full_name[0]
                 ) : (
                   "U"
                 )}
@@ -99,10 +99,10 @@ const Header = () => {
                 <div className="absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-2 animate-in fade-in zoom-in duration-150">
                   <div className="px-4 py-3 border-b border-gray-50">
                     <p className="text-sm font-bold text-gray-800 truncate">
-                      {currentUser.full_name}
+                      {currentUser?.full_name}
                     </p>
                     <p className="text-[11px] text-gray-400 font-medium truncate">
-                      {currentUser.email}
+                      {currentUser?.email}
                     </p>
                   </div>
 
