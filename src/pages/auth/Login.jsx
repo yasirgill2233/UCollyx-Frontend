@@ -501,10 +501,9 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (!email || !password) return;
-
+    
     loginMutation.mutate({ email, password }, {
       onSuccess: (data) => {
-        alert("LOGIN RESPONSE:", data);
         localStorage.clear(); // Clear localStorage to prevent stale data
         queryClient.clear();
         setUser(data.user);
