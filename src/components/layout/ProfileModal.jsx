@@ -97,7 +97,7 @@ const ProfileModal = ({ isOpen, onClose, user, onUpdate }) => {
                   src={
                     avatarPreview
                       ? avatarPreview
-                      : import.meta.env.VITE_API_URL + currentUser.avatar_url
+                      : import.meta.env.VITE_SERVER_URL + currentUser.avatar_url
                   }
                   alt="Profile Preview"
                   crossOrigin="anonymous"

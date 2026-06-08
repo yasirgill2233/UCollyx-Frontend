@@ -604,7 +604,7 @@ const IssuesDashboard = () => {
                           {issue.reporter.avatar_url ? (
                             <img
                               src={
-                                import.meta.env.VITE_API_URL +
+                                import.meta.env.VITE_SERVER_URL +
                                 issue.reporter.avatar_url
                               }
                               alt="Avatar"

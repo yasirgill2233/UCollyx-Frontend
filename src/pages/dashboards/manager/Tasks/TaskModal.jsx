@@ -372,7 +372,7 @@ const TaskModal = ({
                             {user.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_API_URL + user.avatar_url
+                                  import.meta.env.VITE_SERVER_URL + user.avatar_url
                                 }
                                 alt="Avatar"
                                 crossOrigin="anonymous"
@@ -443,7 +443,7 @@ const TaskModal = ({
                                         {user?.avatar_url ? (
                                           <img
                                             src={
-                                              import.meta.env.VITE_API_URL +
+                                              import.meta.env.VITE_SERVER_URL +
                                               user.avatar_url
                                             }
                                             alt="Avatar"
@@ -636,7 +636,7 @@ const TaskModal = ({
                         {sub?.Assignee?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_API_URL +
+                              import.meta.env.VITE_SERVER_URL +
                               sub?.Assignee?.avatar_url
                             }
                             alt="Avatar"
@@ -742,7 +742,7 @@ const TaskModal = ({
                           {comment.User.avatar_url ? (
                             <img
                               src={
-                                import.meta.env.VITE_API_URL +
+                                import.meta.env.VITE_SERVER_URL +
                                 comment.User.avatar_url
                               }
                               alt="Avatar"

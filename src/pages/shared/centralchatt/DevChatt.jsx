@@ -868,7 +868,7 @@ const slugify = (text) => {
                         {member.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_API_URL + member.avatar_url
+                              import.meta.env.VITE_SERVER_URL + member.avatar_url
                             }
                             alt="Avatar"
                             crossOrigin="anonymous"
@@ -966,7 +966,7 @@ const slugify = (text) => {
                         {i.User.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_API_URL + i.User.avatar_url
+                              import.meta.env.VITE_SERVER_URL + i.User.avatar_url
                             }
                             alt={i.User.full_name}
                             crossOrigin="anonymous"
@@ -1081,7 +1081,7 @@ const slugify = (text) => {
                             {msg.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_API_URL + msg.avatar_url
+                                  import.meta.env.VITE_SERVER_URL + msg.avatar_url
                                 }
                                 alt="Avatar"
                                 crossOrigin="anonymous"
@@ -1243,7 +1243,7 @@ const slugify = (text) => {
                                     msg.attachments.length > 0 && (
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {msg.attachments.map((file, idx) => {
-                                          const fileUrl = `${import.meta.env.VITE_API_URL}/${file.path.replace(/\\/g, "/")}`;
+                                          const fileUrl = `${import.meta.env.VITE_SERVER_URL}/${file.path.replace(/\\/g, "/")}`;
                                           const isImage =
                                             file.mimetype.startsWith("image/");
 
@@ -1330,7 +1330,7 @@ const slugify = (text) => {
                       {typingUser.avatarUrl ? (
                         <img
                           src={
-                            import.meta.env.VITE_API_URL + typingUser.avatarUrl
+                            import.meta.env.VITE_SERVER_URL + typingUser.avatarUrl
                           }
                           alt="Avatar"
                           crossOrigin="anonymous"
@@ -1399,7 +1399,7 @@ const slugify = (text) => {
                           {user?.User.avatar_url ? (
                             <img
                               src={
-                                import.meta.env.VITE_API_URL +
+                                import.meta.env.VITE_SERVER_URL +
                                 user?.User.avatar_url
                               }
                               alt="Avatar"

@@ -293,7 +293,7 @@ const ProjectTasksView = () => {
                                   {user.avatar_url ? (
                                     <img
                                       src={
-                                        import.meta.env.VITE_API_URL +
+                                        import.meta.env.VITE_SERVER_URL +
                                         user.avatar_url
                                       }
                                       alt="Avatar"
@@ -380,7 +380,7 @@ const ProjectTasksView = () => {
                                   {user.avatar_url ? (
                                     <img
                                       src={
-                                        import.meta.env.VITE_API_URL +
+                                        import.meta.env.VITE_SERVER_URL +
                                         user.avatar_url
                                       }
                                       alt="Avatar"
@@ -454,7 +454,7 @@ const ProjectTasksView = () => {
                                 {user.avatar_url ? (
                                   <img
                                     src={
-                                      import.meta.env.VITE_API_URL +
+                                      import.meta.env.VITE_SERVER_URL +
                                       user.avatar_url
                                     }
                                     alt="Avatar"

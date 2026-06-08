@@ -157,7 +157,7 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
           : "Direct Message";
 
         const avatarUrl = newIncomingMessage.Sender.avatar_url
-          ? `${import.meta.env.VITE_API_URL}${newIncomingMessage.Sender.avatar_url}`
+          ? `${import.meta.env.VITE_SERVER_URL}${newIncomingMessage.Sender.avatar_url}`
           : null;
 
         toast(
