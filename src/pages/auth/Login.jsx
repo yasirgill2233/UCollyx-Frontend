@@ -455,22 +455,22 @@ export default function Login() {
   };
 
   const handlePostLoginRedirect = async (user) => {
-    if (user.role === "super_admin") {
+    if (user?.role === "super_admin") {
       setUser(user);
       navigate("/super-admin/dashboard");
       return;
     }
 
     try {
-      if (user.requestStatus === "pending") return navigate("/request-pending");
-      if (user.requestStatus === "rejected") return navigate("/request-rejected");
+      if (user?.requestStatus === "pending") return navigate("/request-pending");
+      if (user?.requestStatus === "rejected") return navigate("/request-rejected");
 
       const res = await authService.getMyWorkspaces();
       const workspaces = res.workspaces || [];
       const count = res.count || 0;
 
       if (count > 0 && workspaces.length > 0) {
-        const userRole = workspaces[0].role;
+        const userRole = workspaces[0]?.role;
         const updatedUser = { ...user, role: userRole };
         
         playWorkspaceSound();
@@ -506,8 +506,8 @@ export default function Login() {
       onSuccess: (data) => {
         localStorage.clear(); // Clear localStorage to prevent stale data
         queryClient.clear();
-        setUser(data.user);
-        setToken(data.token);
+        setUser(data?.user);
+        setToken(data?.token);
         handlePostLoginRedirect(data.user);
       },
       onError: (err) => {
