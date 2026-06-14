@@ -215,7 +215,7 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
       queryClient.invalidateQueries(["conversations"]);
       queryClient.invalidateQueries(["channels"]);
 
-                const audio = new Audio('../../../public/sounds/short_bongo.mp3');
+                const audio = new Audio('/sounds/short_bongo.mp3');
   audio.volume = 0.5;
   audio.play().catch((e) => console.log("Sound blocked by browser policy"));
     };
