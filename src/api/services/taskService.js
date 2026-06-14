@@ -18,8 +18,6 @@ export const taskService = {
 
   updateTaskPosition: async (taskId, data, socket, projectId) => {
     const res = await API.patch(`/tasks/${taskId}/position`, data);
-
-    console.log("#####################################################################################################",data)
     
     if (socket) {
       socket.emit("board:task_moved", {
@@ -31,14 +29,9 @@ export const taskService = {
     return res.data;
   },
 
-  // createTask: async (taskData) => {
-  //   return await API.post(`/tasks/create`, taskData);
-  // },
-
   createTask: async (taskData, socket) => {
     const res = await API.post(`/tasks/create`, taskData);
     
-    // 🚀 SOCKET EMIT: Naya task create hone par realtime push
     if (socket && res.data) {
       socket.emit("board:task_created", {
         project_id: taskData.project_id,
@@ -48,15 +41,9 @@ export const taskService = {
     return res.data;
   },
 
-  // updateTask: async (taskId, updatedFields) => {
-  //   const res = await API.put(`/tasks/${taskId}`, updatedFields);
-  //   return res.data;
-  // },
-
   updateTask: async (taskId, updatedFields, socket) => {
     const res = await API.put(`/tasks/${taskId}`, updatedFields);
     
-    // 🚀 SOCKET EMIT: Task details (title, description) update updates
     if (socket) {
       socket.emit("board:task_updated", {
         project_id: updatedFields.project_id,
@@ -72,20 +59,11 @@ export const taskService = {
     return res.data;
   },
 
-  // postComment: async (taskId, commentText) => {
-  //   const res = await API.post(`/tasks/${taskId}/comments`, {
-  //     comment_text: commentText,
-  //   });
-  //   return res.data;
-  // },
-
-  // 🔄 UPGRADED: Comments Real-Time Integration
   postComment: async (taskId, commentText, socket, projectId) => {
     const res = await API.post(`/tasks/${taskId}/comments`, {
       comment_text: commentText,
     });
     
-    // 🚀 SOCKET EMIT: Jab koi comment kare to live push ho
     if (socket && res.data) {
       socket.emit("task:new_comment", {
         project_id: projectId,
@@ -138,15 +116,9 @@ export const taskService = {
     return response.data; 
   },
 
-  // sendTaskMessage: async (taskId, text) => {
-  //   const response = await API.post(`/tasks/${taskId}/messages`, { text });
-  //   return response.data;
-  // },
-
   sendTaskMessage: async (taskId, text, socket, roomName) => {
     const response = await API.post(`/tasks/${taskId}/messages`, { text });
     
-    // 🚀 SOCKET EMIT: Task Chat Message Broadcast
     if (socket && response.data) {
       socket.emit("chat:send_message", {
         roomName,

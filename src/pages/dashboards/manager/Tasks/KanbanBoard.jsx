@@ -193,48 +193,6 @@ const handleLinkEpic = (taskId, epicId) => {
 const handleRemoveEpic = (taskId) => {
   updateEpicMutation.mutate({ taskId, epicId: null });
 };
-
-
-// useEffect(() => {
-//   if (!socket || !projectId) return;
-
-//   // 1. Project Room join karein taake is project ke live events milein
-//   socket.emit("project:join_room", { project_id: projectId });
-
-//   // 2. LISTEN: Jab koi dusra user task move kare
-//   socket.on("board:task_moved_received", (data) => {
-
-//     // 🔔 GLOBAL TOASTER ALIGNMENT
-//     triggerToast(`Task #${data.task_id} status updated to "${data.status.toUpperCase()}"`, 'success');
-
-//     queryClient.invalidateQueries(["board", projectId]);
-//   });
-
-//   // 3. LISTEN: Jab naya task create ho
-//   socket.on("board:task_created_received", (data) => {
-
-//     triggerToast(`New Task Created: "${data.task?.title || 'Task'}"`, 'success');
-
-//     queryClient.invalidateQueries(["board", projectId]);
-//   });
-
-//   // 4. LISTEN: Jab task update ho (Title, description, etc.)
-//   socket.on("board:task_updated_received", () => {
-
-//     triggerToast(`Task updates synchronized in this workspace`, 'success');
-    
-//     queryClient.invalidateQueries(["board", projectId]);
-//     queryClient.invalidateQueries(["projectEpics", projectId]);
-//   });
-
-//   // Clean up listeners on unmount
-//   return () => {
-//     socket.off("board:task_moved_received");
-//     socket.off("board:task_created_received");
-//     socket.off("board:task_updated_received");
-//   };
-// }, [ projectId, queryClient]);
-
   if (isLoading) return <div>Loading Board...</div>;
 
   return (

@@ -6,32 +6,6 @@ import { useHandleRequestMutation } from '../../../hooks/useWorkspace';
 import { triggerToast } from '../../../utils/toastHelper';
 
 const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) => {
-  
-  // // Modal ke baahar click karne se band ho jaye
-  // useEffect(() => {
-  //   const handleEsc = (event) => {
-  //     if (event.keyCode === 27) onClose();
-  //   };
-  //   window.addEventListener('keydown', handleEsc);
-  //   return () => window.removeEventListener('keydown', handleEsc);
-  // }, [onClose]);
-
-  // if (!isOpen) return null;
-
-  // const handleAction = async (requestId, action, role, fullName, email) => {
-  //   // console.log("role is:",role)
-  //   try {
-  //     const res = await API.post('/workspace/handle-join-request', 
-  //       { requestId, action, role, fullName, email },
-  //     );
-
-  //     if (res.data.success) {
-  //       onActionSuccess(`User ${action} successfully!`);
-  //     }
-  //   } catch (err) {
-  //     console.error("Action error:", err);
-  //   }
-  // };
 
   const requestMutation = useHandleRequestMutation();
 

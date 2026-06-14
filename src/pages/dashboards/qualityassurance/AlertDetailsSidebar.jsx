@@ -6,8 +6,6 @@ import { useAddComment } from '../../../hooks/useIssues';
 const AlertDetailsSidebar = ({ alert, onClose }) => {
   const [activeTab, setActiveTab] = useState('Details');
 
-  console.log("=================---------------=======================",alert);
-
   if (!alert) return null;
 
   // Severity based colors for the sidebar accent

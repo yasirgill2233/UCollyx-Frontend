@@ -584,8 +584,8 @@ const slugify = (text) => {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatData, activeChat]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }, [chatData, activeChat, messages.length]);
 
   useEffect(() => {
     if ((channels.length > 0 || dmUsers.length > 0) && !activeChat?.id) {
@@ -714,7 +714,7 @@ const slugify = (text) => {
 
         // Smooth auto scroll view trigger to bottom boundary layout
         setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
         }, 80);
       }
 
@@ -1044,7 +1044,7 @@ const slugify = (text) => {
         )}
 
         {/* Main Chat Message Stream Scroller Node */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 bg-[#f5f5f593]">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 bg-[#eeeeee8a]">
           {isChatLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center min-h-[300px] animate-pulse">
               <div className="w-10 h-10 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin" />
@@ -1377,7 +1377,7 @@ const slugify = (text) => {
         </div>
 
         {/* Native Mobile App Style Input Area */}
-        <div className="px-2 pb-3 pt-1 md:px-8 md:pb-8 bg-[#f5f5f593] flex-shrink-0 transition-all">
+        <div className="px-2 pb-3 pt-1 md:px-8 md:pb-8 bg-[#eeeeee8a] flex-shrink-0 transition-all">
           <div className="relative bg-white border border-slate-200/80 rounded-2xl md:rounded-[24px] shadow-md md:shadow-xl md:shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
             {showMentions &&
               activeChat?.type === "channel" &&

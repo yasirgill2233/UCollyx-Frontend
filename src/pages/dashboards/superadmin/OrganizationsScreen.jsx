@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Search,
   X,
@@ -9,7 +9,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router";
+import axios from "axios"; // Make sure to npm i axios
 import { triggerToast } from "../../../utils/toastHelper";
+import API from "../../../api/axios";
 
 const OrganizationsScreen = () => {
   // --- States ---
@@ -20,109 +22,66 @@ const OrganizationsScreen = () => {
   const [timeFilter, setTimeFilter] = useState("Last 30 Days");
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [modals, setModals] = useState({ suspend: false, reactivate: false });
+  
+  // Real API integration state
+  const [orgs, setOrgs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
-  // --- Mock Data ---
-  const [orgs, setOrgs] = useState([
-    {
-      id: 1,
-      name: "Acme Corporation",
-      status: "Active",
-      users: 142,
-      projects: 28,
-      usage: 68,
-      date: "Jan 15, 2026",
-      email: "yasir@gmail.com",
-      admin: "Yasir Saleem",
-    },
-    {
-      id: 2,
-      name: "Global Tech",
-      status: "Suspended",
-      users: 18,
-      projects: 12,
-      usage: 94,
-      date: "Feb 02, 2026",
-      email: "yasir@gmail.com",
-      admin: "Yasir Saleem",
-    },
-    {
-      id: 3,
-      name: "Nexus Systems",
-      status: "Suspended",
-      users: 34,
-      projects: 5,
-      usage: 45,
-      date: "Jan 20, 2026",
-      email: "shobal@gmail.com",
-      admin: "Shobal Saleem",
-    },
-    {
-      id: 4,
-      name: "Delta Soft",
-      status: "Active",
-      users: 443,
-      projects: 82,
-      usage: 92,
-      date: "Mar 01, 2026",
-      email: "ahsan@gmail.com",
-      admin: "Ahsan Saleem",
-    },
-    {
-      id: 5,
-      name: "Starlight Inc",
-      status: "Trial",
-      users: 87,
-      projects: 3,
-      usage: 10,
-      date: "Mar 10, 2026",
-      email: "ahmed@gmail.com",
-      admin: "Ahmed Amir",
-    },
-    {
-      id: 6,
-      name: "Z-Alpha",
-      status: "Pending",
-      users: 456,
-      projects: 0,
-      usage: 0,
-      date: "Mar 18, 2026",
-      email: "faisal@gmail.com",
-      admin: "Faisal Saleem",
-    },
-  ]);
+  // --- Fetch Data from Backend API ---
+  const fetchOrganizations = async () => {
+    try {
+      setLoading(true);
+      const response = await API.get(`/organizations`, {
+        params: { search: searchTerm, status: statusFilter }
+      });
 
-  // Modal Submit Function
-  const handleAddOrg = (newOrg) => {
-    const formattedOrg = {
-      ...newOrg,
-      id: `ORG-${Math.floor(Math.random() * 900) + 100}`, // Auto-generate ID
-      users: 0,
-      projects: 0,
-      usage: 0,
-      date: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-    };
-    setOrgs([formattedOrg, ...orgs]);
-    setIsModalOpen(false);
+      console.log("######################",response)
+
+      if (response.data.success) {
+        setOrgs(response.data.data);
+      }
+    } catch (error) {
+      triggerToast(error.response?.data?.message || "Error loading dashboards", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // --- Search & Filter Logic (useMemo for performance) ---
-  const filteredOrgs = useMemo(() => {
-    return orgs.filter((org) => {
-      const matchesSearch =
-        org.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        org.id.toString().includes(searchTerm);
-      const matchesStatus =
-        statusFilter === "All" || org.status === statusFilter;
+  // Retrigger upon search or filters updating
+  useEffect(() => {
+    fetchOrganizations();
+  }, [searchTerm, statusFilter]);
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchTerm, statusFilter, orgs]);
+  // Modal Submit Function
+  const handleAddOrg = async (newOrg) => {
+    try {
+      const response = await API.post(`/organizations`, newOrg);
+      if (response.data.success) {
+        triggerToast("Organization Created Successfully!", "success");
+        setIsModalOpen(false);
+        fetchOrganizations(); // Refresh Table
+      }
+    } catch (error) {
+      triggerToast(error.response?.data?.message || "Creation failed", "error");
+    }
+  };
+
+  // Status Change API Caller (Active / Suspended)
+  const handleStatusChange = async (db_id, newStatus) => {
+    try {
+      const response = await API.patch(`/organizations/${db_id}/status`, { status: newStatus });
+      if (response.data.success) {
+        triggerToast(`Status modified to ${newStatus}`, "success");
+        setModals({ suspend: false, reactivate: false });
+        setIsSidebarOpen(false);
+        fetchOrganizations(); // Refresh Table UI
+      }
+    } catch (error) {
+      triggerToast(error.response?.data?.message || "Status change failed", "error");
+    }
+  };
 
   // --- Helper Functions ---
   const getStatusStyle = (status) => {
@@ -147,32 +106,19 @@ const OrganizationsScreen = () => {
     return "bg-blue-600";
   };
 
-  // --- Actions ---
   const handleRowClick = (org) => {
     setSelectedOrg(org);
     setIsSidebarOpen(true);
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setOrgs((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o)),
-    );
-    setModals({ suspend: false, reactivate: false });
-    setIsSidebarOpen(false);
-  };
-
   return (
     <div className="flex min-h-screen bg-white font-sans text-slate-900 w-full">
-      <div className="p-10 mx-auto">
+      <div className="p-10 mx-auto w-full max-w-7xl">
         {/* Header Row */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              Organizations
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Manage tenant organizations and monitor compliance
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Organizations</h1>
+            <p className="text-gray-500 text-sm mt-1">Manage tenant organizations and monitor compliance</p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -195,21 +141,6 @@ const OrganizationsScreen = () => {
             />
           </div>
 
-          {/* Time Filter Select */}
-          <div className="relative">
-            <select
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
-              className="appearance-none border border-gray-200 px-4 py-2 pr-10 rounded-lg text-sm text-gray-600 bg-white hover:border-gray-300 focus:outline-none cursor-pointer"
-            >
-              <option>Last 30 Days</option>
-              <option>Last 90 Days</option>
-              <option>All Time</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Status Filter Select */}
           <div className="relative">
             <select
               value={statusFilter}
@@ -231,57 +162,37 @@ const OrganizationsScreen = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  Organization
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                  Total Users
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center">
-                  Projects
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  Resource Usage
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  Created Date
-                </th>
-                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-right">
-                  Action
-                </th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Organization</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center">Total Users</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-center">Projects</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Resource Usage</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Created Date</th>
+                <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredOrgs.length > 0 ? (
-                filteredOrgs.map((org) => (
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="px-6 py-12 text-center text-gray-400 text-sm">Loading data records...</td>
+                </tr>
+              ) : orgs.length > 0 ? (
+                orgs.map((org) => (
                   <tr
-                    key={org.id}
+                    key={org.db_id}
                     onClick={() => handleRowClick(org)}
-                    className="group hover:bg-gray-50/80 transition-colors"
+                    className="group hover:bg-gray-50/80 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-5 text-sm font-semibold text-gray-800">
-                      {org.name}
-                    </td>
+                    <td className="px-6 py-5 text-sm font-semibold text-gray-800">{org.name}</td>
                     <td className="px-6 py-5">
-                      <span className={getStatusStyle(org.status)}>
-                        {org.status}
-                      </span>
+                      <span className={getStatusStyle(org.status)}>{org.status}</span>
                     </td>
-                    <td className="px-6 py-5 text-sm text-gray-600 text-center font-medium">
-                      {org.users}
-                    </td>
-                    <td className="px-6 py-5 text-sm text-gray-600 text-center font-medium">
-                      {org.projects}
-                    </td>
+                    <td className="px-6 py-5 text-sm text-gray-600 text-center font-medium">{org.users}</td>
+                    <td className="px-6 py-5 text-sm text-gray-600 text-center font-medium">{org.projects}</td>
                     <td className="px-6 py-5">
                       <div className="w-36">
                         <div className="flex justify-between items-center mb-1.5">
-                          <span
-                            className={`text-[10px] font-bold ${org.usage > 90 ? "text-red-500" : "text-gray-500"}`}
-                          >
+                          <span className={`text-[10px] font-bold ${org.usage > 90 ? "text-red-500" : "text-gray-500"}`}>
                             {org.usage}% of limit
                           </span>
                         </div>
@@ -293,10 +204,8 @@ const OrganizationsScreen = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-5 text-sm text-gray-500">
-                      {org.date}
-                    </td>
-                    <td className="px-6 py-5 text-right">
+                    <td className="px-6 py-5 text-sm text-gray-500">{org.date}</td>
+                    <td className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => {
                           setSelectedOrg(org);
@@ -316,9 +225,7 @@ const OrganizationsScreen = () => {
                   <td colSpan="7" className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <AlertCircle className="w-10 h-10 mb-2 opacity-20" />
-                      <p className="text-sm font-medium">
-                        No organizations found matching your filters.
-                      </p>
+                      <p className="text-sm font-medium">No organizations found matching filters.</p>
                     </div>
                   </td>
                 </tr>
@@ -328,166 +235,98 @@ const OrganizationsScreen = () => {
         </div>
       </div>
 
-      {/* --- SIDEBAR: Organization Details --- */}
-      <div
-        className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.05)] border-l border-slate-200 z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}
-      >
+      {/* --- SIDEBAR --- */}
+      <div className={`fixed top-0 right-0 h-full w-[420px] bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.05)] border-l border-slate-200 z-50 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}`}>
         {selectedOrg && (
           <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-white sticky top-0 z-10">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 leading-none">
-                  Organization Details
-                </h2>
-                <p className="text-[11px] font-bold text-slate-400 mt-2 tracking-widest">
-                  {selectedOrg.id}
-                </p>
+                <h2 className="text-xl font-bold text-slate-900">Organization Details</h2>
+                <p className="text-[11px] font-bold text-slate-400 mt-2 tracking-widest">{selectedOrg.id}</p>
               </div>
-              <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setIsSidebarOpen(false)} className="p-2 hover:bg-slate-100 rounded-lg text-slate-400"><X className="w-5 h-5" /></button>
             </div>
 
-            {/* Body */}
             <div className="flex-1 overflow-y-auto p-8 space-y-10">
-              {/* Profile Card */}
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-[#E0EBFF] rounded-2xl flex items-center justify-center text-[#2563eb] text-xl font-black shadow-inner">
+                <div className="w-14 h-14 bg-[#E0EBFF] rounded-2xl flex items-center justify-center text-[#2563eb] text-xl font-black">
                   {selectedOrg.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-lg leading-tight">
-                    {selectedOrg.admin}
-                  </h3>
+                  <h3 className="font-bold text-slate-900 text-lg">{selectedOrg.admin}</h3>
                   <p className="text-sm text-slate-500">{selectedOrg.email}</p>
                 </div>
               </div>
 
-              {/* Data Sections */}
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-4">
-                    Organization Profile
-                  </h4>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">Organization Profile</h4>
                   <div className="space-y-4">
-                    <DetailRow
-                      label="Organization Name"
-                      value={selectedOrg.name}
-                    />
+                    <DetailRow label="Organization Name" value={selectedOrg.name} />
                     <DetailRow label="Organization ID" value={selectedOrg.id} />
-                    <DetailRow
-                      label="Status"
-                      value={selectedOrg.status}
-                      isStatus
-                    />
+                    <DetailRow label="Status" value={selectedOrg.status} isStatus />
                     <DetailRow label="Created Date" value={selectedOrg.date} />
-                    <DetailRow label="Last Updated" value="2 hours ago" />
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-4">
-                    Usage Metrics
-                  </h4>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-4">Usage Metrics</h4>
                   <div className="space-y-4">
                     <DetailRow label="Total Users" value={selectedOrg.users} />
-                    <DetailRow
-                      label="Active Projects"
-                      value={selectedOrg.projects}
-                    />
-                    <div className="py-1">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-slate-500 font-medium">
-                          Storage Used
-                        </span>
-                        <span className="text-slate-900 font-bold">
-                          {selectedOrg.usage} GB / 100 GB
-                        </span>
-                      </div>
-                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#2563eb] transition-all duration-1000"
-                          style={{ width: `${selectedOrg.usage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] mb-4">
-                    Compliance Status
-                  </h4>
-                  <div className="space-y-4">
-                    <DetailRow label="Last Audit" value="5 days ago" />
-                    <DetailRow
-                      label="Security Score"
-                      value="96/100"
-                      isSuccess
-                    />
+                    <DetailRow label="Active Projects" value={selectedOrg.projects} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer Buttons */}
             <div className="p-6 border-t border-slate-100 bg-slate-50/30 flex gap-4">
               <button
-                onClick={() =>
-                  navigate(`/super-admin/roles/${selectedOrg.id}`, {
-                    state: {
-                      orgName: selectedOrg.name,
-                      adminEmail: selectedOrg.email,
-                      adminName: selectedOrg.admin,
-                    },
-                  })
-                }
-                className="flex-1 bg-white border border-slate-200 py-3 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95 shadow-sm"
+                onClick={() => navigate(`/super-admin/roles/${selectedOrg.id}`, { state: selectedOrg })}
+                className="flex-1 bg-white border border-slate-200 py-3 rounded-xl text-sm font-bold text-slate-700"
               >
                 Members
               </button>
-              <button
-                onClick={() => setModals({ ...modals, suspend: true })}
-                className="flex-1 bg-white border border-rose-200 py-3 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-all active:scale-95 shadow-sm"
-              >
-                Suspend Organization
-              </button>
+              {selectedOrg.status === "Active" ? (
+                <button
+                  onClick={() => setModals({ ...modals, suspend: true })}
+                  className="flex-1 bg-white border border-rose-200 py-3 rounded-xl text-sm font-bold text-rose-600 hover:bg-rose-50"
+                >
+                  Suspend
+                </button>
+              ) : (
+                <button
+                  onClick={() => setModals({ ...modals, reactivate: true })}
+                  className="flex-1 bg-[#2563eb] py-3 rounded-xl text-sm font-bold text-white hover:bg-blue-700"
+                >
+                  Reactivate
+                </button>
+              )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Modal Overlay */}
-      {isModalOpen && (
-        <CreateOrgModal
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={handleAddOrg}
-        />
-      )}
-
       {/* Modals Rendering */}
-      {modals.suspend && (
-        <SuspendModal
-          org={selectedOrg}
-          onClose={() => setModals({ ...modals, suspend: false })}
-          onConfirm={(id) => handleStatusChange(id, "Suspended")}
-        />
-      )}
-
-      {modals.reactivate && (
-        <ReactivateModal
-          org={selectedOrg}
-          onClose={() => setModals({ ...modals, reactivate: false })}
-          onConfirm={(id) => handleStatusChange(id, "Active")}
-        />
-      )}
+      {isModalOpen && <CreateOrgModal onClose={() => setIsModalOpen(false)} onSubmit={handleAddOrg} />}
+      {modals.suspend && <SuspendModal org={selectedOrg} onClose={() => setModals({ ...modals, suspend: false })} onConfirm={(id) => handleStatusChange(selectedOrg.db_id, "Suspended")} />}
+      {modals.reactivate && <ReactivateModal org={selectedOrg} onClose={() => setModals({ ...modals, reactivate: false })} onConfirm={(id) => handleStatusChange(selectedOrg.db_id, "Active")} />}
     </div>
   );
 };
+
+// Sub Components
+const DetailRow = ({ label, value, isStatus }) => (
+  <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+    <span className="text-sm text-slate-500 font-medium">{label}</span>
+    {isStatus ? (
+      <span className="bg-emerald-50 text-emerald-600 px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase">{value}</span>
+    ) : (
+      <span className="text-sm font-bold text-slate-800">{value}</span>
+    )}
+  </div>
+);
+
+// --- Modals definitions (CreateOrgModal, SuspendModal, ReactivateModal should follow below exactly as you sent them) ---
 
 // --- Modal Component ---
 const CreateOrgModal = ({ onClose, onSubmit }) => {
@@ -501,6 +340,7 @@ const CreateOrgModal = ({ onClose, onSubmit }) => {
   });
 
   const handleSubmit = (e) => {
+    console.log(formData)
     e.preventDefault();
     if (!formData.name || !formData.adminEmail) return triggerToast("Please fill required fields","error")
     onSubmit(formData);
@@ -770,23 +610,5 @@ const ReactivateModal = ({ org, onClose, onConfirm }) => {
     </div>
   );
 };
-
-// 1. Pehle Helper Component define kar rahe hain taaki ReferenceError khatam ho jaye
-const DetailRow = ({ label, value, isStatus, isSuccess }) => (
-  <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-    <span className="text-sm text-slate-500 font-medium">{label}</span>
-    {isStatus ? (
-      <span className="bg-emerald-50 text-emerald-600 px-2.5 py-0.5 rounded-lg text-[10px] font-black border border-emerald-100 uppercase tracking-tight">
-        {value}
-      </span>
-    ) : (
-      <span
-        className={`text-sm font-bold ${isSuccess ? "text-emerald-600" : "text-slate-800"}`}
-      >
-        {value}
-      </span>
-    )}
-  </div>
-);
 
 export default OrganizationsScreen;

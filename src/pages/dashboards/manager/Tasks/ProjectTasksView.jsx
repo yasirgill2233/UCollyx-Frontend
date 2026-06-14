@@ -50,46 +50,6 @@ const ProjectTasksView = () => {
     }
   }, [projects, projectId]);
 
-
-  // useEffect(() => {
-  //   if (!socket || !projectId) return;
-
-  //   // 1. Project Room Join karein
-  //   socket.emit("project:join_room", { project_id: projectId });
-  //   console.log(`📡 Joined project room from Table View: project_room:${projectId}`);
-
-  //   // 2. LISTEN: Jab koi task drag/move ho (Status change)
-  //   socket.on("board:task_moved_received", (data) => {
-  //     console.log("⚡ Real-time Move Received in Table View:", data);
-      
-  //     // Global Notification Alert 🔔
-  //     triggerToast(`Task #${data.task_id} status updated to "${data.status.toUpperCase()}"`, 'success');
-
-  //     // Refetch table data seamlessly
-  //     queryClient.invalidateQueries({ queryKey: ["board", projectId] });
-  //   });
-
-  //   // 3. LISTEN: Jab naya task add ho
-  //   socket.on("board:task_created_received", (data) => {
-  //     triggerToast(`New Task Created: "${data.task?.title || 'Task'}"`, 'success');
-  //     queryClient.invalidateQueries({ queryKey: ["board", projectId] });
-  //   });
-
-  //   // 4. LISTEN: Jab task ka content/priority update ho
-  //   socket.on("board:task_updated_received", (data) => {
-  //     triggerToast(`Task modifications synchronized in this workspace`, 'success');
-  //     queryClient.invalidateQueries({ queryKey: ["board", projectId] });
-  //     queryClient.invalidateQueries({ queryKey: ["projectEpics", projectId] });
-  //   });
-
-  //   // Cleanup listeners on unmount or project switch
-  //   return () => {
-  //     socket.off("board:task_moved_received");
-  //     socket.off("board:task_created_received");
-  //     socket.off("board:task_updated_received");
-  //   };
-  // }, [projectId, socket, queryClient]);
-
   const { data, isLoading } = useQuery({
     queryKey: ["board", projectId],
     queryFn: () => taskService.getBoard(projectId),

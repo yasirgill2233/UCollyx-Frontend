@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, ChevronDown, ArrowLeft, X, Mail, Phone, Building2, Clock, Calendar } from 'lucide-react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom'; // Fixed: react-router-dom is standard
+import API from '../../../api/axios';
 
 
 // --- Member Profile Modal Component ---
@@ -115,6 +116,26 @@ const MembersAndRoles = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const [membersData, setMembersData] = useState()
+
+  console.log("##########################???",membersData)
+
+  useEffect(() => {
+  const fetchWorkspaceMembers = async () => {
+    try {
+      const response = await API.get(`/organizations/${orgId}/members`);
+      if(response.data.success) {
+         // Yahan aap local state set kar sakte hain: setServerMembers(response.data.data);
+         console.log(response.data)
+         setMembersData(response.data.data)
+      }
+    } catch (err) {
+      console.error("Frontend fetching breakdown:", err);
+    }
+  };
+  if(orgId) fetchWorkspaceMembers();
+}, [orgId]);
+
   // Organization data from navigation state
   const orgName = location.state?.orgName || "Organization";
   const adminEmail = location.state?.adminEmail || "admin@company.com";
@@ -127,26 +148,26 @@ const MembersAndRoles = () => {
 
   // --- Dynamic Data ---
   // Table ka pehla row ab wahi Admin hai jo pichli screen se aaya hai
-  const membersData = useMemo(() => [
-    { 
-        id: "mem-001", 
-        name: adminName, 
-        email: adminEmail, 
-        role: "ADMIN", 
-        status: "Active", 
-        time: "Just Now", 
-        date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) + ", " + new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }) 
-    },
-    { id: "mem-121", name: "Zain Ahmed", email: "zain@company.com", role: "MANAGER", status: "In Active", time: "5 hours ago", date: "Feb 03, 11:30" },
-    { id: "mem-122", name: "Hamza Ali", email: "hamza@dev.com", role: "DEVELOPER", status: "Active", time: "1 hour ago", date: "Feb 03, 15:30" },
-    { id: "mem-123", name: "Ayesha Noor", email: "ayesha@firm.com", role: "QA ENGINEER", status: "Active", time: "3 hours ago", date: "Feb 03, 13:30" },
-    { id: "mem-124", name: "Bilal Khan", email: "bilal@service.com", role: "DEVELOPER", status: "Active", time: "10 mins ago", date: "Feb 03, 16:20" },
-    { id: "mem-125", name: "Sarah Khan", email: "sarah.k@gmail.com", role: "DEVELOPER", status: "Active", time: "2 hours ago", date: "Feb 03, 14:30" },
-  ], [adminEmail, adminName]);
+  // const membersData = useMemo(() => [
+  //   { 
+  //       id: "mem-001", 
+  //       name: adminName, 
+  //       email: adminEmail, 
+  //       role: "ADMIN", 
+  //       status: "Active", 
+  //       time: "Just Now", 
+  //       date: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) + ", " + new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }) 
+  //   },
+  //   { id: "mem-121", name: "Zain Ahmed", email: "zain@company.com", role: "MANAGER", status: "In Active", time: "5 hours ago", date: "Feb 03, 11:30" },
+  //   { id: "mem-122", name: "Hamza Ali", email: "hamza@dev.com", role: "DEVELOPER", status: "Active", time: "1 hour ago", date: "Feb 03, 15:30" },
+  //   { id: "mem-123", name: "Ayesha Noor", email: "ayesha@firm.com", role: "QA ENGINEER", status: "Active", time: "3 hours ago", date: "Feb 03, 13:30" },
+  //   { id: "mem-124", name: "Bilal Khan", email: "bilal@service.com", role: "DEVELOPER", status: "Active", time: "10 mins ago", date: "Feb 03, 16:20" },
+  //   { id: "mem-125", name: "Sarah Khan", email: "sarah.k@gmail.com", role: "DEVELOPER", status: "Active", time: "2 hours ago", date: "Feb 03, 14:30" },
+  // ], [adminEmail, adminName]);
 
   // --- Filter Logic ---
   const filteredMembers = useMemo(() => {
-    return membersData.filter(member => {
+    return membersData?.filter(member => {
       const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             member.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRole = roleFilter === 'All' || member.role === roleFilter.toUpperCase();
@@ -156,17 +177,19 @@ const MembersAndRoles = () => {
     });
   }, [searchTerm, roleFilter, statusFilter, membersData]);
 
+  console.log("##########################################",membersData)
+
   // --- Sidebar Stats Calculations ---
   const stats = useMemo(() => {
     return {
-      total: filteredMembers.length,
-      active: filteredMembers.filter(m => m.status === 'Active').length,
-      inactive: filteredMembers.filter(m => m.status === 'In Active').length,
-      suspended: filteredMembers.filter(m => m.status === 'Suspended').length,
-      devs: filteredMembers.filter(m => m.role === 'DEVELOPER').length,
-      qas: filteredMembers.filter(m => m.role === 'QA ENGINEER').length,
-      managers: filteredMembers.filter(m => m.role === 'MANAGER').length,
-      admins: filteredMembers.filter(m => m.role === 'ADMIN').length,
+      total: filteredMembers?.length,
+      active: filteredMembers?.filter(m => m.status === 'Active').length,
+      inactive: filteredMembers?.filter(m => m.status === 'In Active').length,
+      suspended: filteredMembers?.filter(m => m.status === 'Suspended').length,
+      devs: filteredMembers?.filter(m => m.role === 'DEV').length,
+      qas: filteredMembers?.filter(m => m.role === 'QA').length,
+      managers: filteredMembers?.filter(m => m.role === 'MANAGER').length,
+      admins: filteredMembers?.filter(m => m.role === 'ORG_ADMIN').length,
     };
   }, [filteredMembers]);
 
@@ -236,7 +259,7 @@ const MembersAndRoles = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredMembers.map((member) => (
+              {filteredMembers?.map((member) => (
                 <tr
                 onClick={() => setSelectedMember(member)}
                  key={member.id} className="hover:bg-gray-50/30 transition-colors group">

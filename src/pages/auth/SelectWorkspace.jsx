@@ -47,19 +47,8 @@ export default function SelectWorkspace() {
           role: ws.role
         });
 
-        // 2. Axios instance ke default header ko foran update karo taake agli api calls me naya token jaye
-        // axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.newToken}`;
-
         toast.success(`Welcome to ${ws.name}`, { id: "ws-auth" });
 
-    // alert(`${email} " " ${password}`);
-    // loginMutation.mutate({ email, password }, {
-    //     onSuccess: (data) => {
-    //       queryClient.clear();
-    //       setUser({...data.user, workspace_id: ws.id, role: ws.role});
-    //       setToken(data.token);
-    //     },
-    //   });
     console.log("Selected workspace:", user);
     if (ws.role === "dev") {
       navigate(`/dev/dashboard`);
@@ -104,13 +93,7 @@ export default function SelectWorkspace() {
           </button>
         ))}
       </div>
-      {/*             
-            <button 
-                onClick={() => navigate("/workspace-selection")}
-                className="mt-8 text-indigo-600 font-medium hover:underline"
-            >
-                + Create new workspace
-            </button> */}
+
     </div>
   );
 }

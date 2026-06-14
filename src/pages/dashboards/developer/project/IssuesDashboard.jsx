@@ -39,8 +39,6 @@ const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
     );
   };
 
-  console.log("=======================", issue);
-
   return (
     <div className="fixed inset-0 z-[200] w-[100%] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-xl shadow-xl p-6 border w-[90%] md:w-[30%] border-slate-100 animate-in zoom-in duration-200">

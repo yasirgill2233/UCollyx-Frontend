@@ -146,37 +146,6 @@ const ReportBugForm = () => {
     });
   };
 
-  // --- Submit Handler ---
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-    
-  //   // Server expected dynamic architecture bundle payload compilation
-  //   const payload = {
-  //     project_id: selectedProjectId,
-  //     assigned_to: selectedAssignee?.id || null,
-  //     title: formData.title,
-  //     description: `Module: ${formData.module_name}`,
-  //     severity: formData.severity,
-  //     environment: formData.environment,
-  //     steps_to_repro: formData.steps_to_repro.filter(s => s.trim() !== "").join("\n"),
-  //     expected_result: formData.expected_result,
-  //     actual_result: formData.actual_result,
-  //     // Custom system attributes context integration
-  //     metadata: JSON.stringify({
-  //       is_red_card: formData.is_red_card,
-  //       red_card_reason: formData.is_red_card ? formData.red_card_reason : ""
-  //     })
-  //   };
-
-  //   createIssueMutation.mutate(payload, {
-  //     onSuccess: () => {
-  //       // Submit successfully hone par user navigation backup
-  //       // navigate(-1);
-  //       triggerToast("Bug Form Created Succesffully","success")
-  //     }
-  //   });
-  // };
-
   return (
     <div className="flex-1 bg-[#F9FBFF] min-h-screen p-8">
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in-50 duration-500">

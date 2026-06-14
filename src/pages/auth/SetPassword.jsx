@@ -6,40 +6,6 @@ import { triggerToast } from "../../utils/toastHelper";
 import { useUpdatePasswordMutation } from "../../hooks/useAuth";
 
 export default function SetPassword() {
-  // const [password, setPassword] = useState("");
-  // const [confirmPassword, setConfirmPassword] = useState("");
-  // const [showPassword, setShowPassword] = useState(false);
-  // const [isLoading, setIsLoading] = useState(false);
-  // const [error, setError] = useState("");
-
-  // const navigate = useNavigate();
-
-  // const handleSetPassword = async (e) => {
-  //   e.preventDefault();
-  //   setError("");
-
-  //   // Basic Validations
-  //   if (password.length < 8) {
-  //     return setError("Password must be at least 8 characters long.");
-  //   }
-  //   if (password !== confirmPassword) {
-  //     return setError("Passwords do not match!");
-  //   }
-
-  //   setIsLoading(true);
-  //   try {
-  //     // Backend route: /api/auth/update-password
-  //     // Token headers mein axios interceptor ke zariye khud chala jayega
-  //     await API.post("/auth/update-password", { password });
-
-  //     triggerToast("Password set successfully! Let's set up your workspace.","success");
-  //     navigate("/workspace-selection");
-  //   } catch (err) {
-  //     triggerToast(err.response?.data?.message || "Failed to update password.","error");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const navigate = useNavigate();
   const updatePasswordMutation = useUpdatePasswordMutation();

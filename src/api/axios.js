@@ -5,15 +5,13 @@ const API = axios.create({
 });
 
 API.interceptors.request.use((req) => {
-    const tokenData = localStorage.getItem('token'); // Get as string
+    const tokenData = localStorage.getItem('token');
     
     if (tokenData) {
         try {
-            // Naye hook ki wajah se data "JSON string" hai, isay parse krna lazmi hai
             const token = JSON.parse(tokenData); 
             req.headers.Authorization = `Bearer ${token}`;
         } catch (error) {
-            // Agar kabhi parsing fail ho jaye (purana plain string data)
             req.headers.Authorization = `Bearer ${tokenData}`;
         }
     }

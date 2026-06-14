@@ -160,6 +160,10 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
           ? `${import.meta.env.VITE_SERVER_URL}${newIncomingMessage.Sender?.avatar_url}`
           : null;
 
+          const isMobile = window.innerWidth < 768;
+
+        // Toast sirf tabhi dikhao agar mobile view NAHO
+      if (!isMobile) {
         toast(
           (t) => (
             <div className="flex items-start gap-3.5 w-full max-w-sm">
@@ -206,9 +210,14 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
           { duration: 5000, position: "bottom-right" },
         );
       }
+      }
 
       queryClient.invalidateQueries(["conversations"]);
       queryClient.invalidateQueries(["channels"]);
+
+                const audio = new Audio('../../../public/sounds/short_bongo.mp3');
+  audio.volume = 0.5;
+  audio.play().catch((e) => console.log("Sound blocked by browser policy"));
     };
 
     socket.on("chat:receive_message", handleGlobalIncomingMessage);
@@ -223,92 +232,92 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
 // ==========================================
   // 🔔 PIPELINE 2: CENTRALIZED NOTIFICATIONS ENGINE (Mentions, Joins, DMs)
   // ==========================================
-  useEffect(() => {
-    if (!socket) return;
+  // useEffect(() => {
+  //   if (!socket) return;
 
-    // Tarteeb step 1: Login hotay hi identity online map karein backend par
-    if (currentUserId) {
-      socket.emit("user_online", currentUserId);
-    }
+  //   // Tarteeb step 1: Login hotay hi identity online map karein backend par
+  //   if (currentUserId) {
+  //     socket.emit("user_online", currentUserId);
+  //   }
 
-    // Backend notifications ka unique global router pipeline handle event listener
-    socket.on("notification:received", (notification) => {
-      console.log("🔔 Real-Time Notification Received on Frontend Pipeline:", notification);
+  //   // Backend notifications ka unique global router pipeline handle event listener
+  //   socket.on("notification:received", (notification) => {
+  //     console.log("🔔 Real-Time Notification Received on Frontend Pipeline:", notification);
 
-      // Agar user pehle se wahi message chat layout khol kar betha hai, toh notification pop up na karein
-      const currentActiveNumericId = activeChat?.id?.toString().split("-").pop();
-      const isCurrentChatOpen = activeChat?.id && activeChat.type === "dm"; 
+  //     // Agar user pehle se wahi message chat layout khol kar betha hai, toh notification pop up na karein
+  //     const currentActiveNumericId = activeChat?.id?.toString().split("-").pop();
+  //     const isCurrentChatOpen = activeChat?.id && activeChat.type === "dm"; 
       
-      if (notification.type === 'dm' && isCurrentChatOpen) {
-         queryClient.invalidateQueries(["notifications"]);
-         return;
-      }
+  //     if (notification.type === 'dm' && isCurrentChatOpen) {
+  //        queryClient.invalidateQueries(["notifications"]);
+  //        return;
+  //     }
 
-      // 🎨 Dynamic UI Config Templates based on DB Model Notification Types
-      let toastIcon = "🔔";
-      let titleColor = "text-yellow-400";
-      let typeLabel = "Notification";
+  //     // 🎨 Dynamic UI Config Templates based on DB Model Notification Types
+  //     let toastIcon = "🔔";
+  //     let titleColor = "text-yellow-400";
+  //     let typeLabel = "Notification";
 
-      if (notification.type === "mention") {
-        toastIcon = "🏷️";
-        titleColor = "text-pink-400";
-        typeLabel = "New Mention";
-      } else if (notification.type === "join") {
-        toastIcon = "🎉";
-        titleColor = "text-emerald-400";
-        typeLabel = "Channel Invite";
-      } else if (notification.type === "dm") {
-        toastIcon = "💬";
-        titleColor = "text-blue-400";
-        typeLabel = "Direct Message";
-      }
+  //     if (notification.type === "mention") {
+  //       toastIcon = "🏷️";
+  //       titleColor = "text-pink-400";
+  //       typeLabel = "New Mention";
+  //     } else if (notification.type === "join") {
+  //       toastIcon = "🎉";
+  //       titleColor = "text-emerald-400";
+  //       typeLabel = "Channel Invite";
+  //     } else if (notification.type === "dm") {
+  //       toastIcon = "💬";
+  //       titleColor = "text-blue-400";
+  //       typeLabel = "Direct Message";
+  //     }
 
-      const senderName = "System Alert";
-      const avatarUrl = null; // Agar future mein model payload extend karein toh use ho sakta hai
+  //     const senderName = "System Alert";
+  //     const avatarUrl = null; // Agar future mein model payload extend karein toh use ho sakta hai
 
-      toast(
-        (t) => (
-          <div className="flex items-start gap-3.5 w-full max-w-sm">
-            <div className="text-xl shrink-0 mt-0.5">{toastIcon}</div>
+  //     toast(
+  //       (t) => (
+  //         <div className="flex items-start gap-3.5 w-full max-w-sm">
+  //           <div className="text-xl shrink-0 mt-0.5">{toastIcon}</div>
 
-            <div className="flex-1 flex flex-col gap-0.5 min-w-0">
-              <div className="flex justify-between items-center gap-2">
-                <span className={`font-black ${titleColor} text-[10px] uppercase tracking-wider truncate`}>
-                  {typeLabel}
-                </span>
-                <span className="text-[8px] text-slate-500 font-bold bg-slate-800 px-1.5 py-0.5 rounded shrink-0 border border-slate-700/50">
-                  NEW
-                </span>
-              </div>
+  //           <div className="flex-1 flex flex-col gap-0.5 min-w-0">
+  //             <div className="flex justify-between items-center gap-2">
+  //               <span className={`font-black ${titleColor} text-[10px] uppercase tracking-wider truncate`}>
+  //                 {typeLabel}
+  //               </span>
+  //               <span className="text-[8px] text-slate-500 font-bold bg-slate-800 px-1.5 py-0.5 rounded shrink-0 border border-slate-700/50">
+  //                 NEW
+  //               </span>
+  //             </div>
 
-              <p className="text-xs font-semibold text-slate-300 mt-1 line-clamp-2 italic pr-2 break-words">
-                "{notification.content}"
-              </p>
+  //             <p className="text-xs font-semibold text-slate-300 mt-1 line-clamp-2 italic pr-2 break-words">
+  //               "{notification.content}"
+  //             </p>
 
-              <button
-                onClick={() => {
-                  toast.dismiss(t.id);
-                  // Programmatic route push context:
-                  // window.location.href = notification.target_url;
-                }}
-                className="text-left text-[10px] text-blue-400 font-black mt-1.5 hover:underline tracking-tight transition-all"
-              >
-                Open view details →
-              </button>
-            </div>
-          </div>
-        ),
-        { duration: 5000, position: "bottom-right" }
-      );
+  //             <button
+  //               onClick={() => {
+  //                 toast.dismiss(t.id);
+  //                 // Programmatic route push context:
+  //                 // window.location.href = notification.target_url;
+  //               }}
+  //               className="text-left text-[10px] text-blue-400 font-black mt-1.5 hover:underline tracking-tight transition-all"
+  //             >
+  //               Open view details →
+  //             </button>
+  //           </div>
+  //         </div>
+  //       ),
+  //       { duration: 5000, position: "bottom-right" }
+  //     );
 
-      // Cache clear out data lists refresh updates instantly
-      queryClient.invalidateQueries(["notifications"]);
-    });
+  //     // Cache clear out data lists refresh updates instantly
+  //     queryClient.invalidateQueries(["notifications"]);
+  //   });
 
-    return () => {
-      socket.off("notification:received");
-    };
-  }, [socket, currentUserId, activeChat, queryClient]);
+  //   return () => {
+  //     socket.off("notification:received");
+  //   };
+  // }, [socket, currentUserId, activeChat, queryClient]);
 
 
   return <>{children}</>;
