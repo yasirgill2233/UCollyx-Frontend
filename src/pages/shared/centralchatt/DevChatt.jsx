@@ -406,71 +406,71 @@ const DevChat = () => {
   }, []);
 
   // 1. Helper Function: String ko clean slug banane ke liye
-const slugify = (text) => {
-  return text
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")        // Saari spaces ko hyphen (-) se replace karein
-    .replace(/[^\w\-]+/g, "");   // Baki saare gair-zaroori characters mita dein
-};
+  const slugify = (text) => {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-") // Saari spaces ko hyphen (-) se replace karein
+      .replace(/[^\w\-]+/g, ""); // Baki saare gair-zaroori characters mita dein
+  };
 
   const selectMention = (userName, id) => {
-  const nameSlug = slugify(userName);
+    const nameSlug = slugify(userName);
 
-  const cursorPosition = inputText.lastIndexOf("@");
-  const textBeforeAt = inputText.substring(0, cursorPosition);
-  
-  // Cursor ke baad agar koi text tha to usko cleanly slice karein
-  const textAfterAt = inputText
-    .substring(cursorPosition)
-    .split(" ")
-    .slice(1)
-    .join(" ");
+    const cursorPosition = inputText.lastIndexOf("@");
+    const textBeforeAt = inputText.substring(0, cursorPosition);
 
-  // ✅ FIX: Colons ke darmiyan se extra space khatam kar di (@{slug:id})
-  const newText = `${textBeforeAt}@{${nameSlug}:${id}} ${textAfterAt}`;
+    // Cursor ke baad agar koi text tha to usko cleanly slice karein
+    const textAfterAt = inputText
+      .substring(cursorPosition)
+      .split(" ")
+      .slice(1)
+      .join(" ");
 
-  setInputText(newText);
-  setShowMentions(false);
-};
+    // ✅ FIX: Colons ke darmiyan se extra space khatam kar di (@{slug:id})
+    const newText = `${textBeforeAt}@{${nameSlug}:${id}} ${textAfterAt}`;
 
- const renderMessageWithMentions = (text) => {
-  if (!text) return "";
+    setInputText(newText);
+    setShowMentions(false);
+  };
 
-  const mentionRegex = /@\{([^:]+):(\d+)\}/g;
-  const renderedElements = [];
-  let lastIndex = 0;
-  let match;
+  const renderMessageWithMentions = (text) => {
+    if (!text) return "";
 
-  while ((match = mentionRegex.exec(text)) !== null) {
-    const matchIndex = match.index;
-    const slug = match[1];
-    const userId = match[2];
+    const mentionRegex = /@\{([^:]+):(\d+)\}/g;
+    const renderedElements = [];
+    let lastIndex = 0;
+    let match;
 
-    if (matchIndex > lastIndex) {
-      renderedElements.push(text.substring(lastIndex, matchIndex));
+    while ((match = mentionRegex.exec(text)) !== null) {
+      const matchIndex = match.index;
+      const slug = match[1];
+      const userId = match[2];
+
+      if (matchIndex > lastIndex) {
+        renderedElements.push(text.substring(lastIndex, matchIndex));
+      }
+
+      renderedElements.push(
+        <span
+          key={`mention-${matchIndex}-${userId}`}
+          onClick={() => console.log(`Opening Profile for User ID: ${userId}`)}
+          className="text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-1.5 py-0.5 mx-0.5 rounded-md cursor-pointer hover:bg-blue-200 transition-colors inline-block"
+        >
+          @{slug}
+        </span>,
+      );
+
+      lastIndex = mentionRegex.lastIndex;
     }
 
-    renderedElements.push(
-      <span
-        key={`mention-${matchIndex}-${userId}`}
-        onClick={() => console.log(`Opening Profile for User ID: ${userId}`)}
-        className="text-blue-600 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 font-bold px-1.5 py-0.5 mx-0.5 rounded-md cursor-pointer hover:bg-blue-200 transition-colors inline-block"
-      >
-        @{slug}
-      </span>
-    );
+    if (lastIndex < text.length) {
+      renderedElements.push(text.substring(lastIndex));
+    }
 
-    lastIndex = mentionRegex.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    renderedElements.push(text.substring(lastIndex));
-  }
-
-  return renderedElements.length > 0 ? renderedElements : text;
-};
+    return renderedElements.length > 0 ? renderedElements : text;
+  };
 
   const getLatestChat = (channels, dms) => {
     const allChats = [
@@ -868,7 +868,8 @@ const slugify = (text) => {
                         {member?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL + member?.avatar_url
+                              import.meta.env.VITE_SERVER_URL +
+                              member?.avatar_url
                             }
                             alt="Avatar"
                             crossOrigin="anonymous"
@@ -966,7 +967,8 @@ const slugify = (text) => {
                         {i.User?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL + i.User?.avatar_url
+                              import.meta.env.VITE_SERVER_URL +
+                              i.User?.avatar_url
                             }
                             alt={i.User?.full_name}
                             crossOrigin="anonymous"
@@ -1081,7 +1083,8 @@ const slugify = (text) => {
                             {msg?.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_SERVER_URL + msg?.avatar_url
+                                  import.meta.env.VITE_SERVER_URL +
+                                  msg?.avatar_url
                                 }
                                 alt="Avatar"
                                 crossOrigin="anonymous"
@@ -1305,59 +1308,60 @@ const slugify = (text) => {
                 ),
               )}
 
-              {Object.keys(typingStatus).map((userId) => {
-                const typingUser = typingStatus[userId];
-                return (
-                  <div
-                    key={userId}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 animate-pulse transition-all duration-300"
-                  >
-                    {/* 🖼️ Profile Avatar Container */}
-                    {/* {typingUser?.avatarUrl ? (
-        <img 
-          src={typingUser.avatarUrl} 
-          alt={typingUser.userName} 
-          className="w-5 h-5 rounded-full object-cover ring-1 ring-green-400/50"
-        />
-      ) : (
-        // Fallback placeholder circle if image isn't configured
-        <div className="w-5 h-5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold uppercase">
-          {typingUser?.userName?.charAt(0)}
-        </div>
-      )} */}
+             {Object.keys(typingStatus).length > 0 && (
+  <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 animate-in fade-in slide-in-from-bottom-2 duration-300">
+    
+    {/* 👥 LAYERED AVATARS CONTAINER */}
+    <div className="flex items-center -space-x-3.5 invisible-scrollbar">
+      {Object.keys(typingStatus).map((userId, index) => {
+        const typingUser = typingStatus[userId];
+        return (
+          <div
+            key={userId}
+            className="relative rounded-full border-2 border-white dark:border-zinc-950 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden transition-all duration-300 transform hover:translate-y-[-2px]"
+            style={{ zIndex: index + 1 }} // Taake overlapping layers sahi order mein hon
+          >
+            {typingUser.avatarUrl ? (
+              <img
+                src={import.meta.env.VITE_SERVER_URL + typingUser.avatarUrl}
+                alt="Avatar"
+                crossOrigin="anonymous"
+                className="w-full h-full object-cover"
+              />
+            ) : typingUser.userName ? (
+              typingUser.userName[0]
+            ) : (
+              "U"
+            )}
+          </div>
+        );
+      })}
+    </div>
 
-                    <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                      {typingUser.avatarUrl ? (
-                        <img
-                          src={
-                            import.meta.env.VITE_SERVER_URL + typingUser.avatarUrl
-                          }
-                          alt="Avatar"
-                          crossOrigin="anonymous"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : typingUser.userName ? (
-                        typingUser.userName[0]
-                      ) : (
-                        "U"
-                      )}
-                    </div>
+    {/* 💬 DYNAMIC TEXT WITH BOUNCING DOTS INDICATOR */}
+    <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/60 px-3 py-1.5 rounded-full shadow-sm max-w-xs sm:max-w-md">
+      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate max-w-[180px]">
+        {Object.keys(typingStatus).length === 1
+          ? typingStatus[Object.keys(typingStatus)[0]]?.userName || "Someone"
+          : Object.keys(typingStatus).length === 2
+          ? `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(' ')[0]}, ${typingStatus[Object.keys(typingStatus)[1]]?.userName.split(' ')[0]}`
+          : `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(' ')[0]} and ${Object.keys(typingStatus).length - 1} others`}
+      </span>
+      
+      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+        {Object.keys(typingStatus).length > 1 ? "are typing" : "is typing"}
+      </span>
 
-                    {/* Dynamic Text with Typing Dots Animation */}
-                    <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-zinc-800/60 px-2.5 py-1 rounded-full shadow-sm">
-                      {/* <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-xs">{typingUser?.userName}</span> */}
-                      {/* <span className="text-xs text-zinc-500">is typing</span> */}
+      {/* Realtime bouncing CSS dots indicator */}
+      <span className="flex gap-0.5 items-center ml-0.5 min-w-[14px]">
+        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce"></span>
+      </span>
+    </div>
 
-                      {/* Realtime bouncing CSS dots indicator */}
-                      <span className="flex gap-0.5 items-center ml-0.5">
-                        <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce"></span>
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+  </div>
+)}
 
               <div ref={messagesEndRef} />
             </>
@@ -1392,7 +1396,9 @@ const slugify = (text) => {
                     {filteredUsers?.map((user) => (
                       <div
                         key={user?.User?.id}
-                        onClick={() => selectMention(user?.User?.full_name, user?.User?.id)}
+                        onClick={() =>
+                          selectMention(user?.User?.full_name, user?.User?.id)
+                        }
                         className="flex items-center gap-2.5 px-3 py-2 hover:bg-blue-50 cursor-pointer transition-all border-b border-slate-50 last:border-0"
                       >
                         <div className="rounded-full border border-blue-100 bg-blue-600 w-7 h-7 flex items-center justify-center text-white font-black text-[10px] uppercase overflow-hidden flex-shrink-0">

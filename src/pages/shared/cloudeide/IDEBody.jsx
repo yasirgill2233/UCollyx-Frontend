@@ -37,6 +37,7 @@ import TerminalComponent from "./TerminalComponent";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FileTreeItem } from "./components/FileTreeItem";
+import API from "../../../api/axios";
 
 const getAISuggestion = async (codeSnippet) => {
   try {
@@ -187,8 +188,8 @@ const IDEBody = () => {
     if(!projectId) return;
     
     try {
-      const res = await axios.get(
-        `http://localhost:4002/api/files/tree?projectId=${projectId}`,
+      const res = await API.get(
+        `/files/tree?projectId=${projectId}`,
       );
 
       setProjectData(res.data);
@@ -271,7 +272,7 @@ const IDEBody = () => {
 
   const deleteItem = async (path) => {
     // if (window.confirm("Are you sure you want to delete this?")) {
-      await axios.post("http://localhost:4002/api/files/delete", { path });
+      await API.post("/files/delete", { path });
       refreshTree(slug);
     // }
   };
@@ -291,7 +292,7 @@ const IDEBody = () => {
     });
 
     try {
-      const res = await axios.post("http://localhost:4002/api/files/content", {
+      const res = await API.post("/files/content", {
         path,
       });
       const freshContent = res.data.content;
@@ -375,7 +376,7 @@ const IDEBody = () => {
 
     try {
       const targetPath = parentId;
-      await axios.post("http://localhost:4002/api/files/create", {
+      await API.post("/files/create", {
         parentPath: targetPath,
         name: name,
         type: type,
@@ -399,7 +400,7 @@ const IDEBody = () => {
     const [commits, setCommits] = useState([]);
 
     useEffect(() => {
-      fetch(`http://localhost:4002/api/git/graph/${projectId}`)
+      API.get(`/git/graph/${projectId}`)
         .then((res) => res.json())
         .then((data) => setCommits(data));
     }, [projectId]);
@@ -626,7 +627,7 @@ const IDEBody = () => {
     const currentContent = editorRef.current.getValue();
 
     try {
-      const savePromise = axios.post("http://localhost:4002/api/files/save", {
+      const savePromise = API.post("/files/save", {
         path: activeFilePath,
         content: currentContent,
       });
@@ -679,7 +680,7 @@ const executeFolderUpload = async (uploadType) => {
     try {
       toast.loading("Switching to Local Workspace environment...", { id: "upload" });
 
-      await axios.post("http://localhost:4002/api/files/upload-local", {
+      await API.post("/files/upload-local", {
         projectId: targetProjectId,
         files: [], // Khali array kyunki sirf path badalna ha, file upload nahi karni
         userId: user_id,
@@ -756,7 +757,7 @@ const executeFolderUpload = async (uploadType) => {
       const parsedChildren = await readDirectory(dirHandle, dirHandle.name);
       
       // 🚀 HIT THE BACKEND WRITER API: Structural payload goes out
-      await axios.post("http://localhost:4002/api/files/upload-local", {
+      await API.post("/files/upload-local", {
         projectId: targetProjectId,
         files: apiFilesPayload, // Pura array structure metadata ke sath dispatch ho gaya
         userId: user_id,
@@ -784,7 +785,7 @@ const executeFolderUpload = async (uploadType) => {
     try {
       toast.loading("Configuring Manager Assigned workspace...", { id: "upload" });
 
-      await axios.post("http://localhost:4002/api/files/upload-local", {
+      await API.post("/files/upload-local", {
         projectId: targetProjectId,
         files: [], 
         userId: user_id,
@@ -818,8 +819,8 @@ const executeFolderUpload = async (uploadType) => {
         const currentContent = editorRef.current.getValue();
 
         try {
-          const savePromise = axios.post(
-            "http://localhost:4002/api/files/save",
+          const savePromise = API.post(
+            "/files/save",
             {
               path: activeFilePath,
               content: currentContent,
