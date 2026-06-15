@@ -111,17 +111,6 @@ const VerificationPage = () => {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="flex-1 h-[calc(100vh-64px)] p-8 flex items-center justify-center bg-[#F8FAFC]">
-        <div className="text-center text-red-500 font-bold bg-red-50 p-6 rounded-2xl border border-red-100 max-w-sm">
-          <AlertCircle size={32} className="mx-auto mb-3 text-red-500" />
-          <p className="text-sm">Failed to connect with Database Queue.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] overflow-hidden font-sans text-slate-900 w-full">
       <div className="flex-1 flex flex-col min-w-0">

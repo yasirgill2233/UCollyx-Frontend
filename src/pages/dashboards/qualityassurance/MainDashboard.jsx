@@ -117,19 +117,6 @@ const MainDashboard = () => {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-[#F9FBFF] p-6 text-center">
-        <AlertCircle className="text-red-500 w-12 h-12 mb-4" />
-        <h3 className="text-lg font-black text-slate-800">
-          Failed to load system insights
-        </h3>
-        <p className="text-xs text-slate-500 mt-1 max-w-sm">
-          {error.message || "Internal network extraction issue."}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex-1 bg-[#F9FBFF] p-6 md:p-10 min-h-screen font-sans selection:bg-blue-100">
