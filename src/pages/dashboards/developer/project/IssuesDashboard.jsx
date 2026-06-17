@@ -41,7 +41,7 @@ const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
 
   return (
     <div className="fixed inset-0 z-[200] w-[100%] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl p-6 border w-[90%] md:w-[30%] border-slate-100 animate-in zoom-in duration-200">
+      <div className="bg-white rounded-md shadow-xl p-6 border w-[90%] md:w-[30%] border-slate-100 animate-in zoom-in duration-200">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-black text-slate-800 tracking-tight">
             Update Status
@@ -66,7 +66,7 @@ const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 ring-blue-500/10 focus:border-blue-500 transition-all appearance-none bg-white"
+              className="w-full border border-slate-200 rounded-md px-4 py-3 text-sm font-bold outline-none focus:ring-2 ring-blue-500/10 focus:border-blue-500 transition-all appearance-none bg-white"
             >
               {["Acknowledged", "In Progress", "Ready for QA"].map((s) => (
                 <option key={s} value={s}>
@@ -82,7 +82,7 @@ const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm h-28 resize-none outline-none focus:ring-2 ring-blue-500/10 focus:border-blue-500 font-medium"
+              className="w-full border border-slate-200 rounded-md px-4 py-3 text-sm h-28 resize-none outline-none focus:ring-2 ring-blue-500/10 focus:border-blue-500 font-medium"
               placeholder="Describe the progress or fix details..."
             />
           </div>
@@ -91,14 +91,14 @@ const UpdateStatusModal = ({ isOpen, onClose, issue }) => {
         <div className="flex gap-3 mt-8">
           <button
             onClick={onClose}
-            className="flex-1 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+            className="flex-1 py-3 border border-slate-200 rounded-md text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={updateStatusMutation.isPending}
-            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-50"
+            className="flex-1 py-3 bg-blue-600 text-white rounded-md text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 active:scale-95 transition-all disabled:opacity-50"
           >
             {updateStatusMutation.isPending ? "Updating..." : "Update Status"}
           </button>
@@ -124,7 +124,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-5xl rounded-lg shadow-2xl relative max-h-[94vh] flex flex-col overflow-hidden border border-white">
+      <div className="bg-white w-full max-w-5xl rounded-md shadow-2xl relative max-h-[94vh] flex flex-col overflow-hidden border border-white">
         <button
           onClick={onClose}
           className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 z-10 p-2 bg-slate-50 rounded-full"
@@ -134,7 +134,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
 
         <div className="p-8 md:p-12 overflow-y-auto custom-scrollbar">
           <div className="flex gap-2 mb-6">
-            <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1.5 rounded-lg tracking-widest uppercase">
+            <span className="bg-slate-100 text-slate-500 text-[10px] font-black px-3 py-1.5 rounded-md tracking-widest uppercase">
               BUG-#{issue.id}
             </span>
           </div>
@@ -167,7 +167,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
             <div className="flex gap-3 shrink-0">
               <button
                 onClick={() => setShowUpdate(true)}
-                className="px-5 py-2.5 border-2 border-slate-100 rounded-xl text-xs font-black text-slate-600 hover:bg-slate-50 hover:border-slate-200 transition-all"
+                className="px-5 py-2.5 border-2 border-slate-100 rounded-md text-xs font-black text-slate-600 hover:bg-slate-50 hover:border-slate-200 transition-all"
               >
                 Update Status
               </button>
@@ -182,7 +182,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
                     <ShieldAlert size={14} className="text-orange-500" />{" "}
                     Description / Notes
                   </h3>
-                  <div className="bg-orange-50/50 border-l-4 border-orange-400 rounded-xl p-6 text-[14px] text-orange-900 leading-relaxed font-semibold italic">
+                  <div className="bg-orange-50/50 border-l-4 border-orange-400 rounded-md p-6 text-[14px] text-orange-900 leading-relaxed font-semibold italic">
                     "{issue.description}"
                   </div>
                 </section>
@@ -199,7 +199,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
                         key={idx}
                         className="flex items-start gap-4 text-[14px] text-slate-700 font-bold"
                       >
-                        <span className="w-6 h-6 bg-red-500 text-white rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm">
+                        <span className="w-6 h-6 bg-red-500 text-white rounded-md flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm">
                           {idx + 1}
                         </span>
                         {step}
@@ -214,7 +214,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
                   Expected vs Actual
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-6">
+                  <div className="bg-emerald-50/40 border border-emerald-100 rounded-md p-6">
                     <h4 className="text-[10px] font-black text-emerald-600 uppercase mb-3 flex items-center gap-2">
                       <CheckCircle2 size={12} /> Expected
                     </h4>
@@ -222,7 +222,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
                       {issue.expected_result || "No specific details provided."}
                     </p>
                   </div>
-                  <div className="bg-red-50/40 border border-red-100 rounded-2xl p-6">
+                  <div className="bg-red-50/40 border border-red-100 rounded-md p-6">
                     <h4 className="text-[10px] font-black text-red-600 uppercase mb-3 flex items-center gap-2">
                       <AlertCircle size={12} /> Actual
                     </h4>
@@ -235,7 +235,7 @@ const IssueDetailModal = ({ isOpen, onClose, issue }) => {
             </div>
 
             <div className="col-span-12 lg:col-span-4 space-y-8">
-              <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm space-y-5">
+              <div className="bg-white border border-slate-100 rounded-md p-6 shadow-sm space-y-5">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Card Info
                 </h3>
@@ -351,11 +351,11 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-8 animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[80vh]">
+      <div className="bg-white w-full max-w-lg rounded-md shadow-2xl p-8 animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[80vh]">
         {/* Header Setup */}
         <div className="flex justify-between items-center mb-6 shrink-0 border-b border-slate-50 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+            <div className="p-2 bg-blue-50 rounded-md text-blue-600">
               <MessageSquare size={18} />
             </div>
             <div>
@@ -386,7 +386,7 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
                 key={c.id || i}
                 className="flex gap-4 group animate-in fade-in duration-150"
               >
-                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-[12px] font-black text-slate-600 shrink-0 border border-slate-200 uppercase select-none">
+                <div className="w-10 h-10 rounded-md bg-slate-50 flex items-center justify-center text-[12px] font-black text-slate-600 shrink-0 border border-slate-200 uppercase select-none">
                   {userName.charAt(0)}
                 </div>
                 <div className="flex-1">
@@ -398,7 +398,7 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
                       {formatCommentTime(c.createdAt)}
                     </span>
                   </div>
-                  <div className="bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3 text-[13px] text-slate-600 font-medium leading-relaxed break-words shadow-sm">
+                  <div className="bg-slate-50 border border-slate-100 rounded-md px-5 py-3 text-[13px] text-slate-600 font-medium leading-relaxed break-words shadow-sm">
                     {c.comment_text}
                   </div>
                 </div>
@@ -427,7 +427,7 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             disabled={addCommentMutation.isPending}
-            className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm h-28 resize-none outline-none focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400 transition-all font-medium"
+            className="w-full border-2 border-slate-100 rounded-md px-5 py-4 text-sm h-28 resize-none outline-none focus:border-blue-500 disabled:bg-slate-50 disabled:text-slate-400 transition-all font-medium"
             placeholder={
               addCommentMutation.isPending
                 ? "Syncing..."
@@ -443,7 +443,7 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
           <button
             onClick={handleSend}
             disabled={!newComment.trim() || addCommentMutation.isPending}
-            className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-black hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all select-none"
+            className="absolute bottom-4 right-4 bg-blue-600 text-white px-6 py-2 rounded-md text-xs font-black hover:bg-blue-700 shadow-xl shadow-blue-200 flex items-center gap-2 disabled:opacity-50 disabled:shadow-none transition-all select-none"
           >
             <Send size={14} />{" "}
             {addCommentMutation.isPending ? "Sending..." : "Send"}
@@ -535,14 +535,14 @@ const IssuesDashboard = () => {
               <input
                 type="text"
                 placeholder="Filter by issue title..."
-                className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-4 ring-blue-500/5 focus:border-blue-500 transition-all shadow-sm"
+                className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm font-bold outline-none focus:ring-4 ring-blue-500/5 focus:border-blue-500 transition-all shadow-sm"
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             <select
               value={severityFilter}
-              className="px-6 py-3 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-600 outline-none cursor-pointer hover:border-slate-300 shadow-sm"
+              className="px-6 py-3 bg-white border border-slate-200 rounded-md text-xs font-black text-slate-600 outline-none cursor-pointer hover:border-slate-300 shadow-sm"
               onChange={(e) => setSeverityFilter(e.target.value)}
             >
               <option value="All">All Severity</option>
@@ -555,7 +555,7 @@ const IssuesDashboard = () => {
         </div>
 
         {/* Issues Rendering Table Layout */}
-        <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -586,7 +586,7 @@ const IssuesDashboard = () => {
                     >
                       <td className="px-8 py-6">
                         <span
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border shadow-sm inline-block ${
+                          className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest border shadow-sm inline-block ${
                             (issue.severity || "").toUpperCase() === "CRITICAL"
                               ? "bg-red-50 text-red-600 border-red-100"
                               : "bg-white text-slate-500 border-slate-200"
@@ -669,13 +669,13 @@ const IssuesDashboard = () => {
                         <div className="flex items-center justify-center gap-3">
                           <button
                             onClick={() => setSelectedIssue(issue)}
-                            className="px-5 py-2 bg-blue-600 text-white rounded-xl text-[11px] font-bold hover:bg-blue-700 shadow-md transition-all"
+                            className="px-5 py-2 bg-blue-600 text-white rounded-md text-[11px] font-bold hover:bg-blue-700 shadow-md transition-all"
                           >
                             View
                           </button>
                           <button
                             onClick={() => setCommentIssue(issue)}
-                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl border border-transparent transition-all"
+                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md border border-transparent transition-all"
                           >
                             <MessageSquare size={16} />
                           </button>
@@ -687,12 +687,12 @@ const IssuesDashboard = () => {
                                   openMenuId === issue.id ? null : issue.id,
                                 )
                               }
-                              className="p-2.5 rounded-xl text-slate-400 hover:text-slate-600"
+                              className="p-2.5 rounded-md text-slate-400 hover:text-slate-600"
                             >
                               <MoreVertical size={18} />
                             </button>
                             {openMenuId === issue.id && (
-                              <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl z-[50] py-2">
+                              <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
                                 <p className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                                   Quick Status Update
                                 </p>
@@ -721,7 +721,7 @@ const IssuesDashboard = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="4"
+                      colSpan="5"
                       className="px-8 py-20 text-center text-slate-400 text-xs font-bold uppercase tracking-wider"
                     >
                       No issues matched requirements.

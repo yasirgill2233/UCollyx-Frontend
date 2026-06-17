@@ -102,7 +102,7 @@ const MyProject = () => {
         {statsDashboard.map((stat, i) => (
           <div
             key={i}
-            className="bg-white p-6 rounded-[20px] border border-slate-100 shadow-sm relative overflow-hidden group animate-in fade-in duration-200"
+            className="bg-white p-6 rounded-md border border-slate-100 shadow-sm relative overflow-hidden group animate-in fade-in duration-200"
           >
             <div className={`absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b ${stat.color}`} />
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">
@@ -121,7 +121,7 @@ const MyProject = () => {
       </div>
 
       {/* Filters Form Blocks */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-white p-4 rounded-md border border-slate-100 shadow-sm mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-96">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -129,7 +129,7 @@ const MyProject = () => {
             placeholder="Search projects..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-100 rounded-xl py-2.5 pl-12 pr-4 text-sm outline-none focus:ring-2 ring-blue-500/10 focus:bg-white transition-all text-slate-700 font-medium"
+            className="w-full bg-slate-50 border border-slate-100 rounded-md py-2.5 pl-12 pr-4 text-sm outline-none focus:ring-2 ring-blue-500/10 focus:bg-white transition-all text-slate-700 font-medium"
           />
         </div>
 
@@ -140,7 +140,7 @@ const MyProject = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all w-full"
+              className="appearance-none bg-white border border-slate-200 rounded-md pl-10 pr-10 py-2.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all w-full"
             >
               <option>All Status</option>
               <option>Active</option>
@@ -156,7 +156,7 @@ const MyProject = () => {
             <select
               value={rolesFilter}
               onChange={(e) => setRolesFilter(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all w-full"
+              className="appearance-none bg-white border border-slate-200 rounded-md pl-10 pr-10 py-2.5 text-xs font-bold text-slate-600 outline-none cursor-pointer hover:border-slate-300 transition-all w-full"
             >
               <option>All Roles</option>
               <option>Full Stack</option>
@@ -169,7 +169,7 @@ const MyProject = () => {
       </div>
 
       {/* Main Table Content Container */}
-      <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -214,7 +214,7 @@ const MyProject = () => {
                   <tr key={project.id || idx} className="hover:bg-slate-50/40 transition-colors group animate-in fade-in duration-100">
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black shadow-inner uppercase select-none">
+                        <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black shadow-inner uppercase select-none">
                           {(project.name || "P").charAt(0)}
                         </div>
                         <div>
@@ -250,14 +250,14 @@ const MyProject = () => {
                         <button
                         
                           onClick={() => navigate(`/dev/board?projectId=${project.id}&projectName=${project.name}`)}
-                          className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm active:scale-95"
+                          className="p-2.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50 transition-all shadow-sm active:scale-95"
                           title="Kanban Board Workspace"
                         >
                           <Layout size={16} />
                         </button>
                         <button
                           onClick={()=>handleProjectClick(project.slug)}
-                          className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 transition-all shadow-sm active:scale-95"
+                          className="p-2.5 bg-white border border-slate-200 rounded-md text-slate-600 hover:text-purple-600 hover:border-purple-200 hover:bg-purple-50 transition-all shadow-sm active:scale-95"
                           title="Open Cloud IDE"
                         >
                           <Code2 size={16} />

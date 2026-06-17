@@ -162,7 +162,7 @@ const ReportBugForm = () => {
         </div>
 
         {/* 1. DYNAMIC PROGRESS BAR SECTION */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="bg-white rounded-md border border-slate-200 p-8 shadow-sm">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-sm font-bold text-slate-800">Pipeline Progression Tracker</h3>
             <span className="text-sm font-black text-blue-600 transition-all duration-500">
@@ -188,7 +188,7 @@ const ReportBugForm = () => {
         </div>
 
         {/* 2. Basic Details Section */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="bg-white rounded-md border border-slate-200 p-8 shadow-sm">
           <SectionHeader title="Basic Context Details" sub="Identify project allocation vectors" />
           <div className="grid gap-5 mt-8">
             <InputField label="Bug Track Heading / Reference" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g. Critical Failure on Payment Process checkout checkout runtime loop" required />
@@ -201,7 +201,7 @@ const ReportBugForm = () => {
                     setSelectedProjectId(parseInt(e.target.value));
                     setSelectedAssignee(null); // Reset user profile validation when swapping context projects
                   }} 
-                  className="w-full p-3.5 border border-slate-200 rounded-xl text-xs bg-white outline-none cursor-pointer font-bold text-slate-700"
+                  className="w-full p-3.5 border border-slate-200 rounded-md text-xs bg-white outline-none cursor-pointer font-bold text-slate-700"
                 >
                   {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
@@ -212,7 +212,7 @@ const ReportBugForm = () => {
         </div>
 
         {/* 3. Severity & Allocation Custom Select Team Box */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="bg-white rounded-md border border-slate-200 p-8 shadow-sm">
           <SectionHeader title="Severity Profile & Target Dev Assignment" sub="Classify system footprint impact matrices" />
           <div className="mt-8 grid grid-cols-2 gap-6">
             <div className="space-y-4">
@@ -230,7 +230,7 @@ const ReportBugForm = () => {
               <button
                 type="button"
                 onClick={() => setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
-                className="w-full bg-white border border-slate-200 rounded-xl p-3.5 text-xs font-bold text-slate-700 flex items-center justify-between outline-none"
+                className="w-full bg-white border border-slate-200 rounded-md p-3.5 text-xs font-bold text-slate-700 flex items-center justify-between outline-none"
                 disabled={isMembersLoading}
               >
                 <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ const ReportBugForm = () => {
               </button>
 
               {isAssigneeDropdownOpen && !isMembersLoading && (
-                <div className="absolute left-0 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1 max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="absolute left-0 mt-1 w-full bg-white border border-slate-200 rounded-md shadow-xl z-50 py-1 max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
                   {currentSelectedProject?.members?.length > 0 ? (
                     currentSelectedProject?.members?.map((u) => (
                       <button
@@ -285,7 +285,7 @@ const ReportBugForm = () => {
         </div>
 
         {/* 4. CONSOLIDATED DESCRIPTION */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="bg-white rounded-md border border-slate-200 p-8 shadow-sm">
           <SectionHeader title="Reproduction Lifecycle Vectors" sub="Steps execution thread maps" />
           <div className="mt-8 space-y-8">
             <div className="space-y-4">
@@ -309,10 +309,10 @@ const ReportBugForm = () => {
         </div>
 
         {/* 5. Evidence Section */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+        <div className="bg-white rounded-md border border-slate-200 p-8 shadow-sm">
           <SectionHeader title="Binary Logs & Artifact Evidence" sub="Attach trace captures or system execution dumps" />
           <div className="mt-6">
-            <label className="border-2 border-dashed border-slate-200 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50/50 transition-colors group">
+            <label className="border-2 border-dashed border-slate-200 rounded-md p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50/50 transition-colors group">
               <Upload className="w-8 h-8 text-slate-300 group-hover:text-blue-500 transition-colors mb-2" />
               <p className="text-xs font-bold text-slate-500">Drop log captures or click to stream binary files</p>
               <input type="file" multiple onChange={handleFileUpload} className="hidden" />
@@ -320,7 +320,7 @@ const ReportBugForm = () => {
             {files.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {files.map((f, i) => (
-                  <div key={i} className="text-[10px] font-bold text-slate-600 bg-slate-100/80 border border-slate-200 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                  <div key={i} className="text-[10px] font-bold text-slate-600 bg-slate-100/80 border border-slate-200 px-3 py-1.5 rounded-md flex items-center gap-2">
                     <span>{f.name} ({f.size})</span>
                     <X size={12} className="cursor-pointer text-slate-400 hover:text-red-500 transition-colors" onClick={() => setFiles(p => p.filter((_, idx) => idx !== i))}/>
                   </div>
@@ -331,20 +331,20 @@ const ReportBugForm = () => {
         </div>
 
         {/* 6. Red Card Section */}
-        <div className={`rounded-3xl border-2 p-8 transition-all ${formData.is_red_card ? 'border-red-500 bg-red-50/10' : 'border-slate-200 bg-white'}`}>
+        <div className={`rounded-md border-2 p-8 transition-all ${formData.is_red_card ? 'border-red-500 bg-red-50/10' : 'border-slate-200 bg-white'}`}>
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <input type="checkbox" checked={formData.is_red_card} onChange={(e) => setFormData(p => ({...p, is_red_card: e.target.checked}))} className="w-5 h-5 accent-red-500 rounded" />
             <span className="font-black uppercase tracking-wider text-xs text-slate-700">Escalate Block Threat Layer (Raise Red Card)</span>
           </label>
           {formData.is_red_card && (
-            <textarea name="red_card_reason" value={formData.red_card_reason} onChange={handleInputChange} className="w-full mt-4 p-4 bg-white border border-red-100 rounded-2xl text-xs font-medium text-slate-600 outline-none shadow-sm focus:border-red-400" placeholder="Provide absolute architecture blockers explanation..." required />
+            <textarea name="red_card_reason" value={formData.red_card_reason} onChange={handleInputChange} className="w-full mt-4 p-4 bg-white border border-red-100 rounded-md text-xs font-medium text-slate-600 outline-none shadow-sm focus:border-red-400" placeholder="Provide absolute architecture blockers explanation..." required />
           )}
         </div>
 
         <button 
           type="submit" 
           disabled={createIssueMutation.isPending}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-600/10 transition-all active:scale-[0.99]"
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-4 rounded-md font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-600/10 transition-all active:scale-[0.99]"
         >
           {createIssueMutation.isPending ? "Streaming Data to Pipeline..." : "Commit Bug Report"}
         </button>
@@ -365,27 +365,27 @@ const ProgressStep = ({ label, active, completed }) => (
 
 const SectionHeader = ({ title, sub }) => (
   <div className="flex items-center gap-3 border-b border-slate-50 pb-4">
-    <div className="p-2 bg-blue-50 rounded-xl text-blue-600 shadow-inner"><CheckCircle size={18} /></div>
+    <div className="p-2 bg-blue-50 rounded-md text-blue-600 shadow-inner"><CheckCircle size={18} /></div>
     <div><h3 className="text-xs font-black uppercase tracking-wider text-slate-800">{title}</h3><p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{sub}</p></div>
   </div>
 );
 
 const SeverityButton = ({ label, current, onClick }) => (
-  <button type="button" onClick={() => onClick(label)} className={`p-3 border rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${current === label ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm" : "border-slate-200 text-slate-400 bg-white hover:border-slate-300"}`}>
+  <button type="button" onClick={() => onClick(label)} className={`p-3 border rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${current === label ? "border-blue-600 bg-blue-50 text-blue-700 shadow-sm" : "border-slate-200 text-slate-400 bg-white hover:border-slate-300"}`}>
     {label}
   </button>
 );
 
 const InputField = ({ label, ...props }) => (
-  <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><input className="w-full p-3.5 border border-slate-200 rounded-xl text-xs outline-none font-medium text-slate-600 focus:border-blue-500 transition-colors bg-white shadow-inner" {...props} /></div>
+  <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><input className="w-full p-3.5 border border-slate-200 rounded-md text-xs outline-none font-medium text-slate-600 focus:border-blue-500 transition-colors bg-white shadow-inner" {...props} /></div>
 );
 
 const TextArea = ({ label, color, border, ...props }) => (
-  <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><textarea className={`w-full h-28 p-4 ${color} ${border} border rounded-2xl text-xs font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none shadow-inner`} {...props} /></div>
+  <div className="space-y-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><textarea className={`w-full h-28 p-4 ${color} ${border} border rounded-md text-xs font-medium outline-none focus:ring-2 focus:ring-blue-100 transition-all resize-none shadow-inner`} {...props} /></div>
 );
 
 const CustomSelect = ({ label, value, options, onChange }) => (
-  <div className="space-y-2 flex-1"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><select value={value} onChange={e => onChange(e.target.value)} className="w-full p-3.5 border border-slate-200 rounded-xl text-xs bg-white outline-none font-bold text-slate-700 cursor-pointer">{options.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+  <div className="space-y-2 flex-1"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</label><select value={value} onChange={e => onChange(e.target.value)} className="w-full p-3.5 border border-slate-200 rounded-md text-xs bg-white outline-none font-bold text-slate-700 cursor-pointer">{options.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
 );
 
 export default ReportBugForm;

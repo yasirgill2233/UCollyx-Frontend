@@ -738,13 +738,13 @@ const DevChat = () => {
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
       <div
         className={`
-          fixed inset-y-0 left-0 z-40 w-72 bg-white flex flex-col border-r border-slate-200/60
+          fixed inset-y-0 left-0 z-40 w-72 bg-white flex flex-col border-r border-slate-300
           transition-transform duration-300 ease-in-out md:static md:translate-x-0
           ${isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
         `}
       >
         {/* Sidebar Header */}
-        <div className="h-[68px] px-6 flex justify-between items-center border-b border-slate-100 flex-shrink-0">
+        <div className="h-[68px] px-6 flex justify-between items-center border-b border-slate-300 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
               <MessageSquare size={16} className="text-white" />
@@ -903,7 +903,7 @@ const DevChat = () => {
       {/* 2. Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white min-w-0 w-full h-full relative">
         {/* Chat Top Navbar Header */}
-        <div className="h-[68px] border-b border-slate-100 flex items-center justify-between px-4 md:px-8 bg-white/70 backdrop-blur-xl sticky top-0 z-10 flex-shrink-0">
+        <div className="h-[68px] border-b border-slate-300 flex items-center justify-between px-4 md:px-8 bg-white/70 backdrop-blur-xl sticky top-0 z-10 flex-shrink-0">
           <div className="flex items-center gap-2 md:gap-4 min-w-0">
             {/* Mobile Sidebar Toggle Hamburger Trigger Button */}
             <button
@@ -1119,8 +1119,8 @@ const DevChat = () => {
                             <div
                               className={`px-4 py-2.5 md:px-5 md:py-3 text-[13px] md:text-[14px] leading-relaxed shadow-xs rounded-2xl ${
                                 msg.isMe
-                                  ? "bg-blue-50 text-slate-700 rounded-tr-none border border-blue-100/50"
-                                  : "bg-white text-slate-600 rounded-tl-none border border-slate-100"
+                                  ? "bg-blue-50 text-slate-700 rounded-tr-none border border-blue-100 shadow-sm"
+                                  : "bg-white text-slate-600 rounded-tl-none border border-slate-200 shadow-sm"
                               } w-full`}
                             >
                               {msg.type === "call" ? (
@@ -1128,7 +1128,7 @@ const DevChat = () => {
                                   className={`p-3 md:p-4 rounded-xl md:rounded-[22px] w-full min-w-0 sm:min-w-[260px] shadow-sm border ${
                                     msg.call_status === "active"
                                       ? "bg-indigo-600 text-white border-indigo-400"
-                                      : "bg-white text-slate-800 border-slate-100"
+                                      : "bg-white text-slate-800 border-slate-300"
                                   }`}
                                 >
                                   <div className="flex items-center gap-3 md:gap-4">
@@ -1210,7 +1210,7 @@ const DevChat = () => {
 
                                   {msg.call_status === "ended" &&
                                     msg.transcript && (
-                                      <div className="mt-3 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                                      <div className="mt-3 p-2.5 bg-slate-50 rounded-xl border border-slate-300">
                                         <p className="text-[10px] font-bold text-slate-400 mb-1 uppercase">
                                           Meeting Transcript
                                         </p>
@@ -1382,12 +1382,12 @@ const DevChat = () => {
 
         {/* Native Mobile App Style Input Area */}
         <div className="px-2 pb-3 pt-1 md:px-8 md:pb-8 bg-[#eeeeee8a] flex-shrink-0 transition-all">
-          <div className="relative bg-white border border-slate-200/80 rounded-2xl md:rounded-[24px] shadow-md md:shadow-xl md:shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
+          <div className="relative bg-white border border-slate-200/80 rounded-2xl md:rounded-[24px] shadow-sm md:shadow-sm md:shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
             {showMentions &&
               activeChat?.type === "channel" &&
               filteredUsers?.length > 0 && (
-                <div className="absolute bottom-full left-0 mb-2 w-full sm:w-64 bg-white border border-slate-200 shadow-2xl rounded-xl overflow-hidden z-50">
-                  <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100">
+                <div className="absolute bottom-full left-0 mb-2 w-full sm:w-64 bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden z-50">
+                  <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-300">
                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                       People
                     </span>
@@ -1428,7 +1428,7 @@ const DevChat = () => {
               )}
 
             {selectedFiles?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-4 py-2 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
+              <div className="flex flex-wrap gap-1.5 px-4 py-2 border-b border-slate-300 bg-slate-50/50 rounded-t-2xl">
                 {selectedFiles.map((file, index) => (
                   <div
                     key={index}
@@ -1471,7 +1471,7 @@ const DevChat = () => {
               placeholder={`Message ${activeChat.name}...`}
             />
 
-            <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-4 bg-slate-50/60 rounded-b-2xl md:rounded-b-[23px] border-t border-slate-100/50">
+            <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-4 bg-slate-50/60 rounded-b-2xl md:rounded-b-[23px] border-t border-slate-300/50">
               <div className="flex items-center gap-3.5 md:gap-5 text-slate-400">
                 <button
                   type="button"
@@ -1493,7 +1493,7 @@ const DevChat = () => {
                     <Smile size={18} />
                   </button>
                   {showEmojiPicker && (
-                    <div className="absolute bottom-12 left-0 shadow-2xl border border-slate-100 rounded-xl overflow-hidden z-50 max-w-[280px] sm:max-w-none">
+                    <div className="absolute bottom-12 left-0 shadow-2xl border border-slate-300 rounded-xl overflow-hidden z-50 max-w-[280px] sm:max-w-none">
                       <EmojiPicker
                         onEmojiClick={onEmojiClick}
                         autoFocusSearch={false}

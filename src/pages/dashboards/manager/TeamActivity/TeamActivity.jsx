@@ -138,7 +138,7 @@ const TeamActivity = () => {
   //     <div className="flex flex-col items-center justify-center min-h-screen bg-[#fcfcfc] p-4 text-center">
   //       <span className="text-2xl mb-2">⚠️</span>
   //       <p className="text-xs font-bold text-red-500">{error}</p>
-  //       <button onClick={() => window.location.reload()} className="mt-4 px-4 py-1.5 bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm hover:bg-slate-700 transition-all">Retry Connection</button>
+  //       <button onClick={() => window.location.reload()} className="mt-4 px-4 py-1.5 bg-slate-800 text-white rounded-md text-xs font-bold shadow-sm hover:bg-slate-700 transition-all">Retry Connection</button>
   //     </div>
   //   );
   // }
@@ -161,20 +161,20 @@ const TeamActivity = () => {
               placeholder="Search member..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-blue-500 transition-all w-48"
+              className="pl-9 pr-4 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-bold outline-none focus:border-blue-500 transition-all w-48"
             />
           </div>
           <select 
             value={projectFilter} 
             onChange={(e) => setProjectFilter(e.target.value)}
-            className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 outline-none cursor-pointer"
+            className="bg-white border border-slate-200 px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 outline-none cursor-pointer"
           >
             {allProjects.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
           <select 
             value={roleFilter} 
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 outline-none cursor-pointer"
+            className="bg-white border border-slate-200 px-3 py-1.5 rounded-md text-xs font-bold text-slate-500 outline-none cursor-pointer"
           >
             {allRoles.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
@@ -182,11 +182,11 @@ const TeamActivity = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm mb-8">
+      <div className="bg-white border border-slate-100 rounded-md p-6 shadow-sm mb-8">
         <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-6">Team Load Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {teamStats.map((s, i) => (
-            <div key={i} className="bg-slate-50/50 border border-slate-100 p-5 rounded-2xl group hover:bg-white hover:shadow-md transition-all">
+            <div key={i} className="bg-slate-50/50 border border-slate-100 p-5 rounded-md group hover:bg-white hover:shadow-md transition-all">
               <div className="flex justify-between items-start mb-2">
                 <p className="text-[10px] font-black uppercase text-slate-400">{s.label}</p>
                 <span className="text-sm">{s.icon}</span>
@@ -215,7 +215,7 @@ const TeamActivity = () => {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white border border-slate-100 rounded-[24px] overflow-hidden shadow-sm">
+      <div className="bg-white border border-slate-100 rounded-md overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-50 flex justify-between items-center">
           <h2 className="text-sm font-black text-slate-800">Team Member Activity</h2>
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
@@ -258,7 +258,7 @@ const TeamActivity = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-slate-500 border border-slate-200 px-2 py-1 rounded-lg bg-white">{m.role}</span>
+                      <span className="text-[10px] font-black text-slate-500 border border-slate-200 px-2 py-1 rounded-md bg-white">{m.role}</span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-1.5 flex-wrap max-w-[200px]">

@@ -156,8 +156,8 @@ export default function UsersManagement() {
       <div className="absolute top-0 right-0 w-[35vw] h-[35vw] max-w-[400px] bg-gradient-to-bl from-purple-200/25 to-fuchsia-200/15 rounded-full filter blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[40vw] h-[40vw] max-w-[450px] bg-gradient-to-tr from-amber-100/15 to-pink-200/20 rounded-full filter blur-[120px] pointer-events-none" />
 
-      <div className="mx-auto relative z-10 max-w-[1600px]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 bg-white/50 backdrop-blur-xl p-6 rounded-2xl border border-white/70 shadow-sm">
+      <div className="mx-auto relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 bg-white/50 backdrop-blur-xl p-6 rounded-md border border-white/70 shadow-sm">
           <div>
             <nav className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">
               <span>Workspace Indices</span>
@@ -174,7 +174,7 @@ export default function UsersManagement() {
           </div>
           <button
             onClick={() => setShowInviteModal(true)}
-            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 transition-all active:scale-[0.98] font-semibold text-xs tracking-wide shrink-0"
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-md flex items-center justify-center gap-2 shadow-md shadow-indigo-600/10 transition-all active:scale-[0.98] font-semibold text-xs tracking-wide shrink-0"
           >
             <UserPlus size={14} /> <span>Provision New Key</span>
           </button>
@@ -190,14 +190,14 @@ export default function UsersManagement() {
             <input
               type="text"
               placeholder="Search operators by profile identity or user email..."
-              className="w-full pl-9 pr-4 py-2 bg-white/70 backdrop-blur-md border border-white/60 rounded-xl text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 shadow-sm transition-all placeholder-slate-400"
+              className="w-full pl-9 pr-4 py-2 bg-white/70 backdrop-blur-md border border-white/60 rounded-md text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 shadow-sm transition-all placeholder-slate-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           <select
-            className="border border-white/60 rounded-xl px-4 py-2 bg-white/70 backdrop-blur-md text-xs font-semibold text-slate-500 tracking-wide outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 cursor-pointer shadow-sm transition-all"
+            className="border border-white/60 rounded-md px-4 py-2 bg-white/70 backdrop-blur-md text-xs font-semibold text-slate-500 tracking-wide outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 cursor-pointer shadow-sm transition-all"
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
           >
@@ -214,7 +214,7 @@ export default function UsersManagement() {
             {/* ========================================================== */}
             {/* 💻 DESKTOP VIEW: HIGH-DENSITY COMPACT GLASS TABLE          */}
             {/* ========================================================== */}
-            <div className="hidden md:block bg-white/50 backdrop-blur-xl border border-white/70 rounded-2xl shadow-sm overflow-hidden">
+            <div className="hidden md:block bg-white/50 backdrop-blur-xl border border-white/70 rounded-md shadow-sm overflow-hidden">
               <div className="overflow-x-auto w-full">
                 <table className="w-full text-left border-collapse">
                   <thead className="bg-slate-50/50 backdrop-blur-md border-b border-slate-100/80">
@@ -246,7 +246,7 @@ export default function UsersManagement() {
                       >
                         <td className="pl-6 pr-4 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 shrink-0 bg-gradient-to-br from-white to-slate-50 text-slate-700 font-bold flex items-center justify-center text-xs border border-slate-200/60 group-hover:from-blue-600 group-hover:to-indigo-600 group-hover:text-white group-hover:border-transparent transition-all shadow-sm rounded-xl">
+                            <div className="w-9 h-9 shrink-0 bg-gradient-to-br from-white to-slate-50 text-slate-700 font-bold flex items-center justify-center text-xs border border-slate-200/60 group-hover:from-blue-600 group-hover:to-indigo-600 group-hover:text-white group-hover:border-transparent transition-all shadow-sm rounded-md">
                               {u.name?.charAt(0).toUpperCase()}
                             </div>
                             <div className="overflow-hidden">
@@ -319,7 +319,7 @@ export default function UsersManagement() {
                           </button>
                           {/* Replace the old openMenuId === u.id wrapper inside mobile card header */}
                           {openMenuId === u.id && (
-                            <div className="absolute right-0 top-9 bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl rounded-xl py-2 z-50 w-44 text-left animate-in fade-in zoom-in-95 duration-100">
+                            <div className="absolute right-0 top-9 bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-xl rounded-md py-2 z-50 w-44 text-left animate-in fade-in zoom-in-95 duration-100">
                               <div className="px-4 py-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
                                 Reallocate Context
                               </div>
@@ -362,12 +362,12 @@ export default function UsersManagement() {
                 <div
                   key={u.id}
                   onClick={() => setSelectedUser(u)}
-                  className="bg-white/60 backdrop-blur-xl border border-white/80 p-5 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between group"
+                  className="bg-white/60 backdrop-blur-xl border border-white/80 p-5 rounded-md shadow-sm relative overflow-hidden flex flex-col justify-between group"
                 >
                   {/* Mobile Card Header Frame */}
                   <div className="flex items-start justify-between gap-2 mb-4">
                     <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-slate-200/60 rounded-xl shadow-xs relative">
+                      <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-slate-200/60 rounded-md shadow-xs relative">
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full ${getOnlineStatus(u.lastActive) === "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-slate-300"}`}
                         />
@@ -396,7 +396,7 @@ export default function UsersManagement() {
                       </button>
 
                       {openMenuId === u.id && (
-                        <div className="absolute right-0 top-7 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-xl py-1.5 z-50 w-44 text-left">
+                        <div className="absolute right-0 top-7 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-md py-1.5 z-50 w-44 text-left">
                           <div className="px-4 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 mb-1">
                             Reallocate Context
                           </div>
@@ -526,7 +526,7 @@ export default function UsersManagement() {
             </div>
           </div>
         ) : (
-          <div className="bg-white/50 backdrop-blur-md rounded-2xl p-12 text-center border border-dashed border-slate-200">
+          <div className="bg-white/50 backdrop-blur-md rounded-md p-12 text-center border border-dashed border-slate-200">
             <p className="text-xs font-semibold text-slate-400">
               No active operators discovered within target execution parameters.
             </p>
@@ -547,13 +547,13 @@ export default function UsersManagement() {
           <div className="w-full max-w-md bg-white/90 backdrop-blur-2xl border border-white/80 p-6 sm:p-8 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col relative overflow-hidden">
             <button
               onClick={() => setShowInviteModal(false)}
-              className="absolute top-6 right-6 p-1.5 text-slate-400 hover:text-slate-900 rounded-xl hover:bg-slate-50 transition-all"
+              className="absolute top-6 right-6 p-1.5 text-slate-400 hover:text-slate-900 rounded-md hover:bg-slate-50 transition-all"
             >
               <X size={14} />
             </button>
 
             <div className="text-center mb-6">
-              <div className="w-11 h-11 bg-white border border-slate-200/40 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-2xs text-indigo-600">
+              <div className="w-11 h-11 bg-white border border-slate-200/40 rounded-md flex items-center justify-center mx-auto mb-3 shadow-2xs text-indigo-600">
                 <UserPlus size={18} />
               </div>
               <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
@@ -579,12 +579,12 @@ export default function UsersManagement() {
                       setEmails(newEmails);
                     }}
                     placeholder={`operator.node_${idx + 1}@corporate.com`}
-                    className="flex-1 bg-white/60 border border-slate-200/70 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-500/60 shadow-2xs transition-all"
+                    className="flex-1 bg-white/60 border border-slate-200/70 rounded-md px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-500/60 shadow-2xs transition-all"
                   />
                   {emails.length > 1 && (
                     <button
                       onClick={() => removeEmailField(idx)}
-                      className="p-3 border border-rose-200 bg-rose-50/50 text-rose-500 rounded-xl hover:bg-rose-100 transition-colors shrink-0"
+                      className="p-3 border border-rose-200 bg-rose-50/50 text-rose-500 rounded-md hover:bg-rose-100 transition-colors shrink-0"
                     >
                       <X size={14} />
                     </button>
@@ -593,7 +593,7 @@ export default function UsersManagement() {
               ))}
               <button
                 onClick={addEmailField}
-                className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 hover:border-indigo-500/40 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all"
+                className="w-full py-2.5 border-2 border-dashed border-slate-200 rounded-md text-slate-400 text-xs font-bold tracking-wide flex items-center justify-center gap-1.5 hover:border-indigo-500/40 hover:text-indigo-600 hover:bg-indigo-50/30 transition-all"
               >
                 <Plus size={12} /> Append Email Field
               </button>
@@ -603,14 +603,14 @@ export default function UsersManagement() {
             <div className="flex gap-3 w-full border-t border-slate-100/60 pt-4">
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 rounded-xl text-xs font-bold transition-all active:scale-98"
+                className="flex-1 py-3 bg-white border border-slate-200 text-slate-400 hover:text-slate-600 rounded-md text-xs font-bold transition-all active:scale-98"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendInvites}
                 disabled={isInviting}
-                className="flex-[1.5] py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
+                className="flex-[1.5] py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold rounded-md shadow-md shadow-indigo-600/10 flex items-center justify-center gap-2 active:scale-98 disabled:opacity-50"
               >
                 {isInviting ? (
                   <Loader2 size={14} className="animate-spin text-white" />
@@ -683,15 +683,15 @@ function UserDetailsModal({
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-50 rounded-xl border border-gray-100 text-gray-400"
+            className="p-2 hover:bg-gray-50 rounded-md border border-gray-100 text-gray-400"
           >
             <X size={16} />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex flex-col items-center text-center bg-[#f8fafc]/50 p-5 rounded-2xl border border-gray-100">
-            <div className="w-16 h-16 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] rounded-xl flex items-center justify-center text-white text-xl font-black shadow-lg relative">
+          <div className="flex flex-col items-center text-center bg-[#f8fafc]/50 p-5 rounded-md border border-gray-100">
+            <div className="w-16 h-16 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] rounded-md flex items-center justify-center text-white text-xl font-black shadow-lg relative">
               <span
                 className={`absolute bottom-0.5 right-0.5 w-3 h-3 border-2 border-white rounded-full ${getOnlineStatus(user.lastActive) === "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-gray-300"}`}
               />
@@ -709,7 +709,7 @@ function UserDetailsModal({
             <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-0.5">
               Credentials Matrix
             </h4>
-            <div className="bg-[#f8fafc]/80 rounded-xl p-4 space-y-3.5">
+            <div className="bg-[#f8fafc]/80 rounded-md p-4 space-y-3.5">
               <DetailRow
                 label="Role Context"
                 value={
@@ -752,7 +752,7 @@ function UserDetailsModal({
                 projects.map((p) => (
                   <div
                     key={p.projectId}
-                    className="flex items-center justify-between p-3.5 bg-white border border-gray-100 rounded-xl shadow-sm"
+                    className="flex items-center justify-between p-3.5 bg-white border border-gray-100 rounded-md shadow-sm"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#3b59ff] shrink-0" />
@@ -766,7 +766,7 @@ function UserDetailsModal({
                   </div>
                 ))
               ) : (
-                <div className="text-xs font-medium text-gray-400 italic py-4 bg-[#f8fafc]/50 border border-dashed border-gray-200 rounded-xl text-center">
+                <div className="text-xs font-medium text-gray-400 italic py-4 bg-[#f8fafc]/50 border border-dashed border-gray-200 rounded-md text-center">
                   No localized system instances assigned.
                 </div>
               )}
@@ -787,7 +787,7 @@ function UserDetailsModal({
           <button
             onClick={() => onTogglePermissions(user.id)}
             disabled={isStatusUpdating}
-            className={`w-full py-3.5 font-black rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md ${
+            className={`w-full py-3.5 font-black rounded-md text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md ${
               user.status === "Disabled"
                 ? "bg-emerald-600 text-white"
                 : "bg-gradient-to-r from-red-500 to-red-600 text-white"

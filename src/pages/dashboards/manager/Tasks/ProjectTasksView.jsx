@@ -102,16 +102,16 @@ const ProjectTasksView = () => {
       {/* HEADER SECTION */}
       <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 shadow-sm">
         <div className="flex items-center gap-6">
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+          <div className="flex bg-slate-100 p-1.5 rounded-md border border-slate-200">
             <button
               onClick={() => setActiveView("Table View")}
-              className={`px-6 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${activeView === "Table View" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              className={`px-6 py-2 rounded-md text-xs font-black flex items-center gap-2 transition-all ${activeView === "Table View" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
             >
               <TableIcon size={16} /> Table View
             </button>
             <button
               onClick={() => setActiveView("Kanban")}
-              className={`px-6 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${activeView === "Kanban" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+              className={`px-6 py-2 rounded-md text-xs font-black flex items-center gap-2 transition-all ${activeView === "Kanban" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
             >
               <Layout size={16} /> Kanban Board
             </button>
@@ -122,11 +122,11 @@ const ProjectTasksView = () => {
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6">
           {/* PROJECT DROPDOWN SELECTOR */}
-          <div className="px-6 mb-6 flex justify-between items-center">
+          <div className="mb-12 flex justify-between items-center">
             <div className="relative">
               <button
                 onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative"
+                className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-md px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative"
               >
                 <FolderKanban size={18} className="text-blue-600" />
                 <span className="font-bold text-sm">
@@ -137,7 +137,7 @@ const ProjectTasksView = () => {
               </button>
 
               {showProjectDropdown && (
-                       <div className="absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-xl shadow-xl z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                       <div className="absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-md shadow-xl z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
                          <div className="px-3 py-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
                            {projects.length > 0 ? "Switch Project" : ""}
                          </div>
@@ -177,7 +177,7 @@ const ProjectTasksView = () => {
               </p>
             </div>
           ) : activeView === "Table View" ? (
-            <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
               <table className="w-full text-left">
                 <thead className="bg-slate-50 border-b border-slate-100 font-black text-slate-400 text-xs uppercase tracking-widest">
                   <tr>
@@ -452,7 +452,7 @@ const ProjectTasksView = () => {
     {/* 1. HEADER SECTION (Hamesha dikhega taake Close button aur title toggle/work karein) */}
     <div className="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
+        <div className="p-2 bg-blue-50 rounded-md text-blue-600">
           <MessageSquare size={20} />
         </div>
         <div>
@@ -476,7 +476,7 @@ const ProjectTasksView = () => {
     {/* 2. COMMENTS MIDDLE BODY (Table View check ke sath) */}
     <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/30">
       {/* System Welcome Message */}
-      <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm max-w-[90%]">
+      <div className="bg-white border border-slate-100 p-4 rounded-md shadow-sm max-w-[90%]">
         <p className="text-[10px] font-black text-blue-600 uppercase mb-1">
           {selectedTask.assignees?.[0]?.full_name || "System"}
         </p>
@@ -502,7 +502,7 @@ const ProjectTasksView = () => {
             className={`flex ${isMe ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[85%] p-4 rounded-2xl text-sm font-bold shadow-sm flex flex-col gap-1 ${
+              className={`max-w-[85%] p-4 rounded-md text-sm font-bold shadow-sm flex flex-col gap-1 ${
                 isMe
                   ? "bg-blue-600 text-white rounded-tr-none"
                   : "bg-white border border-slate-100 text-slate-700 rounded-tl-none"
@@ -543,14 +543,14 @@ const ProjectTasksView = () => {
       <input
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
-        className="flex-1 bg-slate-100 px-4 py-3 rounded-xl text-sm font-bold outline-none border border-transparent focus:border-blue-200 text-slate-700"
+        className="flex-1 bg-slate-100 px-4 py-3 rounded-md text-sm font-bold outline-none border border-transparent focus:border-blue-200 text-slate-700"
         placeholder="Type a message..."
         disabled={postCommentMutation?.isPending}
       />
       <button
         type="submit"
         disabled={!inputText.trim() || postCommentMutation?.isPending}
-        className="bg-blue-600 text-white p-3 rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+        className="bg-blue-600 text-white p-3 rounded-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
       >
         <Send size={20} />
       </button>

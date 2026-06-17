@@ -248,7 +248,7 @@ const AdminProjectsView = () => {
       <div className="absolute top-0 right-0 w-[35vw] h-[35vw] max-w-[400px] bg-gradient-to-bl from-purple-200/25 to-fuchsia-200/15 rounded-full filter blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[40vw] h-[40vw] max-w-[450px] bg-gradient-to-tr from-amber-100/15 to-pink-200/20 rounded-full filter blur-[120px] pointer-events-none" />
 
-      <div className="relative z-10 max-w-[1600px] mx-auto">
+      <div className="relative z-10 mx-auto">
         
         {/* --- HEADER BLOCK --- */}
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
@@ -262,7 +262,7 @@ const AdminProjectsView = () => {
           </div>
           <button
             onClick={() => setActiveModal("create")}
-            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/10 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-md text-xs font-semibold shadow-md shadow-indigo-600/10 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <span className="text-sm font-bold">+</span> Create Project
           </button>
@@ -270,12 +270,12 @@ const AdminProjectsView = () => {
 
         {/* --- CONTROLS: FILTERS & SEARCH --- */}
         <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 mb-8">
-          <div className="flex p-1 bg-white/70 backdrop-blur-md border border-white/60 rounded-xl shadow-sm overflow-x-auto whitespace-nowrap scrollbar-none max-w-full">
+          <div className="flex p-1 bg-white/70 backdrop-blur-md border border-white/60 rounded-md shadow-sm overflow-x-auto whitespace-nowrap scrollbar-none max-w-full">
             {["All Projects", "Active", "Archived"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveFilter(tab)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
                   activeFilter === tab ? "bg-slate-900 text-white shadow-sm" : "text-slate-500 hover:text-slate-900 bg-transparent"
                 }`}
               >
@@ -290,7 +290,7 @@ const AdminProjectsView = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search projects..."
-              className="w-full bg-white/70 backdrop-blur-md border border-white/60 rounded-xl pl-9 pr-4 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 shadow-sm transition-all"
+              className="w-full bg-white/70 backdrop-blur-md border border-white/60 rounded-md pl-9 pr-4 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600/50 shadow-sm transition-all"
             />
           </div>
         </div>
@@ -305,7 +305,7 @@ const AdminProjectsView = () => {
           ].map((s, i) => (
             <div
               key={i}
-              className={`p-5 bg-white/60 backdrop-blur-lg border border-white/60 border-t-4 ${s.ring} rounded-2xl shadow-sm flex flex-col justify-between`}
+              className={`p-5 bg-white/60 backdrop-blur-lg border border-white/60 border-t-4 ${s.ring} rounded-md shadow-sm flex flex-col justify-between`}
             >
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.label}</p>
               <p className={`text-2xl font-extrabold tracking-tight ${s.color} mt-2`}>
@@ -318,7 +318,7 @@ const AdminProjectsView = () => {
         {/* ========================================================================= */}
         {/* 💻 DESKTOP VIEW: STANDARD COMPACT GLASS TABLE (Hidden on mobile/tablet) */}
         {/* ========================================================================= */}
-        <div className="hidden md:block bg-white/50 backdrop-blur-xl border border-white/70 rounded-2xl shadow-sm overflow-hidden">
+        <div className="hidden md:block bg-white/50 backdrop-blur-xl border border-white/70 rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50/50 backdrop-blur-md border-b border-slate-100/80">
@@ -339,7 +339,7 @@ const AdminProjectsView = () => {
                       className="pl-6 pr-4 py-4 hover:cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-xs shadow-sm">
+                        <div className="w-9 h-9 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-md flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-xs shadow-sm">
                           {project?.name ? project.name.charAt(0).toUpperCase() : "P"}
                         </div>
                         <div className="overflow-hidden">
@@ -392,12 +392,12 @@ const AdminProjectsView = () => {
                     <td className="pr-6 pl-4 py-4 text-right relative whitespace-nowrap">
                       <button
                         onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
-                        className="text-slate-400 hover:text-slate-700 text-sm font-black p-1.5 rounded-lg hover:bg-white/80"
+                        className="text-slate-400 hover:text-slate-700 text-sm font-black p-1.5 rounded-md hover:bg-white/80"
                       >
                         ⋮
                       </button>
                       {openDropdownId === project.id && (
-                        <div className="absolute right-12 top-4 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-xl py-1.5 z-50 w-44 text-left">
+                        <div className="absolute right-12 top-4 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-md py-1.5 z-50 w-44 text-left">
                           <button
                             onClick={() => {
                               setSelectedProject(project);
@@ -440,7 +440,7 @@ const AdminProjectsView = () => {
           {filteredProjects.map((project) => (
             <div 
               key={project?.id}
-              className="bg-white/60 backdrop-blur-xl border border-white/80 p-5 rounded-2xl shadow-sm relative overflow-hidden flex flex-col justify-between group"
+              className="bg-white/60 backdrop-blur-xl border border-white/80 p-5 rounded-md shadow-sm relative overflow-hidden flex flex-col justify-between group"
             >
               {/* Header inside Mobile Card */}
               <div className="flex justify-between items-start gap-2 mb-4">
@@ -448,7 +448,7 @@ const AdminProjectsView = () => {
                   className="flex items-center gap-3 cursor-pointer overflow-hidden"
                   onClick={() => { setSelectedProjectForSidebar(project); setActiveTab("Overview"); }}
                 >
-                  <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-sm shadow-xs">
+                  <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-md flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-sm shadow-xs">
                     {project?.name ? project.name.charAt(0).toUpperCase() : "P"}
                   </div>
                   <div className="overflow-hidden">
@@ -465,12 +465,12 @@ const AdminProjectsView = () => {
                 <div className="relative shrink-0">
                   <button
                     onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
-                    className="text-slate-400 hover:text-slate-700 font-black p-1.5 rounded-lg bg-white/40 border border-slate-200/40 text-xs"
+                    className="text-slate-400 hover:text-slate-700 font-black p-1.5 rounded-md bg-white/40 border border-slate-200/40 text-xs"
                   >
                     ⋮
                   </button>
                   {openDropdownId === project.id && (
-                    <div className="absolute right-0 top-7 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-xl py-1.5 z-50 w-44 text-left">
+                    <div className="absolute right-0 top-7 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-md py-1.5 z-50 w-44 text-left">
                       <button
                         onClick={() => {
                           setSelectedProject(project);
@@ -518,7 +518,7 @@ const AdminProjectsView = () => {
                   {(() => {
                     const manager = project.members?.find((m) => m.ProjectMember?.project_role === "Manager");
                     return manager ? (
-                      <span className="text-xs font-semibold text-slate-700 bg-white/80 border border-slate-200/40 px-2 py-1 rounded-lg shadow-2xs">
+                      <span className="text-xs font-semibold text-slate-700 bg-white/80 border border-slate-200/40 px-2 py-1 rounded-md shadow-2xs">
                         {manager.full_name}
                       </span>
                     ) : (

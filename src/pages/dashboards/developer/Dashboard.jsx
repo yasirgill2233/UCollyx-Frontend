@@ -98,12 +98,12 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-4 md:p-12 bg-gradient-to-tr from-[#f4f7fc] via-[#eef2f9] to-[#f6f9fc] min-h-screen font-sans text-slate-800 selection:bg-indigo-100 relative overflow-hidden">
+    <div className="p-4 md:p-12 min-h-screen font-sans text-slate-800 selection:bg-indigo-100 relative overflow-hidden">
       <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-sky-200/30 to-indigo-200/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-gradient-to-tr from-purple-200/20 to-pink-200/30 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-blue-200/10 rounded-full blur-[90px] pointer-events-none" />
 
-      <header className="relative mx-auto mb-10 p-8 bg-white/30 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.015)]">
+      <header className="relative mx-auto mb-10 p-8 bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <p className="text-[10px] font-black text-indigo-500/80 uppercase tracking-[0.25em]">
@@ -125,7 +125,7 @@ const Dashboard = () => {
           </div>
 
           {/* Minimalist Live Digital Node */}
-          <div className="flex items-center gap-3 bg-white/50 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/80 shadow-[0_10px_30px_rgba(0,0,0,0.01)] self-start md:self-center">
+          <div className="flex items-center gap-3 bg-white backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white/80 shadow-[0_10px_30px_rgba(0,0,0,0.01)] self-start md:self-center">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-black text-slate-700 tracking-widest tabular-nums">
               {time.toLocaleTimeString([], {
@@ -140,7 +140,7 @@ const Dashboard = () => {
 
       <div className=" mx-auto grid grid-cols-12 gap-8 relative z-10">
         <div className="col-span-12 lg:col-span-8 space-y-8">
-          <section className="bg-white/40 backdrop-blur-2xl border border-white/70 rounded-3xl p-6 md:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.02)]">
+          <section className="bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8">
             <div className="flex justify-between items-center mb-8">
               <div className="space-y-0.5">
                 <h2 className="text-lg font-black text-slate-900 flex items-center gap-2.5 tracking-tight">
@@ -215,11 +215,11 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="bg-rose-50/20 backdrop-blur-xl border border-rose-100/40 rounded-3xl p-6 md:p-8 shadow-sm">
+          <section className="bg-white backdrop-blur-xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="flex w-full justify-between">
                 <div className="flex gap-2">
-                  <div className="p-2 bg-rose-100/50 rounded-xl text-rose-500 border border-rose-200/20">
+                  <div className="p-2 bg-white rounded-sm text-rose-500 border border-rose-200/20">
                     <AlertTriangle size={16} />
                   </div>
                   <div className="">
@@ -245,7 +245,7 @@ const Dashboard = () => {
                 issues.map((alert) => (
                   <div
                     key={alert.id}
-                    className="bg-white/40 backdrop-blur-md border border-white/60 p-5 rounded-2xl hover:bg-white/80 hover:shadow-lg hover:border-rose-300/40 transition-all duration-500 group/alert cursor-pointer flex flex-col justify-between gap-4"
+                    className="bg-white backdrop-blur-md border border-white/60 p-5 rounded-2xl hover:bg-white/80 hover:shadow-lg hover:border-rose-300/40 transition-all duration-500 group/alert cursor-pointer flex flex-col justify-between gap-4"
                   >
                     <p className="font-extrabold text-slate-800 text-sm tracking-tight leading-snug group-hover/alert:text-rose-600 transition-colors">
                       {alert.title}
@@ -262,7 +262,7 @@ const Dashboard = () => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-2 text-center py-8 text-[11px] font-bold text-emerald-600 bg-white/30 border border-emerald-100/40 rounded-2xl shadow-inner">
+                <div className="col-span-2 text-center py-8 text-[11px] font-bold text-emerald-600 bg-white border border-emerald-100/40 rounded-2xl shadow-inner">
                   ✓ Core arrays and clusters completely stable. No trace errors
                   found.
                 </div>
@@ -272,7 +272,7 @@ const Dashboard = () => {
         </div>
 
         <div className="col-span-12 lg:col-span-4 space-y-8">
-          <section className="bg-white/40 backdrop-blur-2xl border border-white/70 rounded-3xl p-6 md:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.02)] relative overflow-hidden">
+          <section className="bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8 relative overflow-hidden">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-base font-black text-slate-900 flex items-center gap-2 tracking-tight">
                 <Layers size={16} className="text-indigo-500" /> Active Repos
@@ -334,9 +334,9 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="bg-white/40 backdrop-blur-2xl border border-white/70 rounded-3xl p-6 md:p-8 shadow-[0_30px_70px_rgba(0,0,0,0.02)]">
+          <section className="bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8">
             <div className="flex items-center gap-2.5 mb-6">
-              <div className="p-2 bg-white/80 rounded-xl text-slate-600 border border-white shadow-sm">
+              <div className="p-2 bg-white/80 rounded-sm text-slate-600 border border-white">
                 <Layout size={14} />
               </div>
               <h2 className="font-black text-slate-900 text-sm tracking-tight">
@@ -366,7 +366,7 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="relative rounded-3xl p-5 bg-gradient-to-br from-slate-900/90 to-indigo-950/90 text-white shadow-xl overflow-hidden group">
+          <section className="relative rounded-md shadow-sm p-5 bg-gradient-to-br from-slate-900/90 to-indigo-950/90 text-white overflow-hidden group">
             {/* <div className="absolute -top-10 -right-10 w-36 h-36 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" /> */}
 
             <div className="flex items-center justify-between mb-4 relative z-10">

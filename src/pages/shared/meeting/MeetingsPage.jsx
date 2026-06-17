@@ -64,7 +64,7 @@ const MeetingsPage = () => {
           </div>
           <button 
             onClick={() => setActiveModal('schedule')}
-            className="group bg-indigo-600 text-white px-8 py-3.5 rounded-lg text-sm font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
+            className="group bg-indigo-600 text-white px-8 py-3.5 rounded-md text-sm font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
           >
             <span className="text-lg group-hover:rotate-90 transition-transform duration-300">+</span>
             Schedule Meeting
@@ -80,14 +80,14 @@ const MeetingsPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search meetings or projects..." 
-              className="w-full bg-white border border-slate-200 rounded-lg px-12 py-3.5 text-sm shadow-sm outline-none focus:border-indigo-500 transition-all" 
+              className="w-full bg-white border border-slate-200 rounded-md px-12 py-3.5 text-sm shadow-sm outline-none focus:border-indigo-500 transition-all" 
             />
           </div>
           <div className="flex gap-2">
             <select 
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="bg-white border border-slate-200 rounded-lg px-6 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer"
+              className="bg-white border border-slate-200 rounded-md px-6 py-3.5 text-xs font-bold text-slate-600 shadow-sm outline-none cursor-pointer"
             >
               {projects.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -114,7 +114,7 @@ const MeetingsPage = () => {
                     setActiveModal('join');
                 }} 
                />
-            )) : <div className="p-12 text-center text-slate-400 text-sm w-full border-2 border-dashed border-slate-100 rounded-xl">No upcoming meetings scheduled.</div>}
+            )) : <div className="p-12 text-center text-slate-400 text-sm w-full border-2 border-dashed border-slate-100 rounded-md">No upcoming meetings scheduled.</div>}
           </div>
         </section>
 
@@ -124,7 +124,7 @@ const MeetingsPage = () => {
             <h3 className="text-sm font-black uppercase tracking-[0.15em] text-slate-400">History</h3>
             <div className="h-px flex-1 bg-gradient-to-r from-slate-200 to-transparent"></div>
           </div>
-          <div className="bg-white border border-slate-100 rounded-lg overflow-hidden shadow-sm">
+          <div className="bg-white border border-slate-100 rounded-md overflow-hidden shadow-sm">
             {past.length > 0 ? past.map((meeting, index) => (
               <PastMeetingItem 
                 key={meeting.id} 
@@ -151,7 +151,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
   const isLive = meeting.status === 'live' || meeting.status === 'Live';
   
   return (
-    <div className={`p-6 md:p-8 bg-white border rounded-lg transition-all duration-300 hover:shadow-xl ${isLive ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-100'}`}>
+    <div className={`p-6 md:p-8 bg-white border rounded-md transition-all duration-300 ${isLive ? 'border-indigo-500 ring-1 ring-indigo-500' : 'border-slate-100'}`}>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
         <div className="space-y-3 flex-1">
           <h4 className="text-xl font-bold text-slate-800 group-hover:text-indigo-600">{meeting.title}</h4>
@@ -162,13 +162,13 @@ const MeetingCard = ({ meeting, onJoin }) => {
         </div>
         <div className="flex items-center gap-8 w-full lg:w-auto">
           <div className="flex-1 lg:text-right text-left">
-            <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase ${isLive ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400'}`}>
+            <span className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase ${isLive ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400'}`}>
               {meeting.status}
             </span>
           </div>
           <button 
             onClick={onJoin} 
-            className={`min-w-[140px] py-4 rounded-lg text-xs font-black transition-all ${isLive ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+            className={`min-w-[140px] py-4 hover:cursor-pointer rounded-md text-xs font-black transition-all ${isLive ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
           >
             {isLive ? 'JOIN NOW' : 'VIEW DETAILS'}
           </button>
@@ -181,7 +181,7 @@ const MeetingCard = ({ meeting, onJoin }) => {
 const PastMeetingItem = ({ meeting, isLast, onRecap }) => (
   <div className={`p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-slate-50/50 ${!isLast ? 'border-b border-slate-50' : ''}`}>
     <div className="flex items-center gap-5">
-      <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500">📄</div>
+      <div className="w-12 h-12 rounded-md bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500">📄</div>
       <div className="text-left">
         <h4 className="text-[15px] font-bold text-slate-700 group-hover:text-indigo-600">{meeting.title}</h4>
         <p className="text-[11px] text-slate-400 font-bold uppercase">
@@ -189,7 +189,7 @@ const PastMeetingItem = ({ meeting, isLast, onRecap }) => (
         </p>
       </div>
     </div>
-    <button onClick={onRecap} className="border border-slate-200 text-slate-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 px-6 py-2.5 rounded-xl text-xs font-black transition-all">
+    <button onClick={onRecap} className="border border-slate-200 text-slate-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 px-6 py-2.5 rounded-md text-xs font-black transition-all">
       RECAP
     </button>
   </div>

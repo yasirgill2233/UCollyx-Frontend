@@ -76,7 +76,7 @@ const OrganizationDashboard = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-10 lg:p-14 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
+    <div className="min-h-screen bg-[#f8fafc] p-8 md:p-10 lg:p-14 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
       
       {/* Structural Ambient Mesh Background Layers */}
       <div className="absolute top-[-10%] right-[-5%] w-[650px] h-[650px] bg-gradient-to-bl from-[#3b59ff]/10 to-[#00f2fe]/15 rounded-full blur-[120px] pointer-events-none" />
@@ -85,10 +85,10 @@ const OrganizationDashboard = () => {
       <Modal />
 
       {/* DYNAMIC MASTER HEADER BANNER CONTAINER */}
-      <div className="bg-white/70 backdrop-blur-xl border border-white/80 rounded-3xl p-6 md:p-8 shadow-[0_12px_40px_rgba(31,38,135,0.04)] mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden z-10">
+      <div className="bg-white/70 backdrop-blur-xl border rounded-md shadow-sm border-gray-100 p-6 md:p-8 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden z-10">
         <div className="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-[#3b59ff]/5 to-transparent pointer-events-none" />
         <div className="flex items-center gap-4.5">
-          <div className="w-14 h-14 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] p-3.5 rounded-2xl text-white shadow-md shadow-blue-500/10 shrink-0 flex items-center justify-center">
+          <div className="w-14 h-14 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] p-3.5 rounded-md shadow-sm text-white shadow-blue-500/10 shrink-0 flex items-center justify-center">
             <Hexagon size={28} strokeWidth={2.5} className="animate-pulse" />
           </div>
           <div>
@@ -109,22 +109,22 @@ const OrganizationDashboard = () => {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsPendingModalOpen(true)}
-            className="relative px-4 py-2.5 bg-white border border-gray-200 hover:border-[#3b59ff]/30 text-gray-700 font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-sm active:scale-95"
+            className="relative px-4 py-2.5 bg-white border border-gray-100 hover:border-[#3b59ff]/30 text-gray-700 font-bold text-xs rounded-md shadow-sm flex items-center gap-2 transition-all active:scale-95"
           >
             <span>Pending Gates</span>
             {stats?.users?.pending > 0 && (
-              <span className="bg-amber-500 text-white font-black text-[9px] px-1.5 py-0.5 rounded-md animate-bounce">
+              <span className="bg-amber-500 text-white font-black text-[9px] px-1.5 py-0.5 rounded-md shadow-sm animate-bounce">
                 {stats.users.pending}
               </span>
             )}
           </button>
-          <button 
+          {/* <button 
             onClick={() => setShowInviteModal(true)}
-            className="px-4 py-2.5 bg-gradient-to-r from-[#3b59ff] to-[#8a2be2] text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-md shadow-blue-500/10 hover:opacity-95 transition-opacity active:scale-95"
+            className="px-4 py-2.5 bg-gradient-to-r from-[#3b59ff] to-[#8a2be2] text-white font-bold text-xs rounded-md shadow-sm flex items-center gap-2 shadow-md shadow-blue-500/10 hover:opacity-95 transition-opacity active:scale-95"
           >
             <Sparkles size={13} />
             <span>Deploy Invite Link</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -132,7 +132,7 @@ const OrganizationDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
         
         {/* PANEL 1: TEAM & ACCESS SYSTEM */}
-        <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl rounded-[32px] p-8 border border-white/60 shadow-[0_16px_36px_rgba(0,0,0,0.02)] flex flex-col justify-between group">
+        <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border flex flex-col justify-between group">
           <div>
             <div className="flex justify-between items-start mb-10">
               <div className="space-y-1">
@@ -143,21 +143,21 @@ const OrganizationDashboard = () => {
                   Active operators and telemetry pipelines
                 </p>
               </div>
-              <div className="w-10 h-10 bg-[#f8fafc] border border-gray-100 rounded-xl flex items-center justify-center text-xs font-black text-gray-400 group-hover:bg-[#3b59ff]/5 group-hover:text-[#3b59ff] transition-all">
+              <div className="w-10 h-10 bg-[#f8fafc] border border-gray-100 rounded-md shadow-sm flex items-center justify-center text-xs font-black text-gray-400 group-hover:bg-[#3b59ff]/5 group-hover:text-[#3b59ff] transition-all">
                 IDX
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-b border-gray-100/60 pb-8 mb-8">
-              <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-2xl flex items-center justify-between">
+              <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-md shadow-sm flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-gray-400 block mb-0.5">Total Users Assigned</span>
                   <span className="text-3xl font-black text-[#1a1d2f] tracking-tight">{stats?.users?.total || 0}</span>
                 </div>
-                <div className="p-2.5 bg-[#3b59ff]/5 rounded-xl text-[#3b59ff] text-xs font-bold">Live Node</div>
+                <div className="p-2.5 bg-[#3b59ff]/5 rounded-md shadow-sm text-[#3b59ff] text-xs font-bold">Live Node</div>
               </div>
 
-              <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-2xl flex items-center justify-between">
+              <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-md shadow-sm flex items-center justify-between">
                 <div>
                   <span className="text-xs font-bold text-gray-400 block mb-0.5">Pending Approvals</span>
                   <span className="text-3xl font-black text-amber-500 tracking-tight">{stats?.users?.pending || 0}</span>
@@ -218,7 +218,7 @@ const OrganizationDashboard = () => {
         </div>
 
         {/* PANEL 2: PROJECT TEAMS PIPELINE */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-8 border border-white/60 shadow-[0_16px_36px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+        <div className="bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-10">
               <div className="space-y-1">
@@ -229,7 +229,7 @@ const OrganizationDashboard = () => {
                   Repositories & Scope clusters
                 </p>
               </div>
-              <div className="w-10 h-10 bg-[#f8fafc] border border-gray-100 rounded-xl flex items-center justify-center text-xs font-black text-gray-400">
+              <div className="w-10 h-10 bg-[#f8fafc] border border-gray-100 rounded-md shadow-sm flex items-center justify-center text-xs font-black text-gray-400">
                 DIR
               </div>
             </div>
@@ -267,7 +267,7 @@ const OrganizationDashboard = () => {
         </div>
 
         {/* PANEL 3: SECURITY TELEMETRY ALERTS */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-8 border border-white/60 shadow-[0_16px_36px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+        <div className="bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border flex flex-col justify-between">
           <div>
             <div className="space-y-1 mb-8">
               <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
@@ -279,7 +279,7 @@ const OrganizationDashboard = () => {
             </div>
 
             {/* Warning Alert Box */}
-            <div className="bg-amber-50/70 border border-amber-200/50 p-4.5 rounded-2xl mb-8 flex gap-3.5 items-center">
+            <div className="bg-amber-50/70 border border-amber-200/50 p-4.5 rounded-md shadow-sm mb-8 flex gap-3.5 items-center">
               <div className="w-1.5 h-10 bg-amber-500 rounded-full shrink-0" />
               <div>
                 <h4 className="text-[9px] font-black text-amber-800 uppercase tracking-widest">Telemetries Mismatch</h4>
@@ -310,7 +310,7 @@ const OrganizationDashboard = () => {
         </div>
 
         {/* PANEL 4: STREAM REALTIME ACTIONS */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-[32px] p-8 border border-white/60 shadow-[0_16px_36px_rgba(0,0,0,0.02)] lg:col-span-2 flex flex-col justify-between">
+        <div className="bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="space-y-1 mb-8">
               <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
@@ -324,7 +324,7 @@ const OrganizationDashboard = () => {
             <div className="space-y-5 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[1px] before:bg-gray-100">
               {recentActions.map((item) => (
                 <div key={item.id} className="flex gap-4.5 items-start relative z-10 animate-in fade-in duration-200">
-                  <div className="w-8 h-8 bg-white border border-gray-100 rounded-xl flex items-center justify-center text-xs shadow-sm shrink-0">
+                  <div className="w-8 h-8 bg-white border border-gray-100 rounded-md shadow-sm flex items-center justify-center text-xs shrink-0">
                     {item.icon}
                   </div>
                   <div className="flex-1 min-w-0">

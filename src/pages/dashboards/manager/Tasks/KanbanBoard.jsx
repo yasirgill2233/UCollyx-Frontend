@@ -196,7 +196,7 @@ const handleRemoveEpic = (taskId) => {
   if (isLoading) return <div>Loading Board...</div>;
 
   return (
-    <div className="pt-6 bg-[#F8FAFC] min-h-screen font-sans">
+    <div className=" bg-[#F8FAFC] min-h-screen font-sans">
      
 
       <DragDropContext onDragEnd={onDragEnd}>

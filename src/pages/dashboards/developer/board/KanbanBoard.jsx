@@ -160,18 +160,14 @@ const KanbanBoard = () => {
   return (
     <div className="p-6 bg-white min-h-screen font-sans">
       {/* Header Context Bar */}
-      <div className="flex justify-between items-center mb-6">
-        <button className="px-4 py-1.5 border border-indigo-100 rounded-full text-xs font-black text-indigo-600 bg-indigo-50/50 transition-all uppercase tracking-wider">
-          Developer Workspace
-        </button>
-      </div>
+  
 
       {/* Dynamic Dropdown Toolbar Section */}
-      <div className="px-6 mb-6 flex justify-between items-center">
+      <div className="mb-6 flex justify-between items-center">
         <div className="relative">
           <button
             onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-            className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative cursor-pointer"
+            className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-md px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative cursor-pointer"
           >
             <FolderKanban size={18} className="text-blue-600" />
             <span className="font-bold text-sm">
@@ -182,7 +178,7 @@ const KanbanBoard = () => {
 
           {/* Fully Unlocked Interactive Dropdown Layout */}
           {showProjectDropdown && (
-            <div className="absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-xl shadow-xl z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-md shadow-sm z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
               <div className="px-3 py-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
                 Switch Workspace
               </div>
@@ -242,7 +238,7 @@ const KanbanBoard = () => {
             return (
               <div
                 key={columnId}
-                className="bg-slate-50/70 rounded-2xl p-4 flex flex-col min-h-[75vh] border border-slate-100"
+                className="bg-slate-50/70 rounded-sm p-4 flex flex-col min-h-[75vh] border border-slate-200"
               >
                 <div className="flex justify-between items-center mb-5 px-1">
                   <h3 className="font-black text-slate-700 text-xs tracking-wider uppercase">

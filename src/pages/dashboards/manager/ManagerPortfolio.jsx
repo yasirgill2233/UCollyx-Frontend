@@ -88,10 +88,10 @@ const ManagerPortfolio = () => {
           </h1>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-[11px] font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+          <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-md text-[11px] font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
              <ListFilter size={14}/> FILTER <ChevronDown size={12}/>
           </button>
-          <button className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-xl text-[11px] font-black shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all">
+          <button className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-md text-[11px] font-black shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all">
              THIS SPRINT <ChevronDown size={12}/>
           </button>
         </div>
@@ -100,10 +100,10 @@ const ManagerPortfolio = () => {
       {/* 📊 Top Metrics Glassmorphism Counter Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
         {stats.map((s, i) => (
-          <div key={i} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+          <div key={i} className="bg-white border border-slate-100 p-5 rounded-md shadow-sm hover:shadow-md transition-all group">
             <div className="flex justify-between items-start mb-2">
                <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">{s.label}</p>
-               <div className="p-1.5 bg-slate-50 rounded-lg group-hover:bg-indigo-50 transition-colors">
+               <div className="p-1.5 bg-slate-50 rounded-md group-hover:bg-indigo-50 transition-colors">
                   {s.icon}
                </div>
             </div>
@@ -128,7 +128,7 @@ const ManagerPortfolio = () => {
             const formattedEndDate = p.end_date ? new Date(p.end_date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : "TBD";
 
             return (
-              <div key={p.id} className="bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
+              <div key={p.id} className="bg-white border border-slate-100 rounded-md p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
                  
                  {/* Ambient Blur Dynamic Layer Background Glow */}
                  <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-[0.03] blur-3xl ${contextColorTheme}`}></div>
@@ -185,7 +185,7 @@ const ManagerPortfolio = () => {
                     {/* Navigate safely with exact ID routing payload */}
                     <button 
                       onClick={() => navigate(`/manager/details`, { state: { project: p } })}
-                      className="bg-slate-50 text-[10px] font-black text-slate-600 px-4 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 group/btn shadow-inner"
+                      className="bg-slate-50 text-[10px] font-black text-slate-600 px-4 py-2 rounded-md hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 group/btn shadow-inner"
                     >
                         DETAILS 
                         <ChevronRight size={12} className="group-hover/btn:translate-x-0.5 transition-transform"/>
@@ -197,7 +197,7 @@ const ManagerPortfolio = () => {
         </div>
       ) : (
         // Empty State View Layer Context
-        <div className="text-center py-20 bg-white border border-slate-100 rounded-[24px] shadow-sm">
+        <div className="text-center py-20 bg-white border border-slate-100 rounded-md shadow-sm">
           <LayoutGrid className="text-slate-200 mx-auto mb-3" size={40} />
           <h3 className="font-black text-slate-700 text-base">No Managed Tracks Existing</h3>
           <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">Create or initialize track workflows inside workspace grid to monitor real-time aggregates.</p>
@@ -210,7 +210,7 @@ const ManagerPortfolio = () => {
 // --- SUBSIDIARY MEMBRANE PRESENTATIONAL COMPONENTS ---
 
 const Badge = ({ label, val, color }) => (
-  <div className="bg-slate-50/70 rounded-xl py-3 px-2 border border-slate-100 text-center transition-all hover:bg-white hover:border-indigo-100">
+  <div className="bg-slate-50/70 rounded-md py-3 px-2 border border-slate-100 text-center transition-all hover:bg-white hover:border-indigo-100">
     <p className="text-[8px] font-black uppercase text-slate-400 mb-1 tracking-widest truncate">{label}</p>
     <p className={`text-[10px] font-black tracking-tight ${color}`}>{val}</p>
   </div>

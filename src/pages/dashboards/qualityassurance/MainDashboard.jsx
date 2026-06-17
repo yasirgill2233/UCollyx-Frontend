@@ -134,9 +134,9 @@ const MainDashboard = () => {
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
           <button
             onClick={() => navigate("/qa/report-bug")}
-            className="group flex items-center gap-2 bg-blue-600 hover:bg-rose-600 text-white px-5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 shadow-lg shadow-blue-100 active:scale-95"
+            className="group flex items-center gap-2 bg-blue-600 hover:bg-rose-600 text-white px-5 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all duration-500 shadow-lg shadow-blue-100 active:scale-95"
           >
-            <div className="bg-white/10 p-1.5 rounded-lg group-hover:bg-white/20 transition-colors">
+            <div className="bg-white/10 p-1.5 rounded-md group-hover:bg-white/20 transition-colors">
               <AlertCircle
                 size={14}
                 strokeWidth={3}
@@ -149,7 +149,7 @@ const MainDashboard = () => {
       </div>
 
       {/* Control Search bar */}
-      <div className="flex justify-between mb-8 p-4 border rounded-lg border-gray-200 bg-white">
+      <div className="flex justify-between mb-8 p-4 border rounded-md border-gray-200 bg-white">
         <div className="relative flex-1 lg:flex-none w-[30%]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
           <input
@@ -157,7 +157,7 @@ const MainDashboard = () => {
             placeholder="Search bugs..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 w-full py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-blue-500/5 outline-none transition-all"
+            className="pl-10 pr-4 w-full py-2.5 bg-white border border-slate-200 rounded-md text-xs font-bold focus:ring-4 focus:ring-blue-500/5 outline-none transition-all"
           />
         </div>
         <div className="flex gap-2">
@@ -166,7 +166,7 @@ const MainDashboard = () => {
             <select
               value={projectFilter}
               onChange={(e) => setProjectFilter(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 px-4 py-2.5 pr-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
+              className="appearance-none bg-white border border-slate-200 px-4 py-2.5 pr-10 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
             >
               <option value="All Projects">All Projects</option>
               {projects.map((proj) => (
@@ -185,7 +185,7 @@ const MainDashboard = () => {
             <select
               value={severityFilter}
               onChange={(e) => setSeverityFilter(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 px-4 py-2.5 pr-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
+              className="appearance-none bg-white border border-slate-200 px-4 py-2.5 pr-10 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
             >
               {["All Severities", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((proj) => (
                 <option key={proj} value={proj}>
@@ -222,7 +222,7 @@ const MainDashboard = () => {
               />
               <SeverityStat label="LOW" count={stats.low} color="cyan" />
             </div>
-            <div className="mt-8 p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-center">
+            <div className="mt-8 p-4 bg-slate-50 rounded-md border border-dashed border-slate-200 text-center">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 Total Open: {openBugsFeed.length}
               </p>
@@ -331,7 +331,7 @@ const MainDashboard = () => {
 
 // --- SUB-COMPONENTS WITH SAFE FALLBACK VALUES HANDLING ---
 const SectionCard = ({ title, subTitle, children, count }) => (
-  <div className="bg-white rounded-[32px] border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all">
+  <div className="bg-white rounded-md border border-slate-100 p-8 shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all">
     <div className="flex justify-between items-start mb-8">
       <div>
         <div className="flex items-center gap-2">
@@ -348,7 +348,7 @@ const SectionCard = ({ title, subTitle, children, count }) => (
           {subTitle}
         </p>
       </div>
-      <button className="text-slate-300 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+      <button className="text-slate-300 p-2 hover:bg-slate-50 rounded-md transition-colors">
         <Layers size={16} />
       </button>
     </div>
@@ -364,7 +364,7 @@ const SeverityStat = ({ label, count, color }) => {
     cyan: "bg-cyan-50 text-cyan-600 border-cyan-100",
   };
   return (
-    <div className={`${colors[color]} border p-5 rounded-3xl`}>
+    <div className={`${colors[color]} border p-5 rounded-md`}>
       <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">
         {label}
       </p>
@@ -385,9 +385,9 @@ const BugFeedItem = ({ bug }) => {
           : "bg-cyan-500 shadow-cyan-100";
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white border border-slate-50 rounded-2xl hover:border-slate-200 transition-all shadow-sm group">
+    <div className="flex items-center justify-between p-4 bg-white border border-slate-50 rounded-md hover:border-slate-200 transition-all shadow-sm group">
       <div className="flex items-center gap-4">
-        <div className={`${sevColor} p-2.5 rounded-xl text-white shadow-lg`}>
+        <div className={`${sevColor} p-2.5 rounded-md text-white shadow-lg`}>
           <AlertCircle size={16} />
         </div>
         <div>
@@ -400,7 +400,7 @@ const BugFeedItem = ({ bug }) => {
         </div>
       </div>
       <span
-        className={`text-[8px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest border ${severity === "CRITICAL" ? "text-red-500 border-red-100 bg-red-50" : severity === "HIGH" ? "text-orange-500 border-orange-100 bg-orange-50" : "text-slate-400 border-slate-100 bg-slate-50"}`}
+        className={`text-[8px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border ${severity === "CRITICAL" ? "text-red-500 border-red-100 bg-red-50" : severity === "HIGH" ? "text-orange-500 border-orange-100 bg-orange-50" : "text-slate-400 border-slate-100 bg-slate-50"}`}
       >
         {severity}
       </span>
@@ -409,9 +409,9 @@ const BugFeedItem = ({ bug }) => {
 };
 
 const AwaitingFixRow = ({ bug }) => (
-  <div className="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:bg-white hover:shadow-md transition-all group">
+  <div className="flex items-center justify-between p-4 bg-slate-50/50 border border-slate-100 rounded-md hover:bg-white hover:shadow-md transition-all group">
     <div className="flex items-center gap-4">
-      <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:text-blue-500 transition-colors">
+      <div className="w-10 h-10 rounded-md bg-white border border-slate-100 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:text-blue-500 transition-colors">
         {bug.id || "BUG"}
       </div>
       <div>
@@ -427,7 +427,7 @@ const AwaitingFixRow = ({ bug }) => (
       </div>
     </div>
     <div className="flex items-center gap-2">
-      <span className="text-[8px] font-black text-slate-400 bg-white border border-slate-100 px-2 py-1 rounded-lg">
+      <span className="text-[8px] font-black text-slate-400 bg-white border border-slate-100 px-2 py-1 rounded-md">
         IN QUEUE
       </span>
       <Clock size={12} className="text-slate-300" />
@@ -437,7 +437,7 @@ const AwaitingFixRow = ({ bug }) => (
 
 const ResultBox = ({ label, count, color }) => (
   <div
-    className={`flex-1 p-5 rounded-3xl border text-center ${color === "emerald" ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-red-50 border-red-100 text-red-600"}`}
+    className={`flex-1 p-5 rounded-md border text-center ${color === "emerald" ? "bg-emerald-50 border-emerald-100 text-emerald-600" : "bg-red-50 border-red-100 text-red-600"}`}
   >
     <h2 className="text-3xl font-black">{count}</h2>
     <p className="text-[10px] font-black uppercase tracking-widest mt-1">
@@ -449,7 +449,7 @@ const ResultBox = ({ label, count, color }) => (
 const RetestRow = ({ bug }) => {
   const status = bug.retest_status || "Pending";
   return (
-    <div className="flex items-center justify-between p-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 rounded-lg">
+    <div className="flex items-center justify-between p-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/50 rounded-md">
       <div className="flex items-center gap-3">
         <CheckCircle2
           size={14}
@@ -467,7 +467,7 @@ const RetestRow = ({ bug }) => {
 };
 
 const EmptyState = () => (
-  <div className="w-full py-10 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200= flex items-center justify-center">
+  <div className="w-full py-10 text-center bg-slate-50/50 rounded-md border border-dashed border-slate-200= flex items-center justify-center">
     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
       No matching results found
     </p>

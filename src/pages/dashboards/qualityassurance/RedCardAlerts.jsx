@@ -109,7 +109,7 @@ console.log("----------------========================--------------------------"
     <div className="flex-1 bg-[#FBFDFF] p-6 min-h-screen font-sans">
       
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white p-5 rounded-md border border-slate-100 shadow-sm">
         <div>
           <h1 className="text-base font-black text-slate-800 tracking-tight flex items-center gap-2 uppercase">
             Priority Alerts Feed
@@ -127,13 +127,13 @@ console.log("----------------========================--------------------------"
               placeholder="Search by ID or Title..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:ring-4 focus:ring-blue-500/5 outline-none w-56 transition-all"
+              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-bold focus:ring-4 focus:ring-blue-500/5 outline-none w-56 transition-all"
             />
           </div>
 
           {/* 🔥 DYNAMIC FILTER DROPDOWN INTEGRATION */}
           <select 
-            className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider text-slate-500 outline-none cursor-pointer"
+            className="bg-white border border-slate-200 px-3 py-2 rounded-md text-[10px] font-black uppercase tracking-wider text-slate-500 outline-none cursor-pointer"
             value={projectFilter}
             onChange={(e) => setProjectFilter(e.target.value)}
           >
@@ -153,10 +153,10 @@ console.log("----------------========================--------------------------"
           <div
             key={alert.id}
             onClick={() => setSelectedAlert(alert)}
-            className={`group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-xl shadow-sm border-l-[5px] ${alert.accentColor} hover:shadow-md transition-all duration-200 cursor-pointer`}
+            className={`group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-md shadow-sm border-l-[5px] ${alert.accentColor} hover:shadow-md transition-all duration-200 cursor-pointer`}
           >
             <div className="flex items-center gap-4">
-              <div className={`p-2 rounded-lg ${alert.severity === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-400'}`}>
+              <div className={`p-2 rounded-md ${alert.severity === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-400'}`}>
                 {alert.severity === 'CRITICAL' ? <ShieldAlert size={20} /> : <AlertCircle size={20} />}
               </div>
 
@@ -193,7 +193,7 @@ console.log("----------------========================--------------------------"
             </div>
 
             <div className="flex items-center gap-4">
-              <span className={`px-3 py-1.5 rounded-lg text-[9px] font-black border tracking-tighter uppercase ${alert.statusStyle}`}>
+              <span className={`px-3 py-1.5 rounded-md text-[9px] font-black border tracking-tighter uppercase ${alert.statusStyle}`}>
                 {alert.status}
               </span>
               <ChevronDown className="w-4 h-4 text-slate-300 -rotate-90 group-hover:translate-x-1 transition-transform" />
