@@ -17,7 +17,7 @@ import API from '../../../api/axios';
 const ManagerPortfolio = () => {
   const navigate = useNavigate();
 
-  // 📡 1. BACKEND DYNAMIC CORE STREAM SYNC (Using React Query)
+  // 1. BACKEND DYNAMIC CORE STREAM SYNC (Using React Query)
   const { data: portfolioResponse, isLoading, error } = useQuery({
     queryKey: ['manager-portfolio-dashboard'],
     queryFn: async () => {
@@ -31,7 +31,7 @@ const ManagerPortfolio = () => {
   // Extract raw list safely from backend structure response
   const projects = useMemo(() => portfolioResponse?.data || [], [portfolioResponse]);
 
-  // 📊 2. METRICS ACCUMULATION ENGINE
+  // 2. METRICS ACCUMULATION ENGINE
   const stats = useMemo(() => {
     const totalProjects = projects.length;
     
@@ -48,7 +48,7 @@ const ManagerPortfolio = () => {
     ];
   }, [projects]);
 
-  console.log("Hello world:==========================",portfolioResponse)
+  console.log("!@#!@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@##############################",portfolioResponse)
 
   // --- LOADING STATE TRIGGER ---
   if (isLoading) {
@@ -62,25 +62,10 @@ const ManagerPortfolio = () => {
     );
   }
 
-  // --- ERROR HANDLING PORTAL ---
-  // if (error) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen bg-[#F8FAFC] text-center p-6">
-  //       <div className="bg-white border border-red-100 p-8 rounded-3xl shadow-sm max-w-md">
-  //         <AlertCircle className="text-red-500 mx-auto mb-4" size={32} />
-  //         <h3 className="font-black text-slate-800 text-lg mb-1">Ecosystem Interrupted</h3>
-  //         <p className="text-xs text-slate-400 font-medium mb-4">
-  //           {error?.response?.data?.message || "Failed to establish secure gateway context."}
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="p-8 bg-[#F8FAFC] min-h-screen font-sans selection:bg-blue-100 text-left">
       
-      {/* 🚀 Top Dynamic Header Matrix */}
+      {/* Top Dynamic Header Matrix */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
@@ -97,7 +82,7 @@ const ManagerPortfolio = () => {
         </div>
       </div>
 
-      {/* 📊 Top Metrics Glassmorphism Counter Cards */}
+      {/* Top Metrics Glassmorphism Counter Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
         {stats.map((s, i) => (
           <div key={i} className="bg-white border border-slate-100 p-5 rounded-md shadow-sm hover:shadow-md transition-all group">
@@ -115,7 +100,7 @@ const ManagerPortfolio = () => {
         ))}
       </div>
 
-      {/* 🗂️ Dynamic Project Stream Cards Grid Layout */}
+      {/* Dynamic Project Stream Cards Grid Layout */}
       {projects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects.map((p) => {

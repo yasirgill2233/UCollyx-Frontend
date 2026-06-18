@@ -37,11 +37,12 @@ const TeamMemberModal = ({ member, onClose, projectData }) => {
           <div className="flex items-center gap-6">
             {/* Dynamic Avatar Block: Image Check */}
             {member.avatar ? (
-              <img 
-                src={member.avatar} 
-                alt={member.name} 
-                className="w-20 h-20 rounded-2xl object-cover border border-white/30 bg-white shadow-md"
-              />
+<img
+                    src={import.meta.env.VITE_SERVER_URL + member?.avatar}
+                    alt="Avatar"
+                    crossOrigin="anonymous"
+                    className="w-20 h-20 rounded-2xl object-cover border border-white/30 bg-white shadow-md"
+                  />
             ) : (
               <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-2xl font-black text-white shadow-md">
                 {member.name.split(" ").map(n => n[0]).join("")}

@@ -139,6 +139,7 @@ const AdminProjectsView = () => {
   };
 
   const handleRoleChange = (memberId, newRole) => {
+    alert(memberId)
     setSelectedProject((prevProject) => {
       if (!prevProject || !prevProject.members) return prevProject;
       const updatedMembers = prevProject.members.map((m) => {
@@ -397,7 +398,7 @@ const AdminProjectsView = () => {
                         ⋮
                       </button>
                       {openDropdownId === project.id && (
-                        <div className="absolute right-12 top-4 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-md py-1.5 z-50 w-44 text-left">
+                        <div className="absolute right-12 -top-14 bg-white/95 backdrop-blur-xl border border-slate-200/80 shadow-xl rounded-md py-1.5 z-50 w-44 text-left">
                           <button
                             onClick={() => {
                               setSelectedProject(project);
