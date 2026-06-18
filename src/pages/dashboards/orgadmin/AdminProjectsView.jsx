@@ -139,7 +139,6 @@ const AdminProjectsView = () => {
   };
 
   const handleRoleChange = (memberId, newRole) => {
-    alert(memberId)
     setSelectedProject((prevProject) => {
       if (!prevProject || !prevProject.members) return prevProject;
       const updatedMembers = prevProject.members.map((m) => {

@@ -51,7 +51,6 @@ export default function Verify() {
 
   // Verify OTP Handler
   const handleVerify = () => {
-    alert("Hey THere")
     const fullOtp = otp.join("");
     if (fullOtp.length < 6) {
       return triggerToast("Please enter all 6 digits.", "error");
