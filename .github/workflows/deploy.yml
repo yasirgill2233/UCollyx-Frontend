@@ -1,39 +1,26 @@
-name: UCollyx Frontend CI/CD Pipeline
+name: Deploy Frontend
 
 on:
   push:
     branches:
       - main
-      - master
-    paths:
-      - 'frontend/**' # Sirf frontend code tabdeel hone par chalay ga
 
 jobs:
-  deploy-frontend:
+  deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
 
-      - name: Build and Deploy Frontend
-        env:
-          VITE_API_URL: "http://localhost:5000" # Aapka production backend endpoint
-        run: |
-          echo "📂 Moving into Project Frontend Directory..."
-          cd /var/www/ucollyx-app/frontend
-          
-          echo "🔄 Pulling latest frontend code..."
-          git pull origin main
-          
-          echo "📦 Installing Dependencies..."
-          npm install
-          
-          echo "🏗️ Building Production Bundle (Vite/React)..."
-          npm run build
-          
-          echo "🚀 Refreshing static files..."
-          # Agar aap Nginx se directly dist point kar rahe hain to yahan kaam khatam.
-          # Agar files move karni hain /var/www/html mein to niche wali line use karein:
-          # sudo cp -R ./dist/* /var/www/html/
-          
-          echo "✨ Frontend Build and Deploy Successful!"
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/frontend
+
+            git pull origin main
+
+            npm install
+
+            npm run build
