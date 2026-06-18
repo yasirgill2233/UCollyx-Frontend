@@ -200,8 +200,14 @@ const DevChat = () => {
         triggerToast(`Channel '${data.data.name}' created!`, "success");
         switchChat(data.data.name, "channel", data.data.id);
       },
-      onError: (err) =>
-        triggerToast(err.response?.data?.message || "Error", "error"),
+      onError: (err) => {
+        const errorMsg = err.response?.data?.errors
+          ? err.response.data.errors
+              .map((e) => `${e.field}: ${e.message}`)
+              .join("\n")
+          : err.response?.data?.message || "Creation failed";
+        triggerToast(errorMsg, "error");
+      },
     });
   };
 
@@ -1308,60 +1314,64 @@ const DevChat = () => {
                 ),
               )}
 
-             {Object.keys(typingStatus).length > 0 && (
-  <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 animate-in fade-in slide-in-from-bottom-2 duration-300">
-    
-    {/* 👥 LAYERED AVATARS CONTAINER */}
-    <div className="flex items-center -space-x-3.5 invisible-scrollbar">
-      {Object.keys(typingStatus).map((userId, index) => {
-        const typingUser = typingStatus[userId];
-        return (
-          <div
-            key={userId}
-            className="relative rounded-full border-2 border-white dark:border-zinc-950 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden transition-all duration-300 transform hover:translate-y-[-2px]"
-            style={{ zIndex: index + 1 }} // Taake overlapping layers sahi order mein hon
-          >
-            {typingUser.avatarUrl ? (
-              <img
-                src={import.meta.env.VITE_SERVER_URL + typingUser.avatarUrl}
-                alt="Avatar"
-                crossOrigin="anonymous"
-                className="w-full h-full object-cover"
-              />
-            ) : typingUser.userName ? (
-              typingUser.userName[0]
-            ) : (
-              "U"
-            )}
-          </div>
-        );
-      })}
-    </div>
+              {Object.keys(typingStatus).length > 0 && (
+                <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-400 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  {/* 👥 LAYERED AVATARS CONTAINER */}
+                  <div className="flex items-center -space-x-3.5 invisible-scrollbar">
+                    {Object.keys(typingStatus).map((userId, index) => {
+                      const typingUser = typingStatus[userId];
+                      return (
+                        <div
+                          key={userId}
+                          className="relative rounded-full border-2 border-white dark:border-zinc-950 bg-blue-600 w-8 h-8 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden transition-all duration-300 transform hover:translate-y-[-2px]"
+                          style={{ zIndex: index + 1 }} // Taake overlapping layers sahi order mein hon
+                        >
+                          {typingUser.avatarUrl ? (
+                            <img
+                              src={
+                                import.meta.env.VITE_SERVER_URL +
+                                typingUser.avatarUrl
+                              }
+                              alt="Avatar"
+                              crossOrigin="anonymous"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : typingUser.userName ? (
+                            typingUser.userName[0]
+                          ) : (
+                            "U"
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
 
-    {/* 💬 DYNAMIC TEXT WITH BOUNCING DOTS INDICATOR */}
-    <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/60 px-3 py-1.5 rounded-full shadow-sm max-w-xs sm:max-w-md">
-      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate max-w-[180px]">
-        {Object.keys(typingStatus).length === 1
-          ? typingStatus[Object.keys(typingStatus)[0]]?.userName || "Someone"
-          : Object.keys(typingStatus).length === 2
-          ? `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(' ')[0]}, ${typingStatus[Object.keys(typingStatus)[1]]?.userName.split(' ')[0]}`
-          : `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(' ')[0]} and ${Object.keys(typingStatus).length - 1} others`}
-      </span>
-      
-      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-        {Object.keys(typingStatus).length > 1 ? "are typing" : "is typing"}
-      </span>
+                  {/* 💬 DYNAMIC TEXT WITH BOUNCING DOTS INDICATOR */}
+                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800/60 px-3 py-1.5 rounded-full shadow-sm max-w-xs sm:max-w-md">
+                    <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate max-w-[180px]">
+                      {Object.keys(typingStatus).length === 1
+                        ? typingStatus[Object.keys(typingStatus)[0]]
+                            ?.userName || "Someone"
+                        : Object.keys(typingStatus).length === 2
+                          ? `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(" ")[0]}, ${typingStatus[Object.keys(typingStatus)[1]]?.userName.split(" ")[0]}`
+                          : `${typingStatus[Object.keys(typingStatus)[0]]?.userName.split(" ")[0]} and ${Object.keys(typingStatus).length - 1} others`}
+                    </span>
 
-      {/* Realtime bouncing CSS dots indicator */}
-      <span className="flex gap-0.5 items-center ml-0.5 min-w-[14px]">
-        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-        <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce"></span>
-      </span>
-    </div>
+                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                      {Object.keys(typingStatus).length > 1
+                        ? "are typing"
+                        : "is typing"}
+                    </span>
 
-  </div>
-)}
+                    {/* Realtime bouncing CSS dots indicator */}
+                    <span className="flex gap-0.5 items-center ml-0.5 min-w-[14px]">
+                      <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                      <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                      <span className="w-1 h-1 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce"></span>
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <div ref={messagesEndRef} />
             </>

@@ -47,9 +47,10 @@ export default function Register() {
         navigate('/verify', { state: { email: formData.email } });
       },
       onError: (err) => {
-        playErrorSound();
-        const msg = err.response?.data?.message || "Something went wrong";
-        triggerToast(msg, "error");
+        const errorMsg = err.response?.data?.errors
+            ? err.response.data.errors.map((e) => `${e.field}: ${e.message}`).join("\n")
+            : err.response?.data?.message || "Registration failed";
+          triggerToast(errorMsg, "error");
       }
     });
   };
@@ -100,7 +101,7 @@ export default function Register() {
                   onChange={handleChange}
                   className="w-full bg-[#f8fafc]/90 border border-gray-200/80 rounded-xl p-3 pl-11 text-sm text-[#1e2238] placeholder-gray-400 focus:bg-white focus:border-[#3b59ff] focus:ring-4 focus:ring-[#3b59ff]/10 outline-none transition-all duration-300 shadow-inner"
                   placeholder="John Doe"
-                  required
+                  
                 />
                 <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#3b59ff] transition-colors" />
               </div>
@@ -114,12 +115,12 @@ export default function Register() {
               <div className="relative group">
                 <input
                   name="email"
-                  type="email"
+                  type="text"
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full bg-[#f8fafc]/90 border border-gray-200/80 rounded-xl p-3 pl-11 text-sm text-[#1e2238] placeholder-gray-400 focus:bg-white focus:border-[#3b59ff] focus:ring-4 focus:ring-[#3b59ff]/10 outline-none transition-all duration-300 shadow-inner"
                   placeholder="name@company.com"
-                  required
+               
                 />
                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#3b59ff] transition-colors" />
               </div>
@@ -138,7 +139,7 @@ export default function Register() {
                   onChange={handleChange}
                   className="w-full bg-[#f8fafc]/90 border border-gray-200/80 rounded-xl p-3 pl-11 pr-11 text-sm text-[#1e2238] placeholder-gray-400 focus:bg-white focus:border-[#9d4edd] focus:ring-4 focus:ring-[#9d4edd]/10 outline-none transition-all duration-300 shadow-inner"
                   placeholder="••••••••••••"
-                  required
+                
                 />
                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#9d4edd] transition-colors" />
                 <button
@@ -164,7 +165,7 @@ export default function Register() {
                   onChange={handleChange}
                   className="w-full bg-[#f8fafc]/90 border border-gray-200/80 rounded-xl p-3 pl-11 pr-11 text-sm text-[#1e2238] placeholder-gray-400 focus:bg-white focus:border-[#9d4edd] focus:ring-4 focus:ring-[#9d4edd]/10 outline-none transition-all duration-300 shadow-inner"
                   placeholder="••••••••••••"
-                  required
+                
                 />
                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#9d4edd] transition-colors" />
                 <button
