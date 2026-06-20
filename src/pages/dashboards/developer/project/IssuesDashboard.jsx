@@ -692,10 +692,8 @@ const IssuesDashboard = () => {
                               <MoreVertical size={18} />
                             </button>
                             {openMenuId === issue.id && (
-                              <div className="absolute right-0 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
-                                <p className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                  Quick Status Update
-                                </p>
+                              <div className="absolute right-8 bottom-0 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
+                               
                                 {[
                                   "Acknowledged",
                                   "In Progress",

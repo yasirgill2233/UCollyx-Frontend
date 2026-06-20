@@ -28,6 +28,8 @@ export default function Login() {
   const [token, setToken] = useLocalStorage('token', null);
   const queryClient = useQueryClient();
 
+  localStorage.setItem('role', user?.role)
+
   console.log("User from localStorage:", user);
 
   // React Query Mutations

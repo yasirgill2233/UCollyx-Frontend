@@ -21,7 +21,12 @@ const MainDashboard = () => {
   const navigate = useNavigate();
 
   const { data: myProjects } = useMyProjects();
-  const { data: serverBugs = [], isLoading, isError, error } = useIssues(projectFilter);
+  const {
+    data: serverBugs = [],
+    isLoading,
+    isError,
+    error,
+  } = useIssues(projectFilter);
 
   const projects = myProjects?.data || [];
 
@@ -43,8 +48,8 @@ const MainDashboard = () => {
     return serverBugs.filter((bug) => {
       const bugTitle = bug.title;
       const bugId = String(bug.id);
-      const bugSeverity = (bug.severity);
-      const bugStatus = (bug.status )
+      const bugSeverity = bug.severity;
+      const bugStatus = bug.status;
 
       const matchesSearch =
         bugTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,14 +66,15 @@ const MainDashboard = () => {
   // --- 4. CATEGORIZED FEEDS DATA ---
   const openBugsFeed = filteredData.filter(
     (b) =>
-      (b.status) === "Acknowledged" ||
-      (b.status) === "New" || (b.status) === "In Progress",
+      b.status === "Acknowledged" ||
+      b.status === "New" ||
+      b.status === "In Progress",
   );
   const awaitingFixList = filteredData.filter(
-    (b) => (b.status) === "In Progress",
+    (b) => b.status === "In Progress",
   );
 
-  console.log("List:",awaitingFixList)
+  console.log("List:", awaitingFixList);
 
   const stats = {
     critical: openBugsFeed.filter(
@@ -87,13 +93,19 @@ const MainDashboard = () => {
   // --- NAVIGATION HANDLERS WITH STATE ROUTING ---
   const handleViewPriorityFeed = () => {
     navigate("/qa/alerts", {
-      state: { title: "Priority Activity Feed", bugs: {st1:"New", st2:"Acknowledged"} },
+      state: {
+        title: "Priority Activity Feed",
+        bugs: { st1: "New", st2: "Acknowledged" },
+      },
     });
   };
 
   const handleViewAwaitingFix = () => {
     navigate("/qa/alerts", {
-      state: { title: "Awaiting Fix Queue", bugs: {st1:"In Progress", st2:"In Progress"} },
+      state: {
+        title: "Awaiting Fix Queue",
+        bugs: { st1: "In Progress", st2: "In Progress" },
+      },
     });
   };
 
@@ -102,7 +114,8 @@ const MainDashboard = () => {
       state: {
         title: "Verification Report",
         bugs: filteredData.filter(
-          (b) => b.retest_status || (b.status || "").toUpperCase() === "RESOLVED",
+          (b) =>
+            b.retest_status || (b.status || "").toUpperCase() === "RESOLVED",
         ),
       },
     });
@@ -116,7 +129,6 @@ const MainDashboard = () => {
       </div>
     );
   }
-
 
   return (
     <div className="flex-1 bg-[#F9FBFF] p-6 md:p-10 min-h-screen font-sans selection:bg-blue-100">
@@ -187,11 +199,13 @@ const MainDashboard = () => {
               onChange={(e) => setSeverityFilter(e.target.value)}
               className="appearance-none bg-white border border-slate-200 px-4 py-2.5 pr-10 rounded-md text-[10px] font-black uppercase tracking-widest text-slate-600 cursor-pointer focus:ring-4 focus:ring-blue-500/5 transition-all outline-none"
             >
-              {["All Severities", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((proj) => (
-                <option key={proj} value={proj}>
-                  {proj}
-                </option>
-              ))}
+              {["All Severities", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map(
+                (proj) => (
+                  <option key={proj} value={proj}>
+                    {proj}
+                  </option>
+                ),
+              )}
             </select>
             <ChevronDown
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
@@ -287,27 +301,26 @@ const MainDashboard = () => {
             <ResultBox
               label="Passed"
               count={
-                filteredData.filter(
-                  (b) =>
-                    b.retest_status === "Passed",
-                ).length
+                filteredData.filter((b) => b.retest_status === "Passed").length
               }
               color="emerald"
             />
             <ResultBox
               label="Failed"
               count={
-                filteredData.filter(
-                  (b) =>
-                    b.retest_status === "Failed",
-                ).length
+                filteredData.filter((b) => b.retest_status === "Failed").length
               }
               color="red"
             />
           </div>
           <div className="space-y-3 overflow-hidden">
             {filteredData
-              .filter((b) => (b.status === "Resolved" || b.status === "In Progress") && (b.retest_status === "Passed" || b.retest_status === "Failed"))
+              .filter(
+                (b) =>
+                  (b.status === "Resolved" || b.status === "In Progress") &&
+                  (b.retest_status === "Passed" ||
+                    b.retest_status === "Failed"),
+              )
               .slice(0, 10)
               .map((bug) => (
                 <RetestRow key={bug.id} bug={bug} />
@@ -399,11 +412,21 @@ const BugFeedItem = ({ bug }) => {
           </p>
         </div>
       </div>
-      <span
-        className={`text-[8px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border ${severity === "CRITICAL" ? "text-red-500 border-red-100 bg-red-50" : severity === "HIGH" ? "text-orange-500 border-orange-100 bg-orange-50" : "text-slate-400 border-slate-100 bg-slate-50"}`}
-      >
-        {severity}
-      </span>
+      <div className="flex items-center gap-2">
+        {bug.comments.length > 0 ? (
+          <div
+            title={`${bug.comments.length} comment(s)`}
+            className={`hover:cursor-pointer text-[12px] bg-rose-400 rounded-full w-2 h-2 flex justify-center items-center p-1 text-white`}
+          ></div>
+        ) : (
+          ""
+        )}
+        <span
+          className={`text-[8px] font-black px-2.5 py-1 rounded-md uppercase tracking-widest border ${severity === "CRITICAL" ? "text-red-500 border-red-100 bg-red-50" : severity === "HIGH" ? "text-orange-500 border-orange-100 bg-orange-50" : "text-slate-400 border-slate-100 bg-slate-50"}`}
+        >
+          {severity}
+        </span>
+      </div>
     </div>
   );
 };
@@ -415,22 +438,33 @@ const AwaitingFixRow = ({ bug }) => (
         {bug.id || "BUG"}
       </div>
       <div>
-        <h4 className="text-[11px] font-bold text-slate-800 leading-tight">
-          {bug.title}
-        </h4>
-        <p className="text-[9px] text-slate-400 font-bold uppercase mt-1 tracking-tighter">
-          Assignee ID:{" "}
+        <div className="flex items-center gap-2">
+          <h4 className="text-[11px] font-bold text-slate-800 leading-tight">
+            {bug.title}
+          </h4>
+        </div>
+        <p className="text-[9px] text-slate-400 font-bold mt-1 tracking-tighter">
+          Assignee TO :{" "}
           <span className="text-slate-700">
-            {bug.assigned_to || "Unassigned"}
+            {bug.assignee.full_name || "Unassigned"}
           </span>
         </p>
       </div>
     </div>
     <div className="flex items-center gap-2">
-      <span className="text-[8px] font-black text-slate-400 bg-white border border-slate-100 px-2 py-1 rounded-md">
+      {bug.comments.length > 0 ? (
+        <div
+          title={`${bug.comments.length} comment(s)`}
+          className={`hover:cursor-pointer text-[12px] bg-blue-400 rounded-full w-2 h-2 flex justify-center items-center p-1 text-white`}
+        ></div>
+      ) : (
+        ""
+      )}
+      <span className="relative text-[8px] font-black text-blue-500 bg-blue-100 border border-slate-100 px-2 py-1 rounded-md">
         IN QUEUE
       </span>
-      <Clock size={12} className="text-slate-300" />
+
+      {/* <Clock size={12} className="text-slate-300" /> */}
     </div>
   </div>
 );
