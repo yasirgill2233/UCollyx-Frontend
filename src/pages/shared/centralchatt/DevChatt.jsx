@@ -750,10 +750,10 @@ const DevChat = () => {
         `}
       >
         {/* Sidebar Header */}
-        <div className="h-[68px] px-6 flex justify-between items-center border-b border-slate-300 flex-shrink-0">
+        <div className=" h-[68px] px-6 flex justify-between items-center border-b border-slate-300 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-200">
-              <MessageSquare size={16} className="text-white" />
+            <div className="flex items-center justify-center">
+              <MessageSquare size={22} className="text-gray-400" />
             </div>
             <h2 className="font-black text-slate-800 tracking-tight text-lg">
               Chatt
@@ -768,9 +768,7 @@ const DevChat = () => {
               <X size={18} />
             </button>
 
-            <button className="p-2 hover:bg-slate-50 rounded-full transition-colors">
-              <Settings size={18} className="text-slate-400" />
-            </button>
+           
           </div>
         </div>
 

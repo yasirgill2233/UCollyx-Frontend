@@ -44,7 +44,7 @@ const Header = () => {
     <>
       <header className="h-16 border-b border-gray-200 flex items-center justify-between px-8 bg-white relative">
         {/* Search Bar */}
-        <div className="relative w-1/2">
+        <div className="relative w-1/2 md:ml-0 ml-12">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
