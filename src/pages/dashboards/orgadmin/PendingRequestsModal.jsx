@@ -43,7 +43,7 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
       <div 
         className="bg-white w-full max-w-[500px] rounded-md shadow-[0_20px_70px_rgba(0,0,0,0.1)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()} // Click modal ke andar hi rahe
-      >
+      > 
         {/* Header Section */}
         <div className="p-8 pb-4 flex justify-between items-start">
           <div>
