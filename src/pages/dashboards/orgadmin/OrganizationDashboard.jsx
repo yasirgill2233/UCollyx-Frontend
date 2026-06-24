@@ -76,7 +76,7 @@ const OrganizationDashboard = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-8 md:p-10 lg:p-14 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
+    <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-8 lg:p-12 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
       
       {/* Structural Ambient Mesh Background Layers */}
       <div className="absolute top-[-10%] right-[-5%] w-[650px] h-[650px] bg-gradient-to-bl from-[#3b59ff]/10 to-[#00f2fe]/15 rounded-full blur-[120px] pointer-events-none" />
