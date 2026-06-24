@@ -41,7 +41,7 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
       
       {/* --- Modal Content Container --- */}
       <div 
-        className="bg-white w-full max-w-[500px] rounded-[2.5rem] shadow-[0_20px_70px_rgba(0,0,0,0.1)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="bg-white w-full max-w-[500px] rounded-md shadow-[0_20px_70px_rgba(0,0,0,0.1)] overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         onClick={(e) => e.stopPropagation()} // Click modal ke andar hi rahe
       >
         {/* Header Section */}
@@ -69,11 +69,11 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
               requests.map((req) => (
                 <div 
                   key={req.id} 
-                  className="flex justify-between items-center bg-white border border-slate-100 p-5 rounded-[2rem] hover:border-indigo-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all group"
+                  className="flex justify-between items-center bg-white border border-slate-100 p-5 rounded-md hover:border-indigo-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all group"
                 >
                   <div className="flex items-center gap-4">
                     {/* Avatar placeholder with Initials */}
-                    <div className="w-11 h-11 bg-indigo-50 rounded-2xl flex items-center justify-center font-black text-indigo-600 text-sm">
+                    <div className="w-11 h-11 bg-indigo-50 rounded-md flex items-center justify-center font-black text-indigo-600 text-sm">
                       {req.User?.full_name?.charAt(0) || <User size={18} />}
                     </div>
                     <div>
@@ -86,7 +86,7 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
                   <div className="flex gap-2">
                     <button 
                       onClick={() => handleAction(req.id, 'approved', req.requested_role, req.User?.full_name, req.User?.email)}
-                      className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-90"
+                      className="w-10 h-10 bg-indigo-600 text-white rounded-md flex items-center justify-center hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-90"
                       title="Approve Member"
                     >
                       {/* <Check size={18} /> */}
@@ -98,7 +98,7 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
                     </button>
                     <button 
                       onClick={() => handleAction(req.id, 'rejected', req.requested_role, req.User?.full_name, req.User?.email)}
-                      className="w-10 h-10 bg-white text-slate-400 border border-slate-200 rounded-xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-90"
+                      className="w-10 h-10 bg-white text-slate-400 border border-slate-200 rounded-md flex items-center justify-center hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all active:scale-90"
                       title="Reject Request"
                     >
                       {/* <UserX size={18} /> */}
@@ -113,7 +113,7 @@ const PendingRequestsModal = ({ isOpen, onClose, requests, onActionSuccess }) =>
               ))
             ) : (
               <div className="text-center py-16">
-                <div className="w-16 h-16 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-slate-50 rounded-md flex items-center justify-center mx-auto mb-4">
                   <UserX size={24} className="text-slate-300" />
                 </div>
                 <p className="text-sm font-bold text-slate-400">All caught up! No pending requests.</p>

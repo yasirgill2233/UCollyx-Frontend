@@ -1121,7 +1121,7 @@ const DevChat = () => {
 
                             {/* Core Context Bubble */}
                             <div
-                              className={`px-4 py-2.5 md:px-5 md:py-3 text-[13px] md:text-[14px] leading-relaxed shadow-xs rounded-2xl ${
+                              className={`px-4 py-2 md:px-5 md:py-3 text-[16px] md:text-[17px] leading-relaxed shadow-xs rounded-2xl ${
                                 msg.isMe
                                   ? "bg-blue-50 text-slate-700 rounded-tr-none border border-blue-100 shadow-sm"
                                   : "bg-white text-slate-600 rounded-tl-none border border-slate-200 shadow-sm"

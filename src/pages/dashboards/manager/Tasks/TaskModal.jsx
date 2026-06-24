@@ -248,7 +248,7 @@ const TaskModal = ({
           </button>
         </div>
 
-        <div className="p-8 max-h-[85vh] overflow-y-auto">
+        <div className="p-8 max-h-[75vh] overflow-y-auto">
           {/* Title Area */}
           <div className="mb-8">
             <input

@@ -283,7 +283,7 @@ const handleRemoveEpic = (taskId) => {
                                   />
                                 </button>
                                 {showTypeDropdown && (
-                                  <div className="absolute left-0 bottom-full mb-2 w-32 bg-white border border-slate-100 rounded-xl shadow-xl z-[110] py-1">
+                                  <div className="absolute left-12 -bottom-4 mb-2 w-28 bg-white border border-slate-100 rounded-lg shadow-xl z-[110]">
                                     {["task", "bug", "story", "epic"].map(
                                       (t) => (
                                         <button
@@ -292,7 +292,7 @@ const handleRemoveEpic = (taskId) => {
                                             setSelectedType(t);
                                             setShowTypeDropdown(false);
                                           }}
-                                          className="w-full px-3 py-2 text-left text-[10px] font-black uppercase hover:bg-slate-50 flex items-center gap-2 text-slate-600"
+                                          className="w-full px-2 py-1.5 text-left text-[10px] font-black uppercase hover:bg-slate-50 flex items-center gap-2 text-slate-600"
                                         >
                                           <TypeIcon type={t} size={14} /> {t}
                                         </button>
