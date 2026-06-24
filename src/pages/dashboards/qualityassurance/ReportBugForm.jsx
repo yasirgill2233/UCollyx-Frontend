@@ -148,7 +148,7 @@ const ReportBugForm = () => {
 
   return (
     <div className="flex-1 bg-[#F9FBFF] min-h-screen p-8">
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6 pb-20 animate-in fade-in-50 duration-500">
+      <form onSubmit={handleSubmit} className="max-w-full mx-auto space-y-6 pb-20 animate-in fade-in-50 duration-500">
         
         {/* Page Header */}
         <div className="flex justify-between items-center mb-10">
