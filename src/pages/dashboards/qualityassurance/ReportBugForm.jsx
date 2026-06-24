@@ -403,7 +403,6 @@
 
 
 
-
 import React, { useState, useMemo } from "react";
 import {
   CheckCircle,
@@ -574,38 +573,60 @@ const ReportBugForm = () => {
           </div>
         </div>
 
-        {/* 1. PIPELINE PROGRESS TRACKER */}
-        <div className="bg-white rounded-md border border-slate-200 p-4 sm:p-6 md:p-8 shadow-sm overflow-hidden">
-          <div className="flex justify-between items-center mb-6">
+        {/* 1. PIPELINE PROGRESS TRACKER (REWRITTEN RESPONSIVE DESIGN) */}
+        <div className="bg-white rounded-md border border-slate-200 p-5 md:p-8 shadow-sm">
+          <div className="flex justify-between items-center mb-4 md:mb-8">
             <h3 className="text-xs sm:text-sm font-bold text-slate-800">Pipeline Progression Tracker</h3>
             <span className="text-xs sm:text-sm font-black text-blue-600 transition-all duration-500">
               {progressPercentage}% complete
             </span>
           </div>
           
-          {/* Horizontal scroll container for small screen overflow tracking */}
-          <div className="overflow-x-auto pb-2 scrollbar-none">
-            <div className="relative flex justify-between items-center px-2 min-w-[600px] md:min-w-0">
-              <div className="absolute top-[15px] left-0 w-full h-1 bg-slate-100 z-0" />
-              <div 
-                className="absolute top-[15px] left-0 h-1 bg-blue-600 z-0 transition-all duration-700 ease-in-out" 
-                style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
-              />
-
-              {stepsConfig.map((step, idx) => (
-                <ProgressStep 
-                  key={step.id} 
-                  label={step.label} 
-                  completed={stepValidations[idx]}
-                  active={currentStep === idx}
-                  onClick={() => {
-                    if (idx === 0 || stepValidations.slice(0, idx).every(Boolean)) {
-                      setCurrentStep(idx);
-                    }
-                  }}
-                />
-              ))}
+          {/* A. MOBILE & TABLET VIEW LOOK (No horizontal line scroll issues) */}
+          <div className="block md:hidden space-y-3">
+            <div className="flex justify-between items-center bg-slate-50 p-3 rounded-md border border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center shadow-sm">
+                  {currentStep + 1}
+                </span>
+                <span className="text-xs font-black uppercase text-slate-700 tracking-wider">
+                  {stepsConfig[currentStep].label}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">
+                Step {currentStep + 1} of {stepsConfig.length}
+              </span>
             </div>
+            {/* Dynamic Tiny Bar */}
+            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-blue-600 h-1.5 transition-all duration-500 ease-in-out rounded-full" 
+                style={{ width: `${((currentStep + 1) / stepsConfig.length) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* B. DESKTOP VIEW VIEWPORT (Original Line View Rendering Matrix) */}
+          <div className="hidden md:block relative flex justify-between items-center px-2">
+            <div className="absolute top-[15px] left-0 w-full h-1 bg-slate-100 z-0" />
+            <div 
+              className="absolute top-[15px] left-0 h-1 bg-blue-600 z-0 transition-all duration-700 ease-in-out" 
+              style={{ width: `${(currentStep / (stepsConfig.length - 1)) * 100}%` }}
+            />
+
+            {stepsConfig.map((step, idx) => (
+              <ProgressStep 
+                key={step.id} 
+                label={step.label} 
+                completed={stepValidations[idx]}
+                active={currentStep === idx}
+                onClick={() => {
+                  if (idx === 0 || stepValidations.slice(0, idx).every(Boolean)) {
+                    setCurrentStep(idx);
+                  }
+                }}
+              />
+            ))}
           </div>
         </div>
 
