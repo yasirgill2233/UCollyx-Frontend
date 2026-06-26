@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios'; // Ya aapka custom API handler client instance
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -10,34 +9,58 @@ import {
   CheckCircle2, 
   LayoutGrid, 
   ListFilter, 
-  Clock 
+  Clock,
+  Calendar
 } from 'lucide-react';
 import API from '../../../api/axios';
 
 const ManagerPortfolio = () => {
   const navigate = useNavigate();
 
-  // 1. BACKEND DYNAMIC CORE STREAM SYNC (Using React Query)
+  // ⚡ DYNAMIC STATES FOR INTERACTIVE FILTER MATRIX
+  const [statusFilter, setStatusFilter] = useState('All'); // Options: 'All', 'Healthy', 'Critical'
+  const [selectedSprintFrame, setSelectedSprintFrame] = useState('All'); // Options: 'All', 'Current', 'Future'
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [showSprintDropdown, setShowSprintDropdown] = useState(false);
+
+  // 1. BACKEND DYNAMIC CORE STREAM SYNC
   const { data: portfolioResponse, isLoading, error } = useQuery({
     queryKey: ['manager-portfolio-dashboard'],
     queryFn: async () => {
-      // Protect routing requirements ke mutabiq headers aapka axios interceptor auto-inject karega
       const res = await API.get('/projects/manager-portfolio'); 
       return res.data;
     },
-    refetchOnWindowFocus: false, // Baar-baar tab switch par un-necessary API calls block karne ke liye
+    refetchOnWindowFocus: false,
   });
 
   // Extract raw list safely from backend structure response
-  const projects = useMemo(() => portfolioResponse?.data || [], [portfolioResponse]);
+  const allProjects = useMemo(() => portfolioResponse?.data || [], [portfolioResponse]);
 
-  // 2. METRICS ACCUMULATION ENGINE
+  // ⚡ 2. ACTIVE FILTERS PROCESSING PIPELINE (Pipeline Execution Matrix)
+  const filteredProjects = useMemo(() => {
+    return allProjects.filter((project) => {
+      // Rule A: Evaluate Project Criticality State
+      const isProjectCritical = project.status === 'Critical' || parseInt(project.redCards || 0) > 0;
+      
+      let matchesStatus = true;
+      if (statusFilter === 'Critical') matchesStatus = isProjectCritical;
+      if (statusFilter === 'Healthy') matchesStatus = !isProjectCritical;
+
+      // Rule B: Evaluate Sprint Timeline Framework Status (If backend supports sprint tracking)
+      let matchesSprint = true;
+      if (selectedSprintFrame !== 'All' && project.active_sprint_status) {
+        matchesSprint = project.active_sprint_status === selectedSprintFrame.toLowerCase();
+      }
+
+      return matchesStatus && matchesSprint;
+    });
+  }, [allProjects, statusFilter, selectedSprintFrame]);
+
+  // 3. METRICS ACCUMULATION ENGINE (Calculates counts based on raw projects data)
   const stats = useMemo(() => {
-    const totalProjects = projects.length;
-    
-    // Critical tab banta hai jab status "Critical" ho ya kisi project me redCards > 0 hon
-    const criticalOnes = projects.filter(p => p.status === 'Critical' || parseInt(p.redCards || 0) > 0).length;
-    const totalRedCards = projects.reduce((acc, p) => acc + parseInt(p.redCards || 0), 0);
+    const totalProjects = allProjects.length;
+    const criticalOnes = allProjects.filter(p => p.status === 'Critical' || parseInt(p.redCards || 0) > 0).length;
+    const totalRedCards = allProjects.reduce((acc, p) => acc + parseInt(p.redCards || 0), 0);
     const healthyOnes = totalProjects - criticalOnes;
 
     return [
@@ -46,11 +69,8 @@ const ManagerPortfolio = () => {
       { label: "Red Cards", val: totalRedCards, sub: "Global Count", icon: <Activity size={12}/> },
       { label: "Healthy", val: healthyOnes >= 0 ? healthyOnes : 0, sub: "On Track", color: "text-emerald-600", icon: <CheckCircle2 size={12}/> },
     ];
-  }, [projects]);
+  }, [allProjects]);
 
-  console.log("!@#!@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@##############################",portfolioResponse)
-
-  // --- LOADING STATE TRIGGER ---
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
@@ -72,17 +92,64 @@ const ManagerPortfolio = () => {
             Portfolio <span className="text-slate-400 font-bold">Overview</span>
           </h1>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-md text-[11px] font-black text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-             <ListFilter size={14}/> FILTER <ChevronDown size={12}/>
-          </button>
-          <button className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-md text-[11px] font-black shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all">
-             THIS SPRINT <ChevronDown size={12}/>
-          </button>
+        
+        {/* Interactive Filters Controls Row */}
+        <div className="flex gap-3 relative">
+          
+          {/* ⚡ STATUS FILTER DROP-DOWN BUTTON */}
+          <div className="relative">
+            <button 
+              onClick={() => { setShowStatusDropdown(!showStatusDropdown); setShowSprintDropdown(false); }}
+              className={`flex items-center gap-2 border px-4 py-2 rounded-md text-[11px] font-black shadow-sm transition-all uppercase ${
+                statusFilter !== 'All' ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+               <ListFilter size={14}/> Filter: {statusFilter} <ChevronDown size={12}/>
+            </button>
+            {showStatusDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[200] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                {['All', 'Healthy', 'Critical'].map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => { setStatusFilter(option); setShowStatusDropdown(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-semibold block ${statusFilter === option ? 'bg-indigo-50 text-indigo-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {option === 'All' ? 'Show All Tracks' : `${option} Projects`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ⚡ SPRINT TIMELINE FILTER DROP-DOWN BUTTON */}
+          <div className="relative">
+            <button 
+              onClick={() => { setShowSprintDropdown(!showSprintDropdown); setShowStatusDropdown(false); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-[11px] font-black shadow-md transition-all uppercase ${
+                selectedSprintFrame !== 'All' ? 'bg-emerald-600 text-white shadow-emerald-100' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
+              }`}
+            >
+               <Calendar size={14}/> SPRINT: {selectedSprintFrame} <ChevronDown size={12}/>
+            </button>
+            {showSprintDropdown && (
+              <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-100 rounded-md shadow-xl z-[200] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                {['All', 'Current', 'Future'].map((frame) => (
+                  <button
+                    key={frame}
+                    onClick={() => { setSelectedSprintFrame(frame); setShowSprintDropdown(false); }}
+                    className={`w-full text-left px-4 py-2 text-xs font-semibold block ${selectedSprintFrame === frame ? 'bg-emerald-50 text-emerald-600 font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    {frame === 'All' ? 'All Sprint Cycles' : `Active ${frame} Sprint`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
         </div>
       </div>
 
-      {/* Top Metrics Glassmorphism Counter Cards */}
+      {/* Top Metrics Counter Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
         {stats.map((s, i) => (
           <div key={i} className="bg-white border border-slate-100 p-5 rounded-md shadow-sm hover:shadow-md transition-all group">
@@ -100,25 +167,20 @@ const ManagerPortfolio = () => {
         ))}
       </div>
 
-      {/* Dynamic Project Stream Cards Grid Layout */}
-      {projects.length > 0 ? (
+      {/* Dynamic Filtered Project Stream Cards Grid Layout */}
+      {filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {projects.map((p) => {
-            // Business Rule: Agar backend query se status 'Critical' aaye ya redCards hon, to dynamic theme mapping change hogi
+          {filteredProjects.map((p) => {
             const isProjectCritical = p.status === 'Critical' || parseInt(p.redCards || 0) > 0;
             const contextColorTheme = isProjectCritical ? 'bg-red-500' : 'bg-blue-600';
 
-            // Dates conversion safely from service timestamps
             const formattedStartDate = p.start_date ? new Date(p.start_date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : "TBD";
             const formattedEndDate = p.end_date ? new Date(p.end_date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : "TBD";
 
             return (
               <div key={p.id} className="bg-white border border-slate-100 rounded-md p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden group">
-                 
-                 {/* Ambient Blur Dynamic Layer Background Glow */}
                  <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-[0.03] blur-3xl ${contextColorTheme}`}></div>
 
-                 {/* Card Header Structure */}
                  <div className="flex justify-between items-start mb-6">
                     <div className="max-w-[160px] sm:max-w-[200px]">
                        <h3 className="text-[15px] font-black text-slate-800 mb-1 group-hover:text-indigo-600 transition-colors truncate">
@@ -167,7 +229,6 @@ const ManagerPortfolio = () => {
                         <MiniStat label="Done" val={p.doneCount || 0} color="text-emerald-500" />
                     </div>
                     
-                    {/* Navigate safely with exact ID routing payload */}
                     <button 
                       onClick={() => navigate(`/manager/details`, { state: { project: p } })}
                       className="bg-slate-50 text-[10px] font-black text-slate-600 px-4 py-2 rounded-md hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 group/btn shadow-inner"
@@ -181,19 +242,18 @@ const ManagerPortfolio = () => {
           })}
         </div>
       ) : (
-        // Empty State View Layer Context
+        /* Empty State View Layer Context */
         <div className="text-center py-20 bg-white border border-slate-100 rounded-md shadow-sm">
           <LayoutGrid className="text-slate-200 mx-auto mb-3" size={40} />
-          <h3 className="font-black text-slate-700 text-base">No Managed Tracks Existing</h3>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">Create or initialize track workflows inside workspace grid to monitor real-time aggregates.</p>
+          <h3 className="font-black text-slate-700 text-base">No Matching Tracks Found</h3>
+          <p className="text-xs text-slate-400 max-w-xs mx-auto mt-1">Try resetting the filter matrix dropdown criteria to explore existing project streams.</p>
         </div>
       )}
     </div>
   );
 };
 
-// --- SUBSIDIARY MEMBRANE PRESENTATIONAL COMPONENTS ---
-
+// --- SUBSIDIARY PRESENTATIONAL COMPONENTS ---
 const Badge = ({ label, val, color }) => (
   <div className="bg-slate-50/70 rounded-md py-3 px-2 border border-slate-100 text-center transition-all hover:bg-white hover:border-indigo-100">
     <p className="text-[8px] font-black uppercase text-slate-400 mb-1 tracking-widest truncate">{label}</p>

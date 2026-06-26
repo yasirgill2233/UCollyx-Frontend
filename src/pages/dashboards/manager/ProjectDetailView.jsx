@@ -33,7 +33,7 @@ const ProjectDetailView = () => {
         />
         <DetailStatCard 
           label="Sprint Status" 
-          value={project.status === 'Critical' ? 'Delayed' : 'On Track'} 
+          value={project.status} 
           sub={project.sprintDate} 
           color="text-slate-800" 
         />
@@ -58,7 +58,7 @@ const ProjectDetailView = () => {
            <span className="text-sm font-black text-slate-800">{project.progress}%</span>
         </div>
         <div className="w-full bg-slate-50 h-3 rounded-full overflow-hidden mb-8">
-           <div className={`${project.color} h-full transition-all duration-700`} style={{ width: `${project.progress}%` }} />
+           <div className={`bg-blue-500 h-full transition-all duration-700`} style={{ width: `${project.progress}%` }} />
         </div>
         <div className="grid grid-cols-4 gap-6">
            {[

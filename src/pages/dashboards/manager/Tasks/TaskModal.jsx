@@ -12,6 +12,7 @@ import { useMyProjects } from "../../../../hooks/useProjects";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taskService } from "../../../../api/services/taskService";
 import { useUsersData } from "../../../../hooks/useUsers";
+import API from "../../../../api/axios";
 
 // Dummy Users Data as per image_a2fbd2
 const availableUsers = [
@@ -71,7 +72,8 @@ const TaskModal = ({
     ...task,
     subtasks: task.subtasks || [],
     due_time: task.due_date || "",
-    pojrect_id: task.project_id || "",
+    project_id: task.project_id || "",
+    sprint_id: task.sprint_id || "",
     assignees: task.assignees || [],
     comments: task.comments || [],
   });
@@ -91,10 +93,24 @@ const TaskModal = ({
         comments: task.comments || prev.comments || [],
         due_time: task.due_time ? task.due_time.substring(0, 16) : "",
         project_id: task.project_id,
+        sprint_id: task.sprint_id,
         assignees: task.assignees || prev.assignees || [],
       }));
     }
   }, [task]);
+
+  const { data: sprintsResponse } = useQuery({
+    queryKey: ["project-sprints", projectId],
+    queryFn: async () => {
+      // Apne API handler standard endpoints ke mutabiq map karna
+      const res = await API.get(`/sprints/project/${projectId}`);
+      return res.data.data || [];
+    },
+    enabled: !!projectId,
+  });
+  const sprints = sprintsResponse || [];
+
+  console.log("Sprint Modal Testing:", sprints);
 
   const [newComment, setNewComment] = useState("");
 
@@ -372,7 +388,8 @@ const TaskModal = ({
                             {user?.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_SERVER_URL + user?.avatar_url
+                                  import.meta.env.VITE_SERVER_URL +
+                                  user?.avatar_url
                                 }
                                 alt="Avatar"
                                 crossOrigin="anonymous"
@@ -531,23 +548,16 @@ const TaskModal = ({
                     Sprint
                   </label>
                   <div className="relative">
-                    <select className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-700 outline-none appearance-none">
-                      <option value="1">Sprint 1</option>
-                      <option value="2">Sprint 2</option>
-                      <option value="3">Sprint 3</option>
-                      <option value="4">Sprint 4</option>
-                      <option value="5">Sprint 5</option>
-                      <option value="6">Sprint 6</option>
-                      <option value="7">Sprint 7</option>
-                      <option value="8">Sprint 8</option>
-                      <option value="9">Sprint 9</option>
-                      <option value="10">Sprint 10</option>
-                      <option value="11">Sprint 11</option>
-                      <option value="12">Sprint 12</option>
-                      <option value="13">Sprint 13</option>
-                      <option value="14">Sprint 14</option>
-                      <option value="15">Sprint 15</option>
-                      <option value="16">Sprint 16</option>
+                    <select
+                      value={editedTask.sprint_id}
+                      onChange={(e) =>
+                        handleChange("sprint_id", e.target.value)
+                      }
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-700 outline-none appearance-none"
+                    >
+                      {sprints.map((sprint) => (
+                        <option value={sprint.id}>{sprint.name}</option>
+                      ))}
                     </select>
                     <ChevronDown
                       size={16}
@@ -666,39 +676,40 @@ const TaskModal = ({
                   />
                   <div className="flex justify-between items-center">
                     <div className="relative group">
-                     {(() => {
+                      {(() => {
+                        const projectMembers = [];
+                        const seenUserIds = new Set();
 
-  const projectMembers = [];
-  const seenUserIds = new Set();
+                        projects?.forEach((project) => {
+                          project?.members?.forEach((user) => {
+                            if (!seenUserIds.has(user.id)) {
+                              seenUserIds.add(user.id);
+                              projectMembers.push(user);
+                            }
+                          });
+                        });
 
-  projects?.forEach((project) => {
-    project?.members?.forEach((user) => {
-      if (!seenUserIds.has(user.id)) {
-        seenUserIds.add(user.id);
-        projectMembers.push(user);
-      }
-    });
-  });
+                        return (
+                          <select
+                            className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-[10px] font-black uppercase text-slate-600 outline-none appearance-none pr-8 cursor-pointer"
+                            onChange={(e) => {
+                              const selectedId = parseInt(e.target.value);
+                              const foundUser = projectMembers.find(
+                                (u) => u.id === selectedId,
+                              );
+                              setSelectedSubtaskUser(foundUser);
+                            }}
+                          >
+                            <option value="">Select Assignee</option>
 
-  return (
-    <select
-      className="bg-white border border-slate-100 rounded-lg px-3 py-2 text-[10px] font-black uppercase text-slate-600 outline-none appearance-none pr-8 cursor-pointer"
-      onChange={(e) => {
-        const selectedId = parseInt(e.target.value);
-        const foundUser = projectMembers.find((u) => u.id === selectedId);
-        setSelectedSubtaskUser(foundUser);
-      }}
-    >
-      <option value="">Select Assignee</option>
-      
-      {projectMembers.map((u) => (
-        <option key={u.id} value={u.id}>
-          {u.full_name || u.name}
-        </option>
-      ))}
-    </select>
-  );
-})()}
+                            {projectMembers.map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.full_name || u.name}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      })()}
                       <ChevronDown
                         size={12}
                         className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"

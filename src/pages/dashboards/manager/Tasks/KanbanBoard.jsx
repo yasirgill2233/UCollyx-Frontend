@@ -31,8 +31,12 @@ import socket from "../../../../context/SocketContext";
 import toast from "react-hot-toast";
 import { triggerToast } from "../../../../utils/toastHelper";
 
-const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
-
+const KanbanBoard = ({
+  showProjectDropdown,
+  projects,
+  projectId,
+  selectedSprintId,
+}) => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
   const [linkingTaskId, setLinkingTaskId] = useState(null);
@@ -51,9 +55,28 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
     enabled: !!projectId,
   });
 
-  console.log("HELLO HELLO HELLO #####################################################3",data)
+  // Custom computed filter map array block to parse columns mapping safely
+  const filteredColumnTaskIds = (columnId) => {
+    if (!data || !data.columns || !data.columns[columnId]) return [];
+
+    return data.columns[columnId].taskIds.filter((taskId) => {
+      const currentTask = data.tasks[taskId];
+      if (!currentTask) return false;
+
+      if (selectedSprintId === "backlog") {
+        return currentTask.status === "backlog" || !currentTask.sprint_id;
+      }
+      return currentTask.sprint_id === Number(selectedSprintId);
+    });
+  };
+
+  console.log(
+    "HELLO HELLO HELLO #####################################################3",
+    data,
+  );
   const dragMutation = useMutation({
-    mutationFn: (vars) => console.log(vars) || taskService.updateTaskPosition(vars.id, vars.data),
+    mutationFn: (vars) =>
+      console.log(vars) || taskService.updateTaskPosition(vars.id, vars.data),
     onMutate: async (newVars) => {
       await queryClient.cancelQueries(["board", projectId]);
       const previousData = queryClient.getQueryData(["board", projectId]);
@@ -61,12 +84,20 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
       queryClient.setQueryData(["board", projectId], (old) => {
         const updatedTasks = { ...old.tasks };
         const updatedColumns = { ...old.columns };
-        
+
         const task = updatedTasks[newVars.id];
-        const sourceColId = Object.keys(updatedColumns).find(id => updatedColumns[id].taskIds.includes(newVars.id));
-        
-        updatedColumns[sourceColId].taskIds = updatedColumns[sourceColId].taskIds.filter(id => id !== newVars.id);
-        updatedColumns[newVars.data.status].taskIds.splice(newVars.data.position, 0, newVars.id);
+        const sourceColId = Object.keys(updatedColumns).find((id) =>
+          updatedColumns[id].taskIds.includes(newVars.id),
+        );
+
+        updatedColumns[sourceColId].taskIds = updatedColumns[
+          sourceColId
+        ].taskIds.filter((id) => id !== newVars.id);
+        updatedColumns[newVars.data.status].taskIds.splice(
+          newVars.data.position,
+          0,
+          newVars.id,
+        );
         task.status = newVars.data.status;
 
         return { ...old, tasks: updatedTasks, columns: updatedColumns };
@@ -95,7 +126,11 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
   const onDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    )
+      return;
 
     dragMutation.mutate({
       id: draggableId,
@@ -109,15 +144,25 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
 
   const handleQuickCreate = () => {
     if (!newTaskTitle.trim()) return;
-    
-    createMutation.mutate({
+
+    // Dynamic payload setup based on active view state
+    const taskPayload = {
       project_id: projectId,
       title: selectedType === "story" ? `Story: ${newTaskTitle}` : newTaskTitle,
       type: selectedType,
-      status: "backlog",
-      priority: "Low"
-    });
+      status: "backlog", // Default column state inside sprint layout
+      priority: "Low",
+    };
+
+    
+    // Agar global pool / generic backlog select nahi hai, toh sprint_id attachment apply karo
+    if (selectedSprintId && selectedSprintId !== "backlog") {
+      taskPayload.sprint_id = Number(selectedSprintId);
+    }
+    
+    createMutation.mutate(taskPayload);
   };
+  console.log("Selected Spring:::",selectedSprintId)
 
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
@@ -126,79 +171,81 @@ const KanbanBoard = ({showProjectDropdown, projects ,projectId}) => {
     onSuccess: () => queryClient.invalidateQueries(["board", projectId]),
   });
 
-const updateTaskMutation = useMutation({
-  mutationFn: ({ taskId, updatedFields }) => 
-    taskService.updateTask(taskId, updatedFields),
-  
-  onMutate: async ({ taskId, updatedFields }) => {
-    await queryClient.cancelQueries({ queryKey: ["board", projectId] });
-    const previousBoardData = queryClient.getQueryData(["board", projectId]);
-    if (previousBoardData) {
-      queryClient.setQueryData(["board", projectId], {
-        ...previousBoardData,
-        tasks: {
-          ...previousBoardData.tasks,
-          [taskId]: {
-            ...previousBoardData.tasks[taskId],
-            ...updatedFields,
-          }
-        }
-      });
-    }
-    return { previousBoardData };
-  },
-  onError: (err, variables, context) => {
-    if (context?.previousBoardData) {
-      queryClient.setQueryData(["board", projectId], context.previousBoardData);
-    }
-  },
-  onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ["board", projectId] });
-  }
-});
+  const updateTaskMutation = useMutation({
+    mutationFn: ({ taskId, updatedFields }) =>
+      taskService.updateTask(taskId, updatedFields),
 
-const handleUpdateTask = (updatedTask) => {
-  updateTaskMutation.mutate({
-    taskId: updatedTask.id,
-    updatedFields: {
-      title: updatedTask.title,
-      description: updatedTask.description,
-      status: updatedTask.status,
-      priority: updatedTask.priority,
-      due_time: updatedTask.due_time,
-      project_id: updatedTask.project_id,
-    }
+    onMutate: async ({ taskId, updatedFields }) => {
+      await queryClient.cancelQueries({ queryKey: ["board", projectId] });
+      const previousBoardData = queryClient.getQueryData(["board", projectId]);
+      if (previousBoardData) {
+        queryClient.setQueryData(["board", projectId], {
+          ...previousBoardData,
+          tasks: {
+            ...previousBoardData.tasks,
+            [taskId]: {
+              ...previousBoardData.tasks[taskId],
+              ...updatedFields,
+            },
+          },
+        });
+      }
+      return { previousBoardData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousBoardData) {
+        queryClient.setQueryData(
+          ["board", projectId],
+          context.previousBoardData,
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["board", projectId] });
+    },
   });
-};
 
+  const handleUpdateTask = (updatedTask) => {
+    updateTaskMutation.mutate({
+      taskId: updatedTask.id,
+      updatedFields: {
+        title: updatedTask.title,
+        description: updatedTask.description,
+        status: updatedTask.status,
+        priority: updatedTask.priority,
+        due_time: updatedTask.due_time,
+        project_id: updatedTask.project_id,
+        sprint_id: updatedTask.sprint_id,
+      },
+    });
+  };
 
-const { data: projectEpics = [] } = useQuery({
-  queryKey: ["projectEpics", projectId],
-  queryFn: () => taskService.getProjectEpics(projectId),
-  enabled: !!projectId,
-});
+  const { data: projectEpics = [] } = useQuery({
+    queryKey: ["projectEpics", projectId],
+    queryFn: () => taskService.getProjectEpics(projectId),
+    enabled: !!projectId,
+  });
 
-const updateEpicMutation = useMutation({
-  mutationFn: ({ taskId, epicId }) => taskService.updateTaskEpic(taskId, epicId),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ["board", projectId] });
-    setLinkingTaskId(null);
-  }
-});
+  const updateEpicMutation = useMutation({
+    mutationFn: ({ taskId, epicId }) =>
+      taskService.updateTaskEpic(taskId, epicId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["board", projectId] });
+      setLinkingTaskId(null);
+    },
+  });
 
-const handleLinkEpic = (taskId, epicId) => {
-  updateEpicMutation.mutate({ taskId, epicId });
-};
+  const handleLinkEpic = (taskId, epicId) => {
+    updateEpicMutation.mutate({ taskId, epicId });
+  };
 
-const handleRemoveEpic = (taskId) => {
-  updateEpicMutation.mutate({ taskId, epicId: null });
-};
+  const handleRemoveEpic = (taskId) => {
+    updateEpicMutation.mutate({ taskId, epicId: null });
+  };
   if (isLoading) return <div>Loading Board...</div>;
 
   return (
     <div className=" bg-[#F8FAFC] min-h-screen font-sans">
-     
-
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="flex gap-4 overflow-x-auto px-2 pb-10 h-[calc(100vh-64px)]">
           {data?.columns &&
@@ -217,7 +264,7 @@ const handleRemoveEpic = (taskId) => {
                     </h3>
                   </div>
                   <span className="bg-white border border-slate-200 text-slate-500 text-[11px] font-black px-3 py-1 rounded-full shadow-sm">
-                    {column.taskIds.length}
+                    {filteredColumnTaskIds(column.id).length}
                   </span>
                 </div>
 
@@ -228,7 +275,7 @@ const handleRemoveEpic = (taskId) => {
                       ref={provided.innerRef}
                       className="space-y-4 flex-1 overflow-y-auto pr-1 min-h-[50px]"
                     >
-                      {column.taskIds.map((taskId, index) => (
+                      {filteredColumnTaskIds(column.id).map((taskId, index) => (
                         <DraggableCard
                           key={taskId}
                           task={data.tasks[taskId]}
@@ -236,18 +283,8 @@ const handleRemoveEpic = (taskId) => {
                           isMenuOpen={openMenuId === taskId}
                           setOpenMenuId={setOpenMenuId}
                           onOpenEpicLink={(id) => setLinkingTaskId(id)}
-                          // onRemoveEpic={(id) =>
-                          //   setData((prev) => ({
-                          //     ...prev,
-                          //     tasks: {
-                          //       ...prev.tasks,
-                          //       [id]: { ...prev.tasks[id], ParentTask: null },
-                          //     },
-                          //   }))
-                          // }
                           onRemoveEpic={(id) => handleRemoveEpic(id)}
                           onClick={() => setSelectedTask(data.tasks[taskId])}
-                          // ICON HANDLERS
                           onChat={() => setActiveChatTask(data.tasks[taskId])}
                           onMeeting={() =>
                             setActiveMeetingTask(data.tasks[taskId])
@@ -334,7 +371,9 @@ const handleRemoveEpic = (taskId) => {
       {linkingTaskId && (
         <LinkEpicModal
           epics={projectEpics}
-          onSelect={(epicId) => {handleLinkEpic(linkingTaskId, epicId), setSelectedTask(null);}}
+          onSelect={(epicId) => {
+            (handleLinkEpic(linkingTaskId, epicId), setSelectedTask(null));
+          }}
           onClose={() => setLinkingTaskId(null)}
           isPending={updateEpicMutation.isPending}
         />
@@ -344,7 +383,8 @@ const handleRemoveEpic = (taskId) => {
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           onUpdateTask={handleUpdateTask}
-          projectId = {projectId}
+          projectId={projectId}
+          selectedSprintId={selectedSprintId !== "backlog" ? selectedSprintId : null}
           onOpenLinkEpic={() => setLinkingTaskId(selectedTask.id)}
         />
       )}
@@ -466,19 +506,21 @@ const DraggableCard = ({
                 <div className="flex -space-x-2 justify-center items-center">
                   {(task.assignees || []).map((user) => (
                     <div className="w-7 h-7 rounded-full border border-blue-100 bg-blue-600 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                {user?.avatar_url ? (
-                  <img
-                    src={import.meta.env.VITE_SERVER_URL + user?.avatar_url}
-                    alt="Avatar"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
-                ) : user.full_name ? (
-                  user.full_name[0]
-                ) : (
-                  "U"
-                )}
-              </div>
+                      {user?.avatar_url ? (
+                        <img
+                          src={
+                            import.meta.env.VITE_SERVER_URL + user?.avatar_url
+                          }
+                          alt="Avatar"
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : user.full_name ? (
+                        user.full_name[0]
+                      ) : (
+                        "U"
+                      )}
+                    </div>
                   ))}
                 </div>
 
