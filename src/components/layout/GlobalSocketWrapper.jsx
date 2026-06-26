@@ -102,7 +102,10 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
     socket.on("pipeline:status_received", (data) => {
       const targetProject = projects.find((p) => p.id === Number(data.project_id));
       const projectName = targetProject ? targetProject.name : `Project #${data.project_id}`;
-      const isSuccess = data.status === "success" || data.status === "passed";
+      
+      // 🌟 FIX: Added .toLowerCase() to support both "Success"/"success" or "Failed"/"failed" safely
+      const normalizedStatus = data.status ? data.status.toLowerCase() : "";
+      const isSuccess = normalizedStatus === "success" || normalizedStatus === "passed";
 
       toast(
         <div className="flex flex-col gap-0.5 min-w-[220px]">
@@ -130,9 +133,9 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
       );
 
       // Deployments dynamic cache refresh
-      queryClient.invalidateQueries({
-        queryKey: ["project_deployments", Number(data.project_id)],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["project_deployments", Number(data.project_id)],
+      // });
     });
 
     return () => {
