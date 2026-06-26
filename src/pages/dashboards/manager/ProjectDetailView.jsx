@@ -5,6 +5,8 @@ import {
   Info, Users, Layout, Clock, CheckCircle2, 
   X
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import API from '../../../api/axios';
 
 const ProjectDetailView = () => {
   const [activeTab, setActiveTab] = useState('Overview');
@@ -13,6 +15,17 @@ const ProjectDetailView = () => {
   const navigate = useNavigate();
 
   const project = location.state?.project;
+
+  // 🌟 LIVE DATA FETCH: Deployments from MySQL Database
+  const { data: dbDeployments = [], isLoading } = useQuery({
+    queryKey: ["project_deployments", Number(project?.id)],
+    queryFn: async () => {
+      if (!project?.id) return [];
+      const res = await API.get(`/deployments/project/${project.id}`); // Apne backend ka exact endpoint url likho
+      return res.data; // Expecting array from database
+    },
+    enabled: !!project?.id,
+  });
 
   console.log("Hey There I am using whatsapp:",project)
 
@@ -201,88 +214,108 @@ const renderRisksAndCards = () => {
  // Modal control ke liye
 
 const renderDeployments = () => {
-  const deployments = [
-    {
-      version: "v2.4.1",
-      status: "Failed",
-      type: "Auto",
-      timestamp: "Yesterday 4:12 PM",
-      log: "$ Build failed: API gateway timeout during integration tests. Exit code 1.",
-      statusClass: "bg-red-50 text-red-500 border-red-100",
-      icon: "text-red-500 bg-red-50"
-    },
-    {
-      version: "v2.4.0",
-      status: "Success",
-      type: "Manual",
-      timestamp: "Jan 30 2:00 PM",
-      log: "$ Deployment successful. All health checks passed.",
-      statusClass: "bg-green-50 text-green-600 border-green-100",
-      icon: "text-green-600 bg-green-50"
-    }
-  ];
+  // Loading State
+  if (isLoading) {
+    return (
+      <div className="mt-8 text-center py-10 text-xs font-bold text-slate-400">
+        Loading deployment logs from database...
+      </div>
+    );
+  }
+
+  // Empty State 
+  if (dbDeployments.length === 0) {
+    return (
+      <div className="mt-8 text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl text-xs font-bold text-slate-400">
+        No deployments found for this project yet.
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 animate-in slide-in-from-bottom-4 duration-500">
       <h2 className="text-sm font-black text-slate-800 mb-4">Deployment History</h2>
       
       <div className="space-y-3">
-        {deployments.map((dep, i) => (
-          <div key={i} className="bg-white border border-slate-100 rounded-xl p-4 flex items-center justify-between group hover:border-blue-200 transition-all">
-            <div className="flex items-center gap-4">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${dep.icon}`}>
-                {dep.status === 'Success' ? '✓' : '✕'}
+        {dbDeployments.map((dep) => {
+          // Check success dynamically (supports casing safely)
+          const isSuccess = dep.status?.toLowerCase() === 'success' || dep.status?.toLowerCase() === 'passed';
+          
+          return (
+            <div key={dep.id} className="bg-white border border-slate-100 rounded-xl p-4 flex items-center justify-between group hover:border-blue-200 transition-all">
+              <div className="flex items-center gap-4">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                  isSuccess ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'
+                }`}>
+                  {isSuccess ? '✓' : '✕'}
+                </div>
+                <span className="text-sm font-black text-slate-800">{dep.version || 'v1.0.0'}</span>
+                
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                  isSuccess ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-500 border-red-100'
+                }`}>
+                  {dep.status?.toUpperCase()}
+                </span>
+                
+                <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 uppercase">
+                  {dep.trigger || 'Auto'}
+                </span>
               </div>
-              <span className="text-sm font-black text-slate-800">{dep.version}</span>
-              <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${dep.statusClass}`}>
-                {dep.status}
-              </span>
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100 uppercase">
-                {dep.type}
-              </span>
+              
+              <div className="flex items-center gap-6">
+                <span className="text-[11px] font-bold text-slate-400">
+                  {dep.deployed_at ? new Date(dep.deployed_at).toLocaleString() : new Date(dep.createdAt).toLocaleString()}
+                </span>
+                <button 
+                  onClick={() => setSelectedLog(dep)}
+                  className="text-xs font-black text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  Logs →
+                </button>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-6">
-              <span className="text-[11px] font-bold text-slate-400">{dep.timestamp}</span>
-              <button 
-                onClick={() => setSelectedLog(dep)}
-                className="text-xs font-black text-blue-600 hover:underline flex items-center gap-1"
-              >
-                Logs →
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* --- Deployment Log Modal --- */}
       {selectedLog && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[24px] w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="bg-white rounded-[24px] w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="p-6 border-b border-slate-50 flex justify-between items-start">
               <div>
-                <h3 className="text-lg font-black text-slate-800">{selectedLog.version}</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">{selectedLog.timestamp}</p>
+                <h3 className="text-lg font-black text-slate-800">{selectedLog.version || 'v1.0.0'}</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase">
+                  {selectedLog.deployed_at ? new Date(selectedLog.deployed_at).toLocaleString() : new Date(selectedLog.createdAt).toLocaleString()}
+                </p>
                 <div className="flex gap-2 mt-2">
-                   <span className={`text-[9px] font-black px-2 py-0.5 rounded ${selectedLog.statusClass}`}>{selectedLog.status}</span>
-                   <span className="text-[9px] font-black px-2 py-0.5 rounded bg-slate-50 text-slate-400 border border-slate-100">Trigger: {selectedLog.type}</span>
+                   <span className={`text-[9px] font-black px-2 py-0.5 rounded ${
+                     (selectedLog.status?.toLowerCase() === 'success') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
+                   }`}>{selectedLog.status?.toUpperCase()}</span>
+                   <span className="text-[9px] font-black px-2 py-0.5 rounded bg-slate-50 text-slate-400 border border-slate-100">
+                     Trigger: {selectedLog.trigger || 'Auto'}
+                   </span>
+                   <span className="text-[9px] font-black px-2 py-0.5 rounded bg-slate-50 text-slate-400 border border-slate-100">
+                     Env: {selectedLog.env?.toUpperCase()}
+                   </span>
                 </div>
               </div>
               <button onClick={() => setSelectedLog(null)} className="bg-slate-50 p-1.5 rounded-full text-slate-400 hover:text-slate-600">
-                <X size={16} /> {/* Replace with Lucide X icon */}
+                <X size={16} />
               </button>
             </div>
             
             <div className="p-6">
-              <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Deployment Log</p>
-              <div className="bg-[#1e293b] rounded-xl p-4 font-mono text-[11px] text-blue-100 leading-relaxed shadow-inner border border-slate-700">
-                {selectedLog.log}
+              <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Deployment Log Output</p>
+              {/* Terminal Style view */}
+              <div className="bg-[#0f172a] rounded-xl p-4 font-mono text-[11px] text-emerald-400 leading-relaxed shadow-inner border border-slate-800 max-h-[250px] overflow-y-auto whitespace-pre-wrap">
+                {selectedLog.log_output || '$ No terminal output log captured.'}
               </div>
               <button 
                 onClick={() => setSelectedLog(null)}
                 className="w-full bg-blue-600 text-white font-black py-3 rounded-xl mt-6 text-xs shadow-lg shadow-blue-100 hover:bg-blue-700 transition-colors"
               >
-                Close
+                Close Logs Window
               </button>
             </div>
           </div>
