@@ -49,7 +49,7 @@ const ProjectDetailView = () => {
         <DetailStatCard 
           label="Sprint Status" 
           value={project.status} 
-          sub={project.sprintDate} 
+          sub={new Date(project.start_date).toLocaleString() + " - " + new Date(project.end_date).toLocaleString()} 
           color="text-slate-800" 
         />
         <DetailStatCard 
