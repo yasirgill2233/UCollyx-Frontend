@@ -133,9 +133,9 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
       );
 
       // Deployments dynamic cache refresh
-      // queryClient.invalidateQueries({
-      //   queryKey: ["project_deployments", Number(data.project_id)],
-      // });
+      queryClient.invalidateQueries({
+        queryKey: ["project_deployments", Number(data.project_id)],
+      });
     });
 
     return () => {
