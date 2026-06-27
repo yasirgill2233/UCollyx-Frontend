@@ -6,15 +6,14 @@ import { useMyProjects } from "../../../../hooks/useProjects";
 
 const TeamActivity = () => {
   // --- 1. STATES FOR REAL DATA & FILTERS ---
-  const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [projectFilter, setProjectFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
   const [selectedMember, setSelectedMember] = useState(null);
-
-  // --- 2. API CALL TO FETCH LIVE DATA ---
+  
+  const [projectData, setProjectData] = useState(null);
   useEffect(() => {
     const fetchTeamActivity = async () => {
       try {
@@ -37,9 +36,6 @@ const TeamActivity = () => {
     fetchTeamActivity();
   }, [projectFilter]);
 
-  console.log("Hello World::", projectData);
-
-  // --- 3. DYNAMIC MEMBERS EXTRACTION FROM TASKS ARRAY ---
   const members = useMemo(() => {
     if (!projectData || !projectData.Tasks) return [];
 
