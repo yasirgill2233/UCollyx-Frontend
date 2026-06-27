@@ -27,6 +27,8 @@ const ProjectDetailView = () => {
     enabled: !!project?.id,
   });
 
+  console.log("Check Github Logs Status:::::::::::::::::::::::::::::::",dbDeployments)
+
   console.log("Hey There I am using whatsapp:",project)
 
   if (!project) {
