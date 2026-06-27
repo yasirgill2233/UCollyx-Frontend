@@ -39,13 +39,7 @@ const ProjectDetailView = () => {
   const renderOverview = () => (
     <div className="animate-in fade-in duration-500">
       {/* Dynamic Stats Row */}
-      <div className="grid grid-cols-4 gap-6 mb-8 mt-8">
-        <DetailStatCard 
-          label="Overall Health" 
-          value={project.health} 
-          sub="Requires immediate attention" 
-          color={project.health === 'Critical' ? 'text-red-600' : 'text-green-600'} 
-        />
+      <div className="grid grid-cols-3 gap-6 mb-8 mt-8">
         <DetailStatCard 
           label="Sprint Status" 
           value={project.status} 
@@ -67,7 +61,7 @@ const ProjectDetailView = () => {
       </div>
 
       {/* Dynamic Progress Bar */}
-      <div className="bg-white border border-slate-100 rounded-[24px] p-8 shadow-sm mb-8">
+      <div className="bg-white border border-slate-100 rounded-md p-8 shadow-sm mb-8">
         <div className="flex justify-between items-center mb-6">
            <h2 className="font-black text-slate-800 tracking-tight">Sprint Progress & Task Distribution</h2>
            <span className="text-sm font-black text-slate-800">{project.progress}%</span>
@@ -80,7 +74,7 @@ const ProjectDetailView = () => {
              { label: "To Do", val: project.todoCount }, { label: "In Progress", val: project.inprogressCount },
              { label: "Blocked", val: project.blockedCount }, { label: "Done", val: project.doneCount }
            ].map((item, i) => (
-             <div key={i} className="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
+             <div key={i} className="bg-white border border-slate-100 p-6 rounded-md text-center shadow-sm">
                 <h3 className="text-2xl font-black text-slate-800 mb-1">{item.val}</h3>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</p>
              </div>
@@ -90,10 +84,10 @@ const ProjectDetailView = () => {
 
       <div className="grid grid-cols-1 gap-8">
         {/* Risks */}
-        <div className="bg-white border border-slate-100 rounded-[24px] p-8 shadow-sm">
+        <div className="bg-white border border-slate-100 rounded-md p-8 shadow-sm">
           <div className="flex justify-between items-center mb-6">
              <h2 className="font-black text-slate-800 tracking-tight">Open Risks & Red Cards</h2>
-             <button className="bg-red-600 text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase shadow-lg shadow-red-100 tracking-wider">
+             <button className="bg-red-600 text-white text-[10px] font-black px-4 py-2 rounded-md uppercase shadow-lg shadow-red-100 tracking-wider">
                 View All Red Cards
              </button>
           </div>
@@ -104,10 +98,10 @@ const ProjectDetailView = () => {
         </div>
 
         {/* Team Load */}
-        <div className="bg-white border border-slate-100 rounded-[24px] p-8 shadow-sm">
+        <div className="bg-white border border-slate-100 rounded-md p-8 shadow-sm">
           <div className="flex justify-between items-center mb-6">
              <h2 className="font-black text-slate-800 tracking-tight">Team Load Snapshot</h2>
-             <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-100">
+             <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-md border border-yellow-100">
                 <div className="w-2 h-2 rounded-full bg-yellow-500" />
                 <span className="text-[10px] font-bold text-yellow-700">Load Imbalance Detected</span>
              </div>
@@ -120,7 +114,7 @@ const ProjectDetailView = () => {
              <TeamMemberCard name="John Smith" tasks="4" status="Normal" color="bg-green-50 text-green-600" />
              <TeamMemberCard name="Lisa Wong" tasks="2" status="Available" color="bg-slate-50 text-slate-400" />
           </div>
-          <div className="bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
+          <div className="bg-yellow-50/50 p-4 rounded-md border border-yellow-100">
              <p className="text-[11px] text-yellow-800 font-medium">
                 <span className="font-black italic mr-1">Note:</span> 2 developers are overloaded while 1 is underutilized. Consider workload rebalancing.
              </p>
@@ -172,7 +166,7 @@ const renderRisksAndCards = () => {
       {riskCards.map((card) => (
         <div 
           key={card.id} 
-          className={`bg-white border border-slate-100 border-l-4 ${card.borderColor} rounded-xl p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
+          className={`bg-white border border-slate-100 border-l-4 ${card.borderColor} rounded-md p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
         >
           <div className="flex items-start gap-6">
             <div className="mt-1">
@@ -228,7 +222,7 @@ const renderDeployments = () => {
   // Empty State 
   if (dbDeployments.length === 0) {
     return (
-      <div className="mt-8 text-center py-10 border-2 border-dashed border-slate-100 rounded-2xl text-xs font-bold text-slate-400">
+      <div className="mt-8 text-center py-10 border-2 border-dashed border-slate-100 rounded-md text-xs font-bold text-slate-400">
         No deployments found for this project yet.
       </div>
     );
@@ -244,9 +238,9 @@ const renderDeployments = () => {
           const isSuccess = dep.status?.toLowerCase() === 'success' || dep.status?.toLowerCase() === 'passed';
           
           return (
-            <div key={dep.id} className="bg-white border border-slate-100 rounded-xl p-4 flex items-center justify-between group hover:border-blue-200 transition-all">
+            <div key={dep.id} className="bg-white border border-slate-100 rounded-md p-4 flex items-center justify-between group hover:border-blue-200 transition-all">
               <div className="flex items-center gap-4">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                <div className={`w-8 h-8 rounded-md flex items-center justify-center font-bold text-xs ${
                   isSuccess ? 'text-green-600 bg-green-50' : 'text-red-500 bg-red-50'
                 }`}>
                   {isSuccess ? '✓' : '✕'}
@@ -283,7 +277,7 @@ const renderDeployments = () => {
       {/* --- Deployment Log Modal --- */}
       {selectedLog && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[24px] w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="bg-white rounded-md w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden">
             <div className="p-6 border-b border-slate-50 flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-black text-slate-800">{selectedLog.version || 'v1.0.0'}</h3>
@@ -310,12 +304,12 @@ const renderDeployments = () => {
             <div className="p-6">
               <p className="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Deployment Log Output</p>
               {/* Terminal Style view */}
-              <div className="bg-[#0f172a] rounded-xl p-4 font-mono text-[11px] text-emerald-400 leading-relaxed shadow-inner border border-slate-800 max-h-[250px] overflow-y-auto whitespace-pre-wrap">
+              <div className="bg-[#0f172a] rounded-md p-4 font-mono text-[11px] text-emerald-400 leading-relaxed shadow-inner border border-slate-800 max-h-[250px] overflow-y-auto whitespace-pre-wrap">
                 {selectedLog.log_output || '$ No terminal output log captured.'}
               </div>
               <button 
                 onClick={() => setSelectedLog(null)}
-                className="w-full bg-blue-600 text-white font-black py-3 rounded-xl mt-6 text-xs shadow-lg shadow-blue-100 hover:bg-blue-700 transition-colors"
+                className="w-full bg-blue-600 text-white font-black py-3 rounded-md mt-6 text-xs shadow-lg shadow-blue-100 hover:bg-blue-700 transition-colors"
               >
                 Close Logs Window
               </button>
@@ -340,18 +334,18 @@ const renderDeployments = () => {
           </div>
 
           <div className="flex items-center gap-4">
-             <div className="flex bg-white border border-slate-100 rounded-xl p-1">
+             <div className="flex bg-white border border-slate-100 rounded-md p-1">
                 {['Overview', 'Risks & Cards', 'Deployments'].map(tab => (
                   <button 
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === tab ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${activeTab === tab ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                   >
                     {tab}
                   </button>
                 ))}
              </div>
-             <button className="flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-white">
+             <button className="flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-md text-xs font-bold text-slate-500 hover:bg-white">
                 This Sprint <ChevronDown size={14}/>
              </button>
           </div>
@@ -371,7 +365,7 @@ const renderDeployments = () => {
 // ... (Sub-components like DetailStatCard, RiskItem, TeamMemberCard stay exactly as you had them)
 // Sub-components for Detail View
 const DetailStatCard = ({ label, value, sub, color }) => (
-  <div className="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+  <div className="bg-white border border-slate-100 p-6 rounded-md shadow-sm">
     <p className="text-[10px] font-black uppercase text-slate-400 mb-2">{label}</p>
     <h3 className={`text-xl font-black mb-1 ${color}`}>{value}</h3>
     <p className="text-[10px] font-medium text-slate-400">{sub}</p>
@@ -379,7 +373,7 @@ const DetailStatCard = ({ label, value, sub, color }) => (
 );
 
 const RiskItem = ({ id, title, priority, status, color }) => (
-  <div className={`border rounded-2xl p-4 border-${color}-100 bg-${color}-50/10`}>
+  <div className={`border rounded-md p-4 border-${color}-100 bg-${color}-50/10`}>
     <div className="flex gap-2 mb-2">
       <span className="text-[9px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded">{id}</span>
       <span className={`text-[9px] font-black px-2 py-0.5 rounded uppercase ${priority === 'Critical' ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>{priority}</span>
@@ -394,7 +388,7 @@ const RiskItem = ({ id, title, priority, status, color }) => (
 );
 
 const TeamMemberCard = ({ name, tasks, status, color }) => (
-  <div className={`p-4 rounded-2xl border border-slate-100 bg-white relative group hover:border-blue-400 transition-all cursor-pointer`}>
+  <div className={`p-4 rounded-md border border-slate-100 bg-white relative group hover:border-blue-400 transition-all cursor-pointer`}>
     <div className="flex justify-between items-start">
        <div>
           <p className="text-xs font-black text-slate-800">{name}</p>
