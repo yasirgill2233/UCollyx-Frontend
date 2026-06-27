@@ -22,14 +22,11 @@ const navigatedStatus = useMemo(() => {
 
 const pageTitle = location.state?.title || "Live Priority Alerts";
 
-console.log("----------------========================--------------------------",navigatedStatus, pageTitle)
-
   // --- 1. LIVE REACT QUERY CALLS ---
   const { data: myProjects } = useMyProjects();
   const projects = myProjects?.data || [];
 
   const { data: incomingData = [], isLoading, isError, error } = usePriorityAlerts(navigatedStatus);
-  console.log("------------------------------------------------------------------",incomingData)
 
   // --- 2. DATA SYNCHRONIZATION & MAPPING ---
   const rawAlerts = useMemo(() => {

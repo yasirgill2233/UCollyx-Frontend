@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import API from "../../../api/axios";
+import { useIssues } from "../../../hooks/useIssues";
 
 const ProjectDetailView = () => {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -151,6 +152,15 @@ const ProjectDetailView = () => {
 
     return `${parts.join(" and ")}. Consider workload rebalancing.`;
   };
+
+
+
+
+
+
+    const { data: serverBugs = [] } = useIssues(project?.name);
+
+    console.log("#######################@@@@@@@@@@@@@@@@#########################",serverBugs)
 
   if (!project) {
     return (
