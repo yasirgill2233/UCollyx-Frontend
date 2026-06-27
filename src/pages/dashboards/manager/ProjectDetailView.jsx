@@ -60,9 +60,9 @@ const ProjectDetailView = () => {
         />
         <DetailStatCard 
           label="Last Deployment" 
-          value={project.lastDeploy} 
-          sub={"Production - " + new Date(dbDeployments[0].deployed_at).toLocaleString() } 
-          color={dbDeployments[0].status === 'Failed' ? 'text-red-600' : 'text-green-600'} 
+          value={dbDeployments[0]?.status} 
+          sub={"Production - " + new Date(dbDeployments[0]?.deployed_at).toLocaleString() } 
+          color={dbDeployments[0]?.status === 'Failed' ? 'text-red-600' : 'text-green-600'} 
         />
       </div>
 
