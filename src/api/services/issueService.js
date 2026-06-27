@@ -19,6 +19,7 @@ export const issueService = {
         : `/issues/project/${projectFilter}`;
 
     const response = await API.get(url);
+    console.log("CHeck fromm service:::::::::::::::::",response.data.data)
     return response.data.success ? response.data.data : response.data;
   },
 

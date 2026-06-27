@@ -158,7 +158,7 @@ const ProjectDetailView = () => {
 
 
 
-    const { data: serverBugs = [] } = useIssues(project?.name);
+    const { data: serverBugs = [] } = useIssues(project?.id);
 
     console.log("#######################@@@@@@@@@@@@@@@@#########################",serverBugs)
 
@@ -366,14 +366,14 @@ const ProjectDetailView = () => {
 
     return (
       <div className="space-y-4 mt-8 animate-in slide-in-from-bottom-4 duration-500">
-        {riskCards.map((card) => (
+        {serverBugs.map((card) => (
           <div
             key={card.id}
-            className={`bg-white border border-slate-100 border-l-4 ${card.borderColor} rounded-md p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
+            className={`bg-white border border-slate-100 border-l-4 ${card.status === 'In Progress' ? 'border-l-blue-500' : card.status === 'New' ? 'border-l-red-500': card.status === 'Acknowledged' ? 'border-l-yellow-500' : card.status === 'Resolved' ? 'border-l-green-500':'border-l-purple-500'} rounded-md p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
           >
             <div className="flex items-start gap-6">
               <div className="mt-1">
-                {card.status === "IN PROGRESS" ? (
+                {card.status === "In Progress" ? (
                   <AlertCircle size={24} className="text-slate-400" />
                 ) : (
                   <div className="w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center font-bold text-xs italic">
@@ -387,20 +387,33 @@ const ProjectDetailView = () => {
                   {card.title}
                 </h3>
                 <p className="text-[11px] text-slate-400 font-bold mb-4">
-                  {card.module}
+                  {card.description}
                 </p>
 
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-200" />{" "}
+                    <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
+                {card?.assignee?.avatar_url ? (
+                  <img
+                    src={import.meta.env.VITE_SERVER_URL + card?.assignee?.avatar_url}
+                    alt="Avatar"
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover"
+                  />
+                ) : card?.assignee?.full_name ? (
+                  card?.assignee?.full_name[0]
+                ) : (
+                  "U"
+                )}
+              </div>
                     {/* Avatar Placeholder */}
                     <span className="text-xs font-bold text-slate-700">
-                      {card.assignee}
+                      {card?.assignee?.full_name}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-slate-400">
                     <Clock size={14} />
-                    <span className="text-xs font-bold">{card.time}</span>
+                    <span className="text-xs font-bold">{card?.createdAt}</span>
                   </div>
                 </div>
               </div>
@@ -408,7 +421,7 @@ const ProjectDetailView = () => {
 
             <div className="flex flex-col items-end">
               <span
-                className={`text-[9px] font-black px-3 py-1 rounded-full border ${card.statusClass}`}
+                className={`text-[9px] font-black px-3 py-1 rounded-full border ${card.status === 'In Progress' ? 'text-blue-600 bg-blue-50 border-blue-100' : card.status === 'New' ? 'text-red-600 bg-red-50 border-red-100': card.status === 'Acknowledged' ? 'text-yellow-600 bg-yellow-50 border-yellow-100' : card.status === 'Resolved' ? 'text-green-600 bg-green-50 border-green-100':'text-purple-600 bg-purple-50 border-purple-100'}`}
               >
                 {card.status}
               </span>
