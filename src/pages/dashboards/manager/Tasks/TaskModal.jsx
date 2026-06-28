@@ -555,6 +555,7 @@ const TaskModal = ({
                       }
                       className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 text-sm font-bold text-slate-700 outline-none appearance-none"
                     >
+                      <option key="select-sprint" value="select-sprint">Select Sprint</option>
                       {sprints.map((sprint) => (
                         <option value={sprint.id}>{sprint.name}</option>
                       ))}

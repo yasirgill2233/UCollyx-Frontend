@@ -3,11 +3,14 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { Lock, ShieldCheck, Loader2, ArrowRight, UserCheck } from "lucide-react";
 import { triggerToast } from "../../utils/toastHelper";
 import { useAcceptInviteMutation, useCheckInvite } from "../../hooks/useWorkspace";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function JoinWorkspace() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
+
+  const queryClient = useQueryClient()
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -50,6 +53,7 @@ export default function JoinWorkspace() {
       { token, password },
       {
         onSuccess: (res) => {
+          queryClient.invalidateQueries(['users-list']);
           localStorage.setItem("token", res.token);
           localStorage.setItem("user", JSON.stringify(res.user));
           triggerToast("Account created and Workspace joined!", "success");

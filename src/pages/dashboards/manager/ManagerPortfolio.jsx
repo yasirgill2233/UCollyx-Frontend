@@ -19,10 +19,10 @@ const ManagerPortfolio = () => {
 
   // ⚡ DYNAMIC STATES FOR INTERACTIVE FILTER MATRIX
   const [statusFilter, setStatusFilter] = useState('All'); // Options: 'All', 'Healthy', 'Critical'
-  const [selectedSprintFrame, setSelectedSprintFrame] = useState('All'); // Options: 'All', 'Current', 'Future'
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [showSprintDropdown, setShowSprintDropdown] = useState(false);
-
+  
+  const [selectedSprintFrame, setSelectedSprintFrame] = useState('All'); // Options: 'All', 'Current', 'Future'
   // 1. BACKEND DYNAMIC CORE STREAM SYNC
   const { data: portfolioResponse, isLoading, error } = useQuery({
     queryKey: ['manager-portfolio-dashboard'],

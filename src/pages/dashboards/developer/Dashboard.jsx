@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { projectService } from "../../../api/services/projectService";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAssignedIssues } from "../../../hooks/useIssues";
 import { useMeetingsHub } from "../../../hooks/useMeetingsHub";
+import API from "../../../api/axios";
 
 // Ultra Soft Rounded Badge
 const SoftBadge = ({ text }) => {
@@ -66,6 +67,16 @@ const Dashboard = () => {
     queryFn: () => taskService.getTodayTasks(),
   });
 
+
+  const { data: portfolioResponse } = useQuery({
+      queryKey: ['developer-project-dashboard'],
+      queryFn: async () => {
+        const res = await API.get('/projects/developer-project-dashboard'); 
+        return res.data;
+      },
+      refetchOnWindowFocus: false,
+    });
+
   const user_name =
     JSON.parse(localStorage.getItem("user"))?.full_name || "Developer";
 
@@ -75,8 +86,9 @@ const Dashboard = () => {
 
   const { meetings } = useMeetingsHub();
 
-  const { data: issues = [], isLoading, isError } = useAssignedIssues();
-  console.log("==========Hello World========", meetings);
+  const { data: issues = [] } = useAssignedIssues();
+
+  console.log("==========Hello World========", portfolioResponse);
 
   const handleProjectNavigation = (id, name, taskId) => {
     const encodedName = encodeURIComponent(name);
@@ -286,9 +298,8 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-5">
-              {activeProjects.length > 0 ? (
-                activeProjects.map((project, pIdx) => {
-                  const progress = project.progress || 0;
+              {portfolioResponse?.data.length > 0 ? (
+                portfolioResponse?.data.map((project) => {
                   return (
                     <div
                       key={project.id}
@@ -300,14 +311,14 @@ const Dashboard = () => {
                       <div className="flex justify-between items-start mb-2">
                         <div className="space-y-0.5">
                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                            Cluster Node 0{pIdx + 1}
+                            Cluster Sprint {project.current_sprint}
                           </p>
                           <h3 className="text-sm font-extrabold text-slate-800 group-hover:text-indigo-600 transition-colors tracking-tight">
                             {project.name}
                           </h3>
                         </div>
                         <span className="text-[10px] font-black text-slate-700 bg-white border border-white shadow-sm rounded-lg px-2 py-0.5 tabular-nums">
-                          {progress}%
+                          {project.progress}%
                         </span>
                       </div>
 
@@ -315,14 +326,9 @@ const Dashboard = () => {
                       <div className="w-full h-1 bg-slate-200/60 rounded-full overflow-hidden mb-2">
                         <div
                           className="h-full bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(99,102,241,0.2)]"
-                          style={{ width: `${progress}%` }}
+                          style={{ width: `${project.progress}%` }}
                         />
                       </div>
-
-                      <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1.5">
-                        <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping" />
-                        {project.current_sprint || "Sprint Lifecycle Running"}
-                      </span>
                     </div>
                   );
                 })

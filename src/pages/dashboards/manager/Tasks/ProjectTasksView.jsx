@@ -83,26 +83,29 @@ const ProjectTasksView = () => {
     },
   });
 
+  const activateSprintMutation = useMutation({
+    mutationFn: async ({ sprintId, project_id }) => {
+      // Apni API ka base URL check kar lena (e.g., /api/sprints)
+      const response = await API.patch(`/sprints/${sprintId}/start`, {
+        project_id,
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // ⚡ Bohat important: Sprints aur project data ko invalidate karo taake UI automatic update ho
+      queryClient.invalidateQueries(["project-sprints", projectId]);
+      queryClient.invalidateQueries(["project-details", projectId]); // Taake current_sprint column update ho jaye
+      queryClient.invalidateQueries(["kanban-board", projectId]); // Board view ko refresh karne ke liye
 
-const activateSprintMutation = useMutation({
-  mutationFn: async ({ sprintId, project_id }) => {
-    // Apni API ka base URL check kar lena (e.g., /api/sprints)
-    const response = await API.patch(`/sprints/${sprintId}/start`, { project_id });
-    return response.data;
-  },
-  onSuccess: (data) => {
-    // ⚡ Bohat important: Sprints aur project data ko invalidate karo taake UI automatic update ho
-    queryClient.invalidateQueries(["project-sprints", projectId]); 
-    queryClient.invalidateQueries(["project-details", projectId]); // Taake current_sprint column update ho jaye
-    queryClient.invalidateQueries(["kanban-board", projectId]); // Board view ko refresh karne ke liye
-    
-    toast.success(data.message || "Sprint activated successfully!");
-  },
-  onError: (error) => {
-    console.error("Sprint activation error:", error);
-    toast.error(error.response?.data?.message || "Failed to activate sprint.");
-  }
-});
+      toast.success(data.message || "Sprint activated successfully!");
+    },
+    onError: (error) => {
+      console.error("Sprint activation error:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to activate sprint.",
+      );
+    },
+  });
 
   useEffect(() => {
     if (projects.length > 0 && !projectId) {
@@ -250,120 +253,137 @@ const activateSprintMutation = useMutation({
             </div>
 
             <div className="relative">
-  <button
-    onClick={() => setShowSprintDropdown(!showSprintDropdown)}
-    className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-md px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative"
-  >
-    <Clock size={16} className="text-indigo-600" />
-    <span className="font-bold text-sm">
-      {selectedSprintId === "backlog"
-        ? "Global Backlog Pool"
-        : sprints.find((s) => s.id === Number(selectedSprintId))?.name || "Select Sprint Focus"}
-    </span>
-    <ChevronDown size={14} className="text-slate-400 ml-1" />
-  </button>
-
-  {showSprintDropdown && (
-    <div className="absolute left-0 mt-2 w-72 bg-white border border-slate-100 rounded-md shadow-xl z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-      <button
-        onClick={() => {
-          setSelectedSprintId("backlog");
-          setShowSprintDropdown(false);
-        }}
-        className={`w-full text-left px-3 py-2 text-xs font-black uppercase flex items-center justify-between border-b border-slate-50 ${selectedSprintId === "backlog" ? "text-indigo-600 bg-indigo-50/50" : "text-slate-500 hover:bg-slate-50"}`}
-      >
-        Master Project Backlog
-      </button>
-
-      <hr className="text-slate-300"/>
-
-      <div className="px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider mt-1">
-        Sprints Framework
-      </div>
-      
-      {/* ⚡ SCROLLABLE CONTAINER WITH TIMELINE DATES */}
-      <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
-        {sprints.map((sprint) => {
-          // Safely formatting dates into "MMM DD" format (e.g., Jun 25)
-          const sDate = sprint.start_date ? new Date(sprint.start_date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'TBD';
-          const eDate = sprint.end_date ? new Date(sprint.end_date).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'TBD';
-
-          return (
-            <div 
-              key={sprint.id}
-              className={`w-full px-6 py-2.5 flex items-center justify-between group/row transition-colors border-b border-slate-50/30 ${
-                Number(selectedSprintId) === sprint.id ? "bg-indigo-50/70" : "hover:bg-slate-50"
-              }`}
-            >
-              {/* Clickable Area */}
               <button
-                onClick={() => {
-                  setSelectedSprintId(sprint.id);
-                  setShowSprintDropdown(false);
-                }}
-                className={`text-left text-[12px] font-semibold flex-1 ${
-                  Number(selectedSprintId) === sprint.id ? "text-indigo-600 font-bold" : "text-slate-600"
-                }`}
+                onClick={() => setShowSprintDropdown(!showSprintDropdown)}
+                className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-md px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative"
               >
-                <div className="flex flex-col gap-0.5">
-                  <span>{sprint.name}</span>
-                  
-                  {/* 🗓️ SPRINT TIMELINE RANGE AND STATUS ROW */}
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-                    <span className="text-slate-500 bg-slate-100 px-1 rounded text-[9px]">
-                      {sDate} — {eDate}
-                    </span>
-                    <span>•</span>
-                    <span className="capitalize">
-                      {sprint.status}
-                    </span>
-                  </div>
-                </div>
+                <Clock size={16} className="text-indigo-600" />
+                <span className="font-bold text-sm">
+                  {selectedSprintId === "backlog"
+                    ? "Global Backlog Pool"
+                    : sprints.find((s) => s.id === Number(selectedSprintId))
+                        ?.name || "Select Sprint Focus"}
+                </span>
+                <ChevronDown size={14} className="text-slate-400 ml-1" />
               </button>
 
-              {/* Right Action Badge Section */}
-              <div className="flex items-center shrink-0 ml-2">
-                {sprint.status === "active" ? (
-                  <span className="text-[8px] bg-emerald-50 text-emerald-600 font-black px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-wide shadow-sm">
-                    Active
-                  </span>
-                ) : (
+              {showSprintDropdown && (
+                <div className="absolute left-0 mt-2 w-72 bg-white border border-slate-100 rounded-md shadow-xl z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
                   <button
-  onClick={(e) => {
-    e.stopPropagation(); // Dropdown ko band hone se rokne ke liye ya extra clicks manage karne ke liye
-    
-    // Trigger mutation
-    activateSprintMutation.mutate({ 
-      sprintId: sprint.id, 
-      project_id: projectId // Yeh projectId aapki screen context se aayegi
-    });
-  }}
-  disabled={activateSprintMutation.isPending}
-  className="hidden group-hover/row:block text-[9px] bg-indigo-600 text-white font-black px-2 py-1 rounded shadow-sm hover:bg-indigo-700 transition-all uppercase tracking-wider disabled:opacity-50"
->
-  {activateSprintMutation.isPending ? "Starting..." : "Start"}
-</button>
-                )}
-              </div>
+                    onClick={() => {
+                      setSelectedSprintId("backlog");
+                      setShowSprintDropdown(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-xs font-black uppercase flex items-center justify-between border-b border-slate-50 ${selectedSprintId === "backlog" ? "text-indigo-600 bg-indigo-50/50" : "text-slate-500 hover:bg-slate-50"}`}
+                  >
+                    Master Project Backlog
+                  </button>
+
+                  <hr className="text-slate-300" />
+
+                  <div className="px-3 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider mt-1">
+                    Sprints Framework
+                  </div>
+
+                  {/* ⚡ SCROLLABLE CONTAINER WITH TIMELINE DATES */}
+                  <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+                    {sprints.map((sprint) => {
+                      // Safely formatting dates into "MMM DD" format (e.g., Jun 25)
+                      const sDate = sprint.start_date
+                        ? new Date(sprint.start_date).toLocaleDateString([], {
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "TBD";
+                      const eDate = sprint.end_date
+                        ? new Date(sprint.end_date).toLocaleDateString([], {
+                            month: "short",
+                            day: "numeric",
+                          })
+                        : "TBD";
+
+                      return (
+                        <div
+                          key={sprint.id}
+                          className={`w-full px-6 py-2.5 flex items-center justify-between group/row transition-colors border-b border-slate-50/30 ${
+                            Number(selectedSprintId) === sprint.id
+                              ? "bg-indigo-50/70"
+                              : "hover:bg-slate-50"
+                          }`}
+                        >
+                          {/* Clickable Area */}
+                          <button
+                            onClick={() => {
+                              setSelectedSprintId(sprint.id);
+                              setShowSprintDropdown(false);
+                            }}
+                            className={`text-left text-[12px] font-semibold flex-1 ${
+                              Number(selectedSprintId) === sprint.id
+                                ? "text-indigo-600 font-bold"
+                                : "text-slate-600"
+                            }`}
+                          >
+                            <div className="flex flex-col gap-0.5">
+                              <span>{sprint.name}</span>
+
+                              {/* 🗓️ SPRINT TIMELINE RANGE AND STATUS ROW */}
+                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
+                                <span className="text-slate-500 bg-slate-100 px-1 rounded text-[9px]">
+                                  {sDate} — {eDate}
+                                </span>
+                                <span>•</span>
+                                <span className="capitalize">
+                                  {sprint.status}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+
+                          {/* Right Action Badge Section */}
+                          <div className="flex items-center shrink-0 ml-2">
+                            {sprint.status === "active" ? (
+                              <span className="text-[8px] bg-emerald-50 text-emerald-600 font-black px-2 py-0.5 rounded border border-emerald-100 uppercase tracking-wide shadow-sm">
+                                Active
+                              </span>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Dropdown ko band hone se rokne ke liye ya extra clicks manage karne ke liye
+
+                                  // Trigger mutation
+                                  activateSprintMutation.mutate({
+                                    sprintId: sprint.id,
+                                    project_id: projectId, // Yeh projectId aapki screen context se aayegi
+                                  });
+                                }}
+                                disabled={activateSprintMutation.isPending}
+                                className="hidden group-hover/row:block text-[9px] bg-indigo-600 text-white font-black px-2 py-1 rounded shadow-sm hover:bg-indigo-700 transition-all uppercase tracking-wider disabled:opacity-50"
+                              >
+                                {activateSprintMutation.isPending
+                                  ? "Starting..."
+                                  : "Start"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <hr className="text-slate-300" />
+
+                  <button
+                    onClick={() => {
+                      setShowSprintModal(true);
+                      setShowSprintDropdown(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 mt-2 text-xs font-black text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 border-t border-slate-50"
+                  >
+                    Create New Sprint Cycle
+                  </button>
+                </div>
+              )}
             </div>
-          );
-        })}
-      </div>
-
-      <hr className="text-slate-300"/>
-
-      <button
-        onClick={() => {
-          setShowSprintModal(true);
-          setShowSprintDropdown(false);
-        }}
-        className="w-full text-left px-4 py-2.5 mt-2 text-xs font-black text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 border-t border-slate-50"
-      >
-        Create New Sprint Cycle
-      </button>
-    </div>
-  )}
-</div>
           </div>
 
           {/* VIEW CONTROLLER CONTENT */}

@@ -9,7 +9,6 @@ export const useUsersData = () => {
     staleTime: 0,
   });
 };
-
 export const useUserMutations = () => {
   const queryClient = useQueryClient();
 
