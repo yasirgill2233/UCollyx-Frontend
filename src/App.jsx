@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast"; // 1. Import karein
 import API from "./api/axios";
 
 import GlobalSocketWrapper from "./components/layout/GlobalSocketWrapper";
+import { AccessProvider } from "./context/AccessContext";
 
 export default function App() {
 
@@ -14,6 +15,8 @@ export default function App() {
   return (
     <>
       {/* 2. Toaster ko yahan rakhein */}
+      <AccessProvider>
+
       <Toaster
         position="bottom-right"
         toastOptions={{
@@ -23,10 +26,11 @@ export default function App() {
             border: "1px solid rgba(255,255,255,0.1)",
           },
         }}
-      />
+        />
       <GlobalSocketWrapper currentUserId={currentUserId} activeChat={activeChat}>
         <AppRoutes />
       </GlobalSocketWrapper>
+        </AccessProvider>
     </>
   );
 }

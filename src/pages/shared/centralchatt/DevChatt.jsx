@@ -185,6 +185,14 @@ const DevChat = () => {
   const channels = channelsData?.data || [];
   const dmUsers = convData?.data || [];
 
+  console.log("Hey There##@@##@@:::::",channelMembers)
+
+  const activeRole = channelMembers?.filter((member)=>{
+    return member?.role_in_channel === 'admin'
+  })
+
+  console.log("Active Role Active Role::",activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member')
+
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   const addNewChannel = (channelData) => {
@@ -239,6 +247,7 @@ const DevChat = () => {
       channelId: numericId,
       userId: memberObj.User.id,
       role: "member",
+      mainAdmin: activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member',
     };
 
     addMemberMutate(payload, {
@@ -575,6 +584,8 @@ const DevChat = () => {
     setCurrentMeetingId(meeting.id);
     setIsVideoModalOpen(true);
   };
+
+  console.log("##################################################################################",chatData)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1567,6 +1578,7 @@ const DevChat = () => {
         channelName={activeChat.name}
         members={channelMembers}
         onAddMember={() => setIsAddMemberModalOpen(true)}
+        memberRole = {activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member'}  
       />
       <GlobalSearchModal
         isOpen={isSearchOpen}

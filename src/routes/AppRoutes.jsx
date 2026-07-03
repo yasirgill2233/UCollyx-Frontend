@@ -42,6 +42,7 @@ import AccessDenied from "../pages/auth/AccessDenied";
 import AwaitingRole from "../pages/auth/AwaitingRole";
 import Unauthorized from "../pages/illustrations/Unauthorized";
 import Forbidden from "../pages/illustrations/Forbidden";
+import RoleAccessManager from "../pages/dashboards/orgadmin/RoleAccessManager";
 
 // const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 
@@ -192,6 +193,7 @@ function AppRoutes() {
               <Route path="users" element={<UsersManagement />} />
               <Route path="chat" element={<DevChat />} />
               <Route path="meetings" element={<MeetingsPage />} />
+              <Route path="permissions" element={<RoleAccessManager />} />
             </Route>
 
             {/* Super Admin Group */}

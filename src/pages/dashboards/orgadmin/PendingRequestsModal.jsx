@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
 import { X, Check, UserX, User, Loader2 } from 'lucide-react';
 import API from '../../../api/axios';
 import { useHandleRequestMutation } from '../../../hooks/useWorkspace';
