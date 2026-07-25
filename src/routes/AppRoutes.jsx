@@ -214,6 +214,6 @@ function AppRoutes() {
       </Routes>
     </Suspense>
   );
-}
+} 
 
 export default AppRoutes;
