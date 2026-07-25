@@ -1303,7 +1303,7 @@ const IDEBody = () => {
             typeof window !== "undefined" &&
             (window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1");
-
+ 
           const previewUrl = isLocal
             ? `http://localhost:${projectPort}/`
               : `https://preview.ucollyx.com/api/proxy/${slug}`;
