@@ -1298,17 +1298,15 @@ const IDEBody = () => {
       )}
 
       {rightPanel === "PREVIEW" &&
-        (() => { 
+        (() => {
           const isLocal =
             typeof window !== "undefined" &&
             (window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1");
- 
-          // const previewUrl = isLocal
-          //   ? `http://localhost:${projectPort}/`
-          //     : `https://preview.ucollyx.com/api/proxy/${slug}`;
 
-            const previewUrl =  `http://localhost:${projectPort}/`
+          const previewUrl = isLocal
+            ? `http://localhost:${projectPort}/`
+            : `https://preview.ucollyx.com/api/proxy/${slug}`;
 
           return (
             <div
