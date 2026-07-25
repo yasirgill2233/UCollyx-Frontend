@@ -1306,7 +1306,7 @@ const IDEBody = () => {
 
           const previewUrl = isLocal
             ? `http://localhost:${projectPort}/`
-             : `https://preview.ucollyx.com/${slug}/`;
+             : `https://preview.ucollyx.com/api/proxy/${slug}/`;
             // : `${window.location.protocol}//${window.location.host}/preview/${slug}/`;
 
           return (
