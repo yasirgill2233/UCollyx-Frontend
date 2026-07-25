@@ -1298,7 +1298,7 @@ const IDEBody = () => {
       )}
 
       {rightPanel === "PREVIEW" &&
-        (() => {
+        (() => { 
           const isLocal =
             typeof window !== "undefined" &&
             (window.location.hostname === "localhost" ||
