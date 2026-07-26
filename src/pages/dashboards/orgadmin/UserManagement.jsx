@@ -150,7 +150,7 @@ export default function UsersManagement() {
       </div>
     );
 
-  return (
+  return ( 
     <div className="min-h-screen bg-gradient-to-tr from-[#fff7f5] via-[#faf9ff] to-[#f4f7ff] p-4 sm:p-8 lg:p-12 font-sans text-left relative overflow-x-hidden selection:bg-indigo-100">
       <div className="absolute top-0 left-0 w-[45vw] h-[45vw] max-w-[450px] bg-gradient-to-br from-cyan-200/20 to-blue-300/15 rounded-full filter blur-[100px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-[35vw] h-[35vw] max-w-[400px] bg-gradient-to-bl from-purple-200/25 to-fuchsia-200/15 rounded-full filter blur-[100px] pointer-events-none" />
