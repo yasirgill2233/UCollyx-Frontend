@@ -72,7 +72,7 @@ const Header = () => {
               <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
                 {currentUser?.avatar_url ? (
                   <img
-                    src={currentUser?.avatar_url}
+                    src={import.meta.env.VITE_SERVER_URL + currentUser?.avatar_url}
                     alt="Avatar"
                     crossOrigin="anonymous"
                     className="w-full h-full object-cover"
