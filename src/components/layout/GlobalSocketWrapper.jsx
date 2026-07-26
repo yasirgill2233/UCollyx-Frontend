@@ -201,7 +201,7 @@ useEffect(() => {
       const chatContext = newIncomingMessage.channel_id ? "# group-channel" : "Direct Message";
 
       const avatarUrl = newIncomingMessage.Sender?.avatar_url
-        ? `${import.meta.env.VITE_SERVER_URL}${newIncomingMessage.Sender?.avatar_url}`
+        ? `${newIncomingMessage.Sender?.avatar_url}`
         : null;
         
       const isMobile = window.innerWidth < 768;

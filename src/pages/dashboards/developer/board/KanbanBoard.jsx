@@ -408,7 +408,7 @@ const DraggableCard = ({
                 >
                   {user?.avatar_url ? (
                     <img
-                      src={import.meta.env.VITE_SERVER_URL + user?.avatar_url}
+                      src={user?.avatar_url}
                       alt="Avatar"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover"

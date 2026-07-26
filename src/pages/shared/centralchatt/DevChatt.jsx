@@ -883,7 +883,6 @@ const DevChat = () => {
                         {member?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL +
                               member?.avatar_url
                             }
                             alt="Avatar"
@@ -982,7 +981,6 @@ const DevChat = () => {
                         {i.User?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL +
                               i.User?.avatar_url
                             }
                             alt={i.User?.full_name}
@@ -1098,7 +1096,6 @@ const DevChat = () => {
                             {msg?.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_SERVER_URL +
                                   msg?.avatar_url
                                 }
                                 alt="Avatar"
@@ -1261,7 +1258,7 @@ const DevChat = () => {
                                     msg.attachments.length > 0 && (
                                       <div className="flex flex-wrap gap-2 mt-2">
                                         {msg.attachments.map((file, idx) => {
-                                          const fileUrl = `${import.meta.env.VITE_SERVER_URL}/${file.path.replace(/\\/g, "/")}`;
+                                          const fileUrl = `/${file.path.replace(/\\/g, "/")}`;
                                           const isImage =
                                             file.mimetype.startsWith("image/");
 
@@ -1338,7 +1335,6 @@ const DevChat = () => {
                           {typingUser.avatarUrl ? (
                             <img
                               src={
-                                import.meta.env.VITE_SERVER_URL +
                                 typingUser.avatarUrl
                               }
                               alt="Avatar"
@@ -1424,7 +1420,6 @@ const DevChat = () => {
                           {user?.User?.avatar_url ? (
                             <img
                               src={
-                                import.meta.env.VITE_SERVER_URL +
                                 user?.User?.avatar_url
                               }
                               alt="Avatar"

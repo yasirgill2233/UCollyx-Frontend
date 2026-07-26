@@ -62,7 +62,6 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
                         {member.User?.avatar_url ? (
                           <img
                             src={
-                              import.meta.env.VITE_SERVER_URL +
                               member?.User?.avatar_url
                             }
                             alt="Avatar"

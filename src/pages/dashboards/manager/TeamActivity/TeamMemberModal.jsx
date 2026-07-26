@@ -38,7 +38,7 @@ const TeamMemberModal = ({ member, onClose, projectData }) => {
             {/* Dynamic Avatar Block: Image Check */}
             {member.avatar ? (
 <img
-                    src={import.meta.env.VITE_SERVER_URL + member?.avatar}
+                    src={member?.avatar}
                     alt="Avatar"
                     crossOrigin="anonymous"
                     className="w-20 h-20 rounded-2xl object-cover border border-white/30 bg-white shadow-md"

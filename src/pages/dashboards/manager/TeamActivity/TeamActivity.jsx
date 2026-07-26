@@ -329,7 +329,7 @@ const TeamActivity = () => {
                         <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
                           {m?.avatar ? (
                             <img
-                              src={import.meta.env.VITE_SERVER_URL + m?.avatar}
+                              src={m?.avatar}
                               alt="Avatar"
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"

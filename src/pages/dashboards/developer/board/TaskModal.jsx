@@ -272,7 +272,7 @@ const SubtasksContent = ({ subtasks, task, onToggleSubtask }) => {
                 >
                   {user?.avatar_url ? (
                     <img
-                      src={import.meta.env.VITE_SERVER_URL + user?.avatar_url}
+                      src={user?.avatar_url}
                       alt="Avatar"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover"
@@ -314,7 +314,7 @@ const CommentsContent = ({
                   {comment.User?.avatar_url ? (
                     <img
                       src={
-                        import.meta.env.VITE_SERVER_URL + comment.User?.avatar_url
+                        comment.User?.avatar_url
                       }
                       alt="Avatar"
                       crossOrigin="anonymous"

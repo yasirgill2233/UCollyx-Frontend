@@ -749,7 +749,6 @@ const ReportBugForm = () => {
                             {selectedAssignee?.avatar_url ? (
                               <img
                                 src={
-                                  import.meta.env.VITE_SERVER_URL +
                                   selectedAssignee?.avatar_url
                                 }
                                 alt="Avatar"
@@ -795,7 +794,6 @@ const ReportBugForm = () => {
                               {u?.avatar_url ? (
                                 <img
                                   src={
-                                    import.meta.env.VITE_SERVER_URL +
                                     u?.avatar_url
                                   }
                                   alt="Avatar"
