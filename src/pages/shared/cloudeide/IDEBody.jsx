@@ -86,14 +86,14 @@ const IDEBody = () => {
   const [isBrowsedProject, setIsBrowsedProject] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  const [terminals, setTerminals] = useState([
-    {
-      id: crypto.randomUUID(),
-      title: "bash",
-    },
-  ]);
+  // const [terminals, setTerminals] = useState([
+  //   {
+  //     id: crypto.randomUUID(),
+  //     title: "bash",
+  //   },
+  // ]);
 
-  const [activeTerminal, setActiveTerminal] = useState(terminals[0].id);
+  // const [activeTerminal, setActiveTerminal] = useState(terminals[0].id);
 
   const modelDecorationsRef = useRef({});
 
@@ -1005,31 +1005,31 @@ const IDEBody = () => {
     }, 200);
   };
 
-  const createTerminal = () => {
-    const terminal = {
-      id: crypto.randomUUID(),
-      title: `bash ${terminals.length + 1}`,
-    };
+  // const createTerminal = () => {
+  //   const terminal = {
+  //     id: crypto.randomUUID(),
+  //     title: `bash ${terminals.length + 1}`,
+  //   };
 
-    setTerminals((prev) => [...prev, terminal]);
-    setActiveTerminal(terminal.id);
-  };
+  //   setTerminals((prev) => [...prev, terminal]);
+  //   setActiveTerminal(terminal.id);
+  // };
 
-  const closeTerminal = (id) => {
-    if (terminals.length === 1) return;
+  // const closeTerminal = (id) => {
+  //   if (terminals.length === 1) return;
 
-    const updated = terminals.filter((t) => t.id !== id);
+  //   const updated = terminals.filter((t) => t.id !== id);
 
-    setTerminals(updated);
+  //   setTerminals(updated);
 
-    if (activeTerminal === id) {
-      setActiveTerminal(updated[0].id);
-    }
+  //   if (activeTerminal === id) {
+  //     setActiveTerminal(updated[0].id);
+  //   }
 
-    socket.emit("terminal:close", {
-      terminalId: id,
-    });
-  };
+  //   socket.emit("terminal:close", {
+  //     terminalId: id,
+  //   });
+  // };
 
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
@@ -1306,16 +1306,16 @@ const IDEBody = () => {
         </div>
 
         <div className="h-60 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
-          {/* <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
+          <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TerminalIcon size={12} className="text-zinc-500" />
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 Terminal
               </span>
             </div>
-          </div> */}
+          </div>
 
-          <div className="h-9 border-b border-zinc-800 flex items-center justify-between bg-[#09090b]">
+          {/* <div className="h-9 border-b border-zinc-800 flex items-center justify-between bg-[#09090b]">
             <div className="flex overflow-x-auto">
               {terminals.map((terminal) => (
                 <div
@@ -1350,15 +1350,15 @@ const IDEBody = () => {
             >
               +
             </button>
-          </div>
+          </div> */}
 
           <div className="flex-1 overflow-hidden p-2">
-            {/* <TerminalComponent socket={socket} /> */}
-            <TerminalComponent
+            <TerminalComponent socket={socket} />
+            {/* <TerminalComponent
               socket={socket}
               terminalId={activeTerminal}
               projectId={activeProjectId}
-            />
+            /> */}
           </div>
         </div>
       </section>
