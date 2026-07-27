@@ -1382,12 +1382,14 @@ const IDEBody = () => {
             (window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1");
 
-          const preview = isLocal
-            ? `http://localhost:${projectPort}/`
-            : `https://${slug}.preview.ucollyx.com`;
+          // const preview = isLocal
+          //   ? `http://localhost:${projectPort}/`
+          //   : `https://${slug}.preview.ucollyx.com`;
           // : `https://preview.ucollyx.com/api/proxy/${slug}`;
 
-              setPreviewUrl(preview)
+              setPreviewUrl(isLocal
+            ? `http://localhost:${projectPort}/`
+            : `https://${slug}.preview.ucollyx.com`)
 
           return (
             <div
