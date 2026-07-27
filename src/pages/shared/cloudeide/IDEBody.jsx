@@ -85,6 +85,7 @@ const IDEBody = () => {
 
   const [isBrowsedProject, setIsBrowsedProject] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState();
 
   // const [terminals, setTerminals] = useState([
   //   {
@@ -1381,10 +1382,12 @@ const IDEBody = () => {
             (window.location.hostname === "localhost" ||
               window.location.hostname === "127.0.0.1");
 
-          const previewUrl = isLocal
+          const preview = isLocal
             ? `http://localhost:${projectPort}/`
             : `https://${slug}.preview.ucollyx.com`;
           // : `https://preview.ucollyx.com/api/proxy/${slug}`;
+
+              setPreviewUrl(preview)
 
           return (
             <div
@@ -1475,7 +1478,8 @@ const IDEBody = () => {
                 {/* DYNAMIC URL ADDRESS BAR */}
                 <div className="p-2 bg-[#0c0c0e] border-b border-zinc-800/60 flex items-center gap-2 shrink-0 overflow-hidden">
                   <div className="bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-400 rounded-md px-3 py-1 flex-1 min-w-0 truncate font-mono">
-                    {previewUrl}
+                    <input type="text" value={previewUrl} onChange={(e) => setPreviewUrl(e.target.value)} />
+                    {/* {previewUrl} */}
                   </div>
 
                   <a
