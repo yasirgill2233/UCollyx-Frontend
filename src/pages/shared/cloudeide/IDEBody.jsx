@@ -86,6 +86,15 @@ const IDEBody = () => {
   const [isBrowsedProject, setIsBrowsedProject] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
+  const [terminals, setTerminals] = useState([
+    {
+      id: crypto.randomUUID(),
+      title: "bash",
+    },
+  ]);
+
+  const [activeTerminal, setActiveTerminal] = useState(terminals[0].id);
+
   const modelDecorationsRef = useRef({});
 
   const loadProject = async (id) => {
@@ -996,6 +1005,32 @@ const IDEBody = () => {
     }, 200);
   };
 
+  const createTerminal = () => {
+    const terminal = {
+      id: crypto.randomUUID(),
+      title: `bash ${terminals.length + 1}`,
+    };
+
+    setTerminals((prev) => [...prev, terminal]);
+    setActiveTerminal(terminal.id);
+  };
+
+  const closeTerminal = (id) => {
+    if (terminals.length === 1) return;
+
+    const updated = terminals.filter((t) => t.id !== id);
+
+    setTerminals(updated);
+
+    if (activeTerminal === id) {
+      setActiveTerminal(updated[0].id);
+    }
+
+    socket.emit("terminal:close", {
+      terminalId: id,
+    });
+  };
+
   return (
     <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] bg-[#09090b] text-zinc-300 text-sm font-sans">
       {showExplorer && (
@@ -1271,17 +1306,59 @@ const IDEBody = () => {
         </div>
 
         <div className="h-60 border-t border-zinc-800 flex flex-col bg-[#0c0c0e]">
-          <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
+          {/* <div className="px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TerminalIcon size={12} className="text-zinc-500" />
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
                 Terminal
               </span>
             </div>
+          </div> */}
+
+          <div className="h-9 border-b border-zinc-800 flex items-center justify-between bg-[#09090b]">
+            <div className="flex overflow-x-auto">
+              {terminals.map((terminal) => (
+                <div
+                  key={terminal.id}
+                  onClick={() => setActiveTerminal(terminal.id)}
+                  className={`group flex items-center gap-2 px-4 h-9 cursor-pointer border-r border-zinc-800 ${
+                    activeTerminal === terminal.id
+                      ? "bg-[#0f0f10] text-white"
+                      : "text-zinc-500 hover:bg-zinc-900"
+                  }`}
+                >
+                  <TerminalIcon size={13} />
+
+                  <span className="text-xs">{terminal.title}</span>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeTerminal(terminal.id);
+                    }}
+                    className="opacity-0 group-hover:opacity-100"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={createTerminal}
+              className="px-3 text-zinc-500 hover:text-white"
+            >
+              +
+            </button>
           </div>
 
           <div className="flex-1 overflow-hidden p-2">
-            <TerminalComponent socket={socket} />
+            {/* <TerminalComponent socket={socket} /> */}
+            <TerminalComponent
+              socket={socket}
+              terminalId={activeTerminal}
+              projectId={activeProjectId}
+            />
           </div>
         </div>
       </section>
@@ -1306,8 +1383,8 @@ const IDEBody = () => {
 
           const previewUrl = isLocal
             ? `http://localhost:${projectPort}/`
-            :`https://${slug}.preview.ucollyx.com`;
-            // : `https://preview.ucollyx.com/api/proxy/${slug}`;
+            : `https://${slug}.preview.ucollyx.com`;
+          // : `https://preview.ucollyx.com/api/proxy/${slug}`;
 
           return (
             <div
