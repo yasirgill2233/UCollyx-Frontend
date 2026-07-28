@@ -164,28 +164,64 @@ const IDEBody = () => {
     setMenuPos({ x: e.pageX, y: e.pageY, visible: true, targetId: itemId });
   };
 
+  // const handleAISend = async () => {
+  //   if (!aiInput.trim()) return;
+
+  //   const userMessage = { role: "user", text: aiInput };
+  //   setChatHistory((prev) => [...prev, userMessage]);
+  //   setAiInput("");
+  //   setIsTyping(true);
+
+  //   try {
+  //     const res = await axios.post("http://localhost:11434/api/generate", {
+  //       // model: "codellama:7b", // ya "deepseek-coder"
+  //       model: "deepseek-coder:1.3b",
+  //       prompt: aiInput,
+  //       stream: false,
+  //     });
+
+  //     const aiMessage = { role: "ai", text: res.data.response };
+  //     setChatHistory((prev) => [...prev, aiMessage]);
+  //   } catch (error) {
+  //     setChatHistory((prev) => [
+  //       ...prev,
+  //       { role: "ai", text: "Error: Ollama se connect nahi ho pa raha." },
+  //     ]);
+  //   } finally {
+  //     setIsTyping(false);
+  //   }
+  // };
+
   const handleAISend = async () => {
     if (!aiInput.trim()) return;
 
     const userMessage = { role: "user", text: aiInput };
     setChatHistory((prev) => [...prev, userMessage]);
+    const currentPrompt = aiInput; // Input store karein request ke liye
     setAiInput("");
     setIsTyping(true);
 
     try {
-      const res = await axios.post("http://localhost:11434/api/generate", {
-        // model: "codellama:7b", // ya "deepseek-coder"
-        model: "deepseek-coder:1.3b",
-        prompt: aiInput,
-        stream: false,
-      });
+      // Apne Express backend API endpoint ko call karein jo Groq SDK use kar raha hai
+      // Ya agar direct Groq API hitting hai (recommended via backend Proxy):
+      const res = await API.post(
+        "/ai/generate",
+        {
+          prompt: currentPrompt,
+        },
+      );
 
-      const aiMessage = { role: "ai", text: res.data.response };
-      setChatHistory((prev) => [...prev, aiMessage]);
+      if (res.data.success) {
+        const aiMessage = { role: "ai", text: res.data.response };
+        setChatHistory((prev) => [...prev, aiMessage]);
+      } else {
+        throw new Error("Response failed");
+      }
     } catch (error) {
+      console.error("Groq Error:", error);
       setChatHistory((prev) => [
         ...prev,
-        { role: "ai", text: "Error: Ollama se connect nahi ho pa raha." },
+        { role: "ai", text: "Error: AI service response nahi de rahi." },
       ]);
     } finally {
       setIsTyping(false);

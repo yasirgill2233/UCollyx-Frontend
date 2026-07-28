@@ -1,5 +1,7 @@
 import { Brain, Send, X } from "lucide-react";
 import React from "react";
+import AIChatMessage from "../ai/AIChatMessage";
+ // Path apne folder structure ke mutabiq adjust kar lein
 
 const AIPanel = ({
   onClose,
@@ -13,10 +15,11 @@ const AIPanel = ({
   const chatEndRef = React.useRef(null);
   React.useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [chatHistory, isTyping]);
 
   return (
-    <aside className="flex-shrink-0 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300">
+    <aside className="flex-shrink-0 border-l border-zinc-800 bg-[#0c0c0e] flex flex-col animate-in slide-in-from-right duration-300 w-full md:w-[450px] lg:w-[500px]">
+      {/* Header */}
       <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
         <div className="flex items-center gap-2">
           <Brain size={18} className="text-blue-500" />
@@ -26,7 +29,7 @@ const AIPanel = ({
         </div>
         <X
           size={18}
-          className="cursor-pointer text-zinc-600 hover:text-white"
+          className="cursor-pointer text-zinc-600 hover:text-white transition-colors"
           onClick={onClose}
         />
       </div>
@@ -36,26 +39,32 @@ const AIPanel = ({
         {chatHistory.map((msg, index) => (
           <div
             key={index}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex ${
+              msg.role === "user" ? "justify-end" : "justify-start"
+            }`}
           >
-            <div
-              className={`max-w-[600px] p-3 rounded-xl text-xs leading-relaxed ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white rounded-br-none"
-                  : "bg-zinc-800/60 text-zinc-300 border border-zinc-700/30 rounded-bl-none"
-              }`}
-            >
-              {msg.text}
-            </div>
+            {msg.role === "user" ? (
+              /* User Bubble */
+              <div className="max-w-[80%] p-3 rounded-xl text-xs leading-relaxed bg-blue-600 text-white rounded-br-none shadow-sm">
+                {msg.text}
+              </div>
+            ) : (
+              /* AI Response Container with Markdown & Syntax Highlighting */
+              <div className="max-w-[88%] p-3.5 rounded-xl text-xs leading-relaxed bg-zinc-900/80 text-zinc-200 border border-zinc-800 rounded-bl-none shadow-md overflow-hidden">
+                <AIChatMessage content={msg.text} />
+              </div>
+            )}
           </div>
         ))}
+
+        {/* Typing / Loading Indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="bg-zinc-800/60 p-3 rounded-xl rounded-bl-none border border-zinc-700/30">
-              <div className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce"></span>
-                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-75"></span>
-                <span className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-bounce delay-150"></span>
+            <div className="bg-zinc-900/80 p-3 rounded-xl rounded-bl-none border border-zinc-800">
+              <div className="flex gap-1.5 items-center">
+                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
               </div>
             </div>
           </div>
@@ -75,12 +84,13 @@ const AIPanel = ({
                 handleAISend();
               }
             }}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-xs text-zinc-300 outline-none focus:border-blue-500/50 resize-none h-20"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-xs text-zinc-200 outline-none focus:border-blue-500/50 resize-none h-20 transition-all placeholder:text-zinc-600"
             placeholder="Ask anything..."
           />
           <button
             onClick={handleAISend}
-            className="absolute right-2 bottom-2 bg-blue-600 p-1.5 rounded-lg hover:bg-blue-500 transition-colors text-white"
+            disabled={!aiInput.trim() || isTyping}
+            className="absolute right-2 bottom-3 bg-blue-600 p-1.5 rounded-lg hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 transition-all text-white"
           >
             <Send size={14} />
           </button>
