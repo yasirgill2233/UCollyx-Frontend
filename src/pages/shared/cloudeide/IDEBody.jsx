@@ -204,8 +204,8 @@ const IDEBody = () => {
     try {
       // Apne Express backend API endpoint ko call karein jo Groq SDK use kar raha hai
       // Ya agar direct Groq API hitting hai (recommended via backend Proxy):
-      const res = await API.post(
-        "/ai/generate",
+      const res = await axios.post(
+        "https://ucollyx.com/api/ai/generate",
         {
           prompt: currentPrompt,
         },
