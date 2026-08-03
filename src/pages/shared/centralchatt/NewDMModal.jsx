@@ -6,6 +6,9 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const { data: allUsers = [] } = useWorkspaceMembers();
 
+  console.log(onSelectUser, "onSelectUser in new dm modal");
+  console.log(allUsers, "allUsers in new dm modal");
+
   const filteredMembers = allUsers.filter((member) =>
     member.User?.full_name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -75,7 +78,7 @@ const NewDMModal = ({ isOpen, onClose, onSelectUser }) => {
                         )}
                       </div>
                       <div
-                        className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.User.status === "active" ? "bg-green-500" : "bg-gray-300"}`}
+                        className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${member.User.last_login !== null ? "bg-green-500" : "bg-gray-300"}`}
                       />
                     </div>
 
