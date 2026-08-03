@@ -19,8 +19,8 @@ const MembersSidebar = ({
     memberRole,
   );
 
-  const onlineMembers = members.filter((m) => m.User.status === "active");
-  const offlineMembers = members.filter((m) => m.User.status !== "active");
+  const onlineMembers = members.filter((m) => m.User.last_login !== null);
+  const offlineMembers = members.filter((m) => m.User.last_login === null);
 
   return (
     <div className="fixed inset-y-0 right-0 w-72 bg-white border-l border-gray-100 shadow-2xl z-[200] animate-in slide-in-from-right duration-300">

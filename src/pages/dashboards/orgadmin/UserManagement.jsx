@@ -133,9 +133,16 @@ export default function UsersManagement() {
   };
 
   const getOnlineStatus = (lastActive) => {
-    if (!lastActive) return "OFFLINE_CLUSTER";
-    const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
-    return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
+    console.log("Login::::",lastActive)
+    if (!lastActive) {
+      return "OFFLINE_CLUSTER"
+    }
+    else{
+      return "LIVE_ON_NODE"
+    };
+    // const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
+    // console.log("Login Minutes:::::",diffInSeconds)
+    // return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
   };
 
   if (isUsersLoading)
@@ -369,7 +376,7 @@ export default function UsersManagement() {
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-slate-200/60 rounded-md shadow-xs relative">
                         <span
-                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full ${getOnlineStatus(u.lastActive) === "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-slate-300"}`}
+                          className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-white rounded-full ${getOnlineStatus(u?.lastActive) == "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-slate-300"}`}
                         />
                         {u.name?.charAt(0).toUpperCase()}
                       </div>
@@ -452,10 +459,10 @@ export default function UsersManagement() {
                     </div>
                     <div>
                       <span className="text-slate-400 font-medium block">
-                        Node Presence
+                        Presence
                       </span>
                       <span className="text-slate-500 font-medium mt-0.5 block truncate">
-                        {getOnlineStatus(u.lastActive) === "LIVE_ON_NODE"
+                        {getOnlineStatus(u?.lastActive) === "LIVE_ON_NODE"
                           ? "LIVE ON NODE"
                           : "OFFLINE CLUSTER"}
                       </span>
@@ -658,9 +665,14 @@ function UserDetailsModal({
     : "NOT_SYNCED";
 
   const getOnlineStatus = (lastActive) => {
-    if (!lastActive) return "OFFLINE_CLUSTER";
-    const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
-    return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
+    console.log("Login::::",lastActive)
+    if (!lastActive) {
+      return "OFFLINE_CLUSTER"
+    }else{
+      return "LIVE_ON_NODE"
+    };
+    // const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
+    // return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
   };
 
   return (
@@ -693,7 +705,7 @@ function UserDetailsModal({
           <div className="flex flex-col items-center text-center bg-[#f8fafc]/50 p-5 rounded-md border border-gray-100">
             <div className="w-16 h-16 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] rounded-md flex items-center justify-center text-white text-xl font-black shadow-lg relative">
               <span
-                className={`absolute bottom-0.5 right-0.5 w-3 h-3 border-2 border-white rounded-full ${getOnlineStatus(user.lastActive) === "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-gray-300"}`}
+                className={`absolute bottom-0.5 right-0.5 w-3 h-3 border-2 border-white rounded-full ${getOnlineStatus(user?.lastActive) === "LIVE_ON_NODE" ? "bg-emerald-500" : "bg-gray-300"}`}
               />
               {user.name?.charAt(0).toUpperCase()}
             </div>
@@ -735,8 +747,8 @@ function UserDetailsModal({
                 isStatus
               />
               <DetailRow
-                label="Node Presence"
-                value={getOnlineStatus(user.lastActive)}
+                label="Presence"
+                value={getOnlineStatus(user?.lastActive) === "LIVE_ON_NODE" ? "LIVE ON NODE" : "OFFLINE CLUSTER"}
                 isTime
               />
             </div>
@@ -813,21 +825,44 @@ function UserDetailsModal({
 }
 
 function DetailRow({ label, value, isStatus, isTeam, isTime }) {
+  // Safe normalization taake uppercase/lowercase ka masla na aaye
+  const normalizedVal = String(value || "").trim().toLowerCase();
+  
+  // Status ya special cases ke liye color logic
   const getStatusColor = (val) => {
-    if (val === "active")
-      return "text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded";
-    if (val === "Disabled")
-      return "text-red-600 bg-red-500/10 px-2 py-0.5 rounded";
-    return "text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded";
+    const baseClass = "px-2 py-0.5 rounded font-medium inline-block";
+
+    if (val === "active") {
+      return `${baseClass} text-emerald-600 bg-emerald-500/10`;
+    }
+    if (val === "disabled") {
+      return `${baseClass} text-red-600 bg-red-500/10`;
+    }
+    if (val === "live on node") {
+      return `${baseClass} text-green-600 bg-green-500/10`;
+    }
+
+    return `${baseClass} text-blue-600 bg-blue-500/10`;
   };
 
+  // Check karo ke status prop true hai YA phir value "LIVE ON NODE" hai
+  const isStatusBadge = isStatus || normalizedVal === "live on node";
+
   return (
-    <div className="flex justify-between items-center text-xs">
+    <div className="flex justify-between items-center text-xs py-1">
       <span className="font-bold text-gray-400">{label}</span>
       <span
-        className={`font-black ${isStatus ? getStatusColor(value) : isTeam ? "text-[#3b59ff]" : isTime ? "text-gray-400 font-mono text-[11px]" : "text-gray-800"}`}
+        className={
+          isStatusBadge
+            ? getStatusColor(normalizedVal)
+            : isTeam
+            ? "text-[#3b59ff] font-bold"
+            : isTime
+            ? "text-gray-400 font-mono text-[11px]"
+            : "text-gray-800 font-semibold"
+        }
       >
-        {value}
+        {value ?? "N/A"}
       </span>
     </div>
   );

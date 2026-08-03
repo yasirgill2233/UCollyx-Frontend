@@ -545,6 +545,7 @@ const DevChat = () => {
       call_duration: msg.call_duration,
       isMe: msg.sender_id === currentUserId,
       status: msg.Sender?.status || "Active",
+      last_login: msg.Sender?.last_login || null,
       email: msg.Sender?.email || "",
       created_at: msg?.createdAt,
       avatar_url: msg.Sender?.avatar_url || null,
@@ -749,6 +750,20 @@ const DevChat = () => {
     };
   }, [activeChat?.id, activeChat?.type, currentUserId, queryClient]);
 
+
+  const getOnlineStatus = (lastActive) => {
+    console.log("Login::::",lastActive)
+    if (!lastActive) {
+      return "OFFLINE_CLUSTER"
+    }
+    else{
+      return "LIVE_ON_NODE"
+    };
+    // const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
+    // console.log("Login Minutes:::::",diffInSeconds)
+    // return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
+  };
+
   // ==========================================
 
   return (
@@ -952,7 +967,7 @@ const DevChat = () => {
                 {!isChatLoading && activeChat?.type === "channel" && (
                   <span>
                     {
-                      channelMembers.filter((u) => u.User.status === "active")
+                      channelMembers.filter((u) => u.User.last_login !== null)
                         .length
                     }{" "}
                     / {channelMembers.length} Online
@@ -971,7 +986,7 @@ const DevChat = () => {
                   onClick={() => setIsMembersOpen(true)}
                 >
                   {channelMembers
-                    ?.filter((member) => member.User?.status === "active")
+                    ?.filter((member) => member.User?.last_login !== null)
                     .slice(0, 4)
                     .map((i) => (
                       <div
@@ -993,11 +1008,11 @@ const DevChat = () => {
                       </div>
                     ))}
 
-                  {channelMembers?.filter((m) => m.User?.status === "active")
+                  {channelMembers?.filter((m) => m.User?.last_login !== null)
                     .length > 4 && (
                     <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
                       +
-                      {channelMembers.filter((m) => m.User?.status === "active")
+                      {channelMembers.filter((m) => m.User?.last_login !== null)
                         .length - 4}
                     </div>
                   )}

@@ -4,7 +4,7 @@ import { X, Mail, Phone, Calendar, MessageSquare } from 'lucide-react';
 const UserProfileSidebar = ({ isOpen, onClose, userData }) => {
   if (!isOpen) return null;
 
-  console.log(userData)
+  console.log("Hm check kr rha hain data in user profile::::::::::::",userData)
 
   // Default data agar userData provide na ho
   const user = userData || {
@@ -48,8 +48,8 @@ const UserProfileSidebar = ({ isOpen, onClose, userData }) => {
               <div>
                 <h2 className="text-lg font-black text-slate-800 leading-none">{user.user}</h2>
                 <div className="flex items-center gap-2 mt-2">
-                  {user.status === "Active" ? (<div className="w-2 h-2 bg-green-500 rounded-full" />):(<div className="w-2 h-2 bg-gray-400 rounded-full" />)}
-                  <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{user.status}</span>
+                  {user.last_login !== null ? (<div className="w-2 h-2 bg-green-500 rounded-full" />):(<div className="w-2 h-2 bg-gray-400 rounded-full" />)}
+                  <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">{user.last_login !== null ? 'Online' : 'Offline'}</span>
                 </div>
                 <p className="text-[11px] text-gray-400 mt-1">{user.localTime}</p>
               </div>
