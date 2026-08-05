@@ -185,13 +185,18 @@ const DevChat = () => {
   const channels = channelsData?.data || [];
   const dmUsers = convData?.data || [];
 
-  console.log("Hey There##@@##@@:::::",channelMembers)
+  console.log("Hey There##@@##@@:::::", channelMembers);
 
-  const activeRole = channelMembers?.filter((member)=>{
-    return member?.role_in_channel === 'admin'
-  })
+  const activeRole = channelMembers?.filter((member) => {
+    return member?.role_in_channel === "admin";
+  });
 
-  console.log("Active Role Active Role::",activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member')
+  console.log(
+    "Active Role Active Role::",
+    activeRole[0]?.user_id == currentUserId
+      ? activeRole[0]?.role_in_channel
+      : "member",
+  );
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -247,7 +252,10 @@ const DevChat = () => {
       channelId: numericId,
       userId: memberObj.User.id,
       role: "member",
-      mainAdmin: activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member',
+      mainAdmin:
+        activeRole[0]?.user_id == currentUserId
+          ? activeRole[0]?.role_in_channel
+          : "member",
     };
 
     addMemberMutate(payload, {
@@ -586,7 +594,10 @@ const DevChat = () => {
     setIsVideoModalOpen(true);
   };
 
-  console.log("##################################################################################",chatData)
+  console.log(
+    "##################################################################################",
+    chatData,
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -750,15 +761,13 @@ const DevChat = () => {
     };
   }, [activeChat?.id, activeChat?.type, currentUserId, queryClient]);
 
-
   const getOnlineStatus = (lastActive) => {
-    console.log("Login::::",lastActive)
+    console.log("Login::::", lastActive);
     if (!lastActive) {
-      return "OFFLINE_CLUSTER"
+      return "OFFLINE_CLUSTER";
+    } else {
+      return "LIVE_ON_NODE";
     }
-    else{
-      return "LIVE_ON_NODE"
-    };
     // const diffInSeconds = (new Date() - new Date(lastActive)) / 1000;
     // console.log("Login Minutes:::::",diffInSeconds)
     // return diffInSeconds < 20 ? "LIVE_ON_NODE" : "OFFLINE_CLUSTER";
@@ -793,8 +802,6 @@ const DevChat = () => {
             >
               <X size={18} />
             </button>
-
-           
           </div>
         </div>
 
@@ -843,15 +850,24 @@ const DevChat = () => {
                         className={`flex-shrink-0 ${isChannelActive ? "text-blue-500" : "text-slate-400"}`}
                       />
                       <span className="truncate">
-                        {ch?.name
-                          ?.substring(1)
-                          .split("-")
-                          .map(
-                            (word) =>
-                              word.charAt(0).toUpperCase() +
-                              word.slice(1).toLowerCase(),
-                          )
-                          .join(" ")}
+                        {(() => {
+                          const name = ch?.name?.substring(1) || "";
+
+                          if (name.startsWith("announcements"))
+                            return "Announcements";
+                          if (name.startsWith("random")) return "Random";
+                          if (name.startsWith("ai-assistant"))
+                            return "AI Assistant";
+
+                          return name
+                            .split("-")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
+                        })()}
                       </span>
                     </div>
                     {isChannelActive && (
@@ -897,9 +913,7 @@ const DevChat = () => {
                       <div className="w-8 h-8 rounded-full bg-slate-200 backdrop-blur-md border border-white/20 flex items-center justify-center text-[11px] font-bold text-slate-600 overflow-hidden">
                         {member?.avatar_url ? (
                           <img
-                            src={
-                              member?.avatar_url
-                            }
+                            src={member?.avatar_url}
                             alt="Avatar"
                             crossOrigin="anonymous"
                             className="w-full h-full object-cover"
@@ -995,9 +1009,7 @@ const DevChat = () => {
                       >
                         {i.User?.avatar_url ? (
                           <img
-                            src={
-                              i.User?.avatar_url
-                            }
+                            src={i.User?.avatar_url}
                             alt={i.User?.full_name}
                             crossOrigin="anonymous"
                             className="w-full h-full object-cover"
@@ -1110,9 +1122,7 @@ const DevChat = () => {
                           >
                             {msg?.avatar_url ? (
                               <img
-                                src={
-                                  msg?.avatar_url
-                                }
+                                src={msg?.avatar_url}
                                 alt="Avatar"
                                 crossOrigin="anonymous"
                                 className="w-full h-full object-cover"
@@ -1349,9 +1359,7 @@ const DevChat = () => {
                         >
                           {typingUser.avatarUrl ? (
                             <img
-                              src={
-                                typingUser.avatarUrl
-                              }
+                              src={typingUser.avatarUrl}
                               alt="Avatar"
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"
@@ -1434,9 +1442,7 @@ const DevChat = () => {
                         <div className="rounded-full border border-blue-100 bg-blue-600 w-7 h-7 flex items-center justify-center text-white font-black text-[10px] uppercase overflow-hidden flex-shrink-0">
                           {user?.User?.avatar_url ? (
                             <img
-                              src={
-                                user?.User?.avatar_url
-                              }
+                              src={user?.User?.avatar_url}
                               alt="Avatar"
                               crossOrigin="anonymous"
                               className="w-full h-full object-cover"
@@ -1588,7 +1594,11 @@ const DevChat = () => {
         channelName={activeChat.name}
         members={channelMembers}
         onAddMember={() => setIsAddMemberModalOpen(true)}
-        memberRole = {activeRole[0]?.user_id == currentUserId ? activeRole[0]?.role_in_channel : 'member'}  
+        memberRole={
+          activeRole[0]?.user_id == currentUserId
+            ? activeRole[0]?.role_in_channel
+            : "member"
+        }
       />
       <GlobalSearchModal
         isOpen={isSearchOpen}
