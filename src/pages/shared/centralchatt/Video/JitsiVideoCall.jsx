@@ -110,6 +110,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { X, Maximize2, Minimize2, Loader2 } from "lucide-react";
 import axios from "axios";
 import { useMediaRecorder } from "../../../../hooks/useMediaRecorder";
+import API from "../../../../api/axios";
 
 const JitsiVideoCall = ({ 
   isOpen, 
@@ -145,7 +146,7 @@ const JitsiVideoCall = ({
       formData.append("audio", audioBlob, `meeting_${currentMeetingId}.webm`);
       formData.append("meetingId", currentMeetingId);
 
-      const response = await axios.post("/api/meetings/finalize", formData, {
+      const response = await API.post("/api/meetings/finalize", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -159,7 +160,8 @@ const JitsiVideoCall = ({
     } catch (error) {
       console.error("❌ Error sending meeting audio to backend:", error);
       alert("❌ Failed to process meeting transcript.");
-    } finally {
+    } 
+    finally {
       setIsProcessingTranscript(false);
       onClose();
     }
