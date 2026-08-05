@@ -235,6 +235,8 @@ export const JoinMeetingModal = ({ isOpen, onClose, meeting }) => {
 };
 
 export const ViewNotesModal = ({ isOpen, onClose, meeting }) => {
+
+  console.log(meeting, "meeting data in view notes modal");
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 text-left">
@@ -252,28 +254,40 @@ export const ViewNotesModal = ({ isOpen, onClose, meeting }) => {
           <section>
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 text-left">Meeting Summary</h3>
             <div className="text-[14px] text-slate-600 leading-[1.6] bg-slate-50/50 border border-slate-100 rounded-lg p-6">
-              {meeting?.summary || "Summary is being processed or was not generated for this session."}
+              {meeting?.recap_notes || "Summary is being processed or was not generated for this session."}
             </div>
           </section>
 
           <section>
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 text-left">Attendees</h3>
             <div className="flex -space-x-3">
-               {meeting?.Members?.map((member, i) => (
-                 <div key={i} title={member.User?.name} className="w-10 h-10 rounded-lg border-4 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">
-                    {member.User?.name?.substring(0, 2).toUpperCase()}
+               {meeting?.Participants?.map((member, i) => (
+                 <div key={i} title={member?.full_name} className="w-10 h-10 rounded-lg border-4 border-white bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">
+                    {/* {member?.full_name?.substring(0, 2).toUpperCase()} */}
+                    {member?.avatar_url ? (
+                  <img
+                    src={member?.avatar_url}
+                    alt="Avatar"
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover"
+                  />
+                ) : member?.full_name ? (
+                  member?.full_name[0]
+                ) : (
+                  "U"
+                )}
                  </div>
                ))}
-               {(!meeting?.Members || meeting.Members.length === 0) && <p className="text-xs text-slate-400 ml-4 font-bold">No participants recorded</p>}
+               {(!meeting?.Participants || meeting.Participants.length === 0) && <p className="text-xs text-slate-400 ml-4 font-bold">No participants recorded</p>}
             </div>
           </section>
         </div>
 
         <div className="flex justify-end gap-3 mt-12 pt-8 border-t border-slate-50">
            <button onClick={onClose} className="px-8 py-3 rounded-lg text-sm font-bold text-slate-400 border border-slate-100">Close</button>
-           <button className="px-8 py-3 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-xl shadow-blue-100">
+           {/* <button className="px-8 py-3 bg-blue-600 text-white rounded-lg text-sm font-bold shadow-xl shadow-blue-100">
               ⬇ Export PDF
-           </button>
+           </button> */}
         </div>
       </div>
     </div>
