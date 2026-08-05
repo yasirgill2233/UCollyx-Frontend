@@ -146,7 +146,7 @@ const JitsiVideoCall = ({
       formData.append("audio", audioBlob, `meeting_${currentMeetingId}.webm`);
       formData.append("meetingId", currentMeetingId);
 
-      const response = await API.post("/api/meetings/finalize", formData, {
+      const response = await API.post("/meetings/finalize", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
