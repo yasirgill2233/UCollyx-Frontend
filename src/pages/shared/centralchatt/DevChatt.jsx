@@ -558,6 +558,7 @@ const DevChat = () => {
       created_at: msg?.createdAt,
       avatar_url: msg.Sender?.avatar_url || null,
       attachments: msg.attachments || [],
+      transcript: msg.transcript,
     }));
   }, [chatResp, currentUserId]);
 
@@ -774,6 +775,9 @@ const DevChat = () => {
   };
 
   // ==========================================
+
+
+  console.log("#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",groupedMessages)
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
@@ -1254,7 +1258,7 @@ const DevChat = () => {
                                         <p className="text-xs text-slate-600 line-clamp-2 italic">
                                           "{msg.transcript}"
                                         </p>
-                                        {msg.audio_url && (
+                                        {/* {msg.audio_url && (
                                           <audio
                                             controls
                                             className="w-full h-8 mt-2 scale-90 origin-left"
@@ -1264,7 +1268,7 @@ const DevChat = () => {
                                               type="audio/mpeg"
                                             />
                                           </audio>
-                                        )}
+                                        )} */}
                                         <button className="mt-1.5 text-blue-600 text-[10px] font-black hover:underline">
                                           READ FULL SUMMARY
                                         </button>
