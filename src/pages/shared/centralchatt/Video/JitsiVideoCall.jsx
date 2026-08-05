@@ -116,25 +116,97 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
   const [apiInstance, setApiInstance] = useState(null);
   const [isMinimized, setIsMinimized] = useState(false);
   
-  // Track if page is unloading/refreshing to prevent fake end alerts
+  // Ref to hold transcript lines across renders
+  const transcriptRef = useRef([]);
+  const recognitionRef = useRef(null);
   const isUnloadingRef = useRef(false);
 
   const { startRecording, stopRecording } = useMediaRecorder(async (blob) => {
+    // Collect full transcript
+    const fullTranscript = transcriptRef.current.join("\n");
+
     if (finalizeMeetingApi && currentMeetingId) {
-      await finalizeMeetingApi(blob, currentMeetingId);
+      await finalizeMeetingApi(blob, currentMeetingId, fullTranscript);
     }
   });
 
-  // Helper function: Dummy alert show karne ke liye
+  // Start Speech Recognition in background
+  const startSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      console.warn("⚠️ Web Speech API is not supported in this browser.");
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false; // Sirf final sentences pick karein
+      recognition.lang = "en-US"; // English (ya 'ur-PK' for Urdu)
+
+      recognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          if (event.results[i].isFinal) {
+            const text = event.results[i][0].transcript.trim();
+            const time = new Date().toLocaleTimeString();
+            const logEntry = `[${time}] ${userName}: ${text}`;
+            
+            transcriptRef.current.push(logEntry);
+            console.log("🎤 Live Transcript Line:", logEntry);
+          }
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.warn("Speech Recognition Error:", event.error);
+      };
+
+      // Restart automatically if interrupted during active meeting
+      recognition.onend = () => {
+        if (apiInstance && recognitionRef.current) {
+          try {
+            recognitionRef.current.start();
+          } catch (e) {
+            /* ignore if already active */
+          }
+        }
+      };
+
+      recognition.start();
+      recognitionRef.current = recognition;
+      console.log("🎙️ Speech Recognition Started Successfully!");
+    } catch (err) {
+      console.error("Failed to start speech recognition:", err);
+    }
+  };
+
+  // Stop Speech Recognition
+  const stopSpeechRecognition = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {
+        console.warn(e);
+      }
+      recognitionRef.current = null;
+    }
+  };
+
+  // Helper function: Alert user with the captured transcript
   const triggerEndAlert = () => {
-    const dummyTranscript = `[${new Date().toLocaleTimeString()}] ${userName}: Hello, starting meeting.\n[${new Date().toLocaleTimeString()}] ${userName}: Discussing project updates & channel setup.`;
-    console.log("📝 [MOCK TRANSCRIPT CAPTURED]:\n", dummyTranscript);
-    alert(`✅ Meeting Ended!\n\n[Dummy Transcript Log Captured]:\n"${dummyTranscript}"`);
+    stopSpeechRecognition();
+
+    const capturedText = transcriptRef.current.length > 0 
+      ? transcriptRef.current.join("\n")
+      : "No speech detected or mic was muted during the meeting.";
+
+    console.log("📝 [FINAL CAPTURED MEETING TRANSCRIPT]:\n", capturedText);
+    alert(`✅ Meeting Ended!\n\n[Captured Meeting Transcript]:\n\n${capturedText}`);
   };
 
   // User click on X Button or explicit Close
   const handleManualClose = () => {
-    // Show confirmation alert on intentional manual close
     triggerEndAlert();
 
     if (apiInstance) {
@@ -149,6 +221,7 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
   };
 
   const handleClose = () => {
+    stopSpeechRecognition();
     if (apiInstance) {
       try {
         apiInstance.dispose();
@@ -166,7 +239,7 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
     return `UCollyx-${hashedName}`;
   }, [roomName, activeChat]);
 
-  // Window Unload Guard (Tab Refresh / Close Detection)
+  // Window Unload Guard
   useEffect(() => {
     const handleBeforeUnload = () => {
       isUnloadingRef.current = true;
@@ -181,6 +254,9 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
     let api = null;
 
     if (isOpen && window.JitsiMeetExternalAPI && jitsiContainerRef.current) {
+      // Reset transcript array on new call opening
+      transcriptRef.current = [];
+
       const domain = "meet.jit.si";
       const options = {
         roomName: secureRoomName,        
@@ -203,19 +279,19 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
       api = new window.JitsiMeetExternalAPI(domain, options);
       setApiInstance(api);
 
-      // 1. Join Event -> Recording Starts
+      // 1. Join Event -> Recording & Live Speech-To-Text Starts
       api.addEventListener('videoConferenceJoined', () => {
-        console.log("🟢 Jitsi Conference Joined! Starting screen/audio recording...");
+        console.log("🟢 Jitsi Conference Joined! Starting media recorder & speech transcription...");
         if (typeof startRecording === 'function') startRecording();
+        startSpeechRecognition();
       });
 
-      // 2. Leave Event (Only trigger alert IF NOT page refresh)
+      // 2. Leave Event
       api.addEventListener('videoConferenceLeft', () => {
         console.log("🔴 Jitsi Conference Left!");
         
         if (typeof stopRecording === 'function') stopRecording();
 
-        // Check: Agar user ne page refresh/close nahi kiya, tabhi notification throw karo
         if (!isUnloadingRef.current) {
           triggerEndAlert();
         }
@@ -230,6 +306,7 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
     }
 
     return () => {
+      stopSpeechRecognition();
       if (api) {
         api.dispose();
       }
