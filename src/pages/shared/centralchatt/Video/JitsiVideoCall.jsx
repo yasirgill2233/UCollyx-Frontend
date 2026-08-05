@@ -107,7 +107,7 @@
 
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { X, Maximize2, Minimize2, CheckCircle2 } from "lucide-react";
+import { X, Maximize2, Minimize2 } from "lucide-react";
 import { useMediaRecorder } from "../../../../hooks/useMediaRecorder";
 import { finalizeMeetingApi } from "../../../../api/services/meetingService";
 
@@ -115,14 +115,38 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
   const jitsiContainerRef = useRef(null);
   const [apiInstance, setApiInstance] = useState(null);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showEndNotification, setShowEndNotification] = useState(false);
+  
+  // Track if page is unloading/refreshing to prevent fake end alerts
+  const isUnloadingRef = useRef(false);
 
   const { startRecording, stopRecording } = useMediaRecorder(async (blob) => {
-    // Media recording payload execution (Will send to server when ready)
     if (finalizeMeetingApi && currentMeetingId) {
       await finalizeMeetingApi(blob, currentMeetingId);
     }
   });
+
+  // Helper function: Dummy alert show karne ke liye
+  const triggerEndAlert = () => {
+    const dummyTranscript = `[${new Date().toLocaleTimeString()}] ${userName}: Hello, starting meeting.\n[${new Date().toLocaleTimeString()}] ${userName}: Discussing project updates & channel setup.`;
+    console.log("📝 [MOCK TRANSCRIPT CAPTURED]:\n", dummyTranscript);
+    alert(`✅ Meeting Ended!\n\n[Dummy Transcript Log Captured]:\n"${dummyTranscript}"`);
+  };
+
+  // User click on X Button or explicit Close
+  const handleManualClose = () => {
+    // Show confirmation alert on intentional manual close
+    triggerEndAlert();
+
+    if (apiInstance) {
+      try {
+        apiInstance.dispose();
+      } catch (err) {
+        console.warn("Jitsi dispose warning:", err);
+      }
+    }
+    setApiInstance(null);
+    onClose();
+  };
 
   const handleClose = () => {
     if (apiInstance) {
@@ -141,6 +165,17 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
     const hashedName = btoa(baseName).replace(/[=+/]/g, ''); 
     return `UCollyx-${hashedName}`;
   }, [roomName, activeChat]);
+
+  // Window Unload Guard (Tab Refresh / Close Detection)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      isUnloadingRef.current = true;
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     let api = null;
@@ -174,17 +209,16 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
         if (typeof startRecording === 'function') startRecording();
       });
 
-      // 2. Leave Event -> Stop Recording & Show Mock Transcript Log/Feedback
+      // 2. Leave Event (Only trigger alert IF NOT page refresh)
       api.addEventListener('videoConferenceLeft', () => {
         console.log("🔴 Jitsi Conference Left!");
         
         if (typeof stopRecording === 'function') stopRecording();
 
-        // DUMMY TRANSCRIPT FEEDBACK (Confirm action happened)
-        const dummyTranscript = `[${new Date().toLocaleTimeString()}] ${userName}: Hello, starting meeting.\n[${new Date().toLocaleTimeString()}] ${userName}: Discussing project updates & channel setup.`;
-        
-        console.log("📝 [MOCK TRANSCRIPT CAPTURED]:\n", dummyTranscript);
-        alert(`✅ Meeting Ended!\n\n[Dummy Transcript Log Captured]:\n"${dummyTranscript}"`);
+        // Check: Agar user ne page refresh/close nahi kiya, tabhi notification throw karo
+        if (!isUnloadingRef.current) {
+          triggerEndAlert();
+        }
         
         handleClose();
       });
@@ -221,8 +255,10 @@ const JitsiVideoCall = ({ isOpen, onClose, roomName, userName, activeChat, userE
           >
             {isMinimized ? <Maximize2 size={18} /> : <Minimize2 size={18} />}
           </button>
+
+          {/* MANUAL CLOSE BUTTON */}
           <button 
-            onClick={handleClose}
+            onClick={handleManualClose}
             className="p-2 bg-rose-500/80 hover:bg-rose-600 text-white rounded-full backdrop-blur-md transition-colors"
             title="End / Close Call"
           >
