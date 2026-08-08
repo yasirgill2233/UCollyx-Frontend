@@ -335,6 +335,7 @@ export default function UsersManagement() {
                                   { id: "dev", label: "Developer" },
                                   { id: "qa", label: "QA Engineer" },
                                   { id: "manager", label: "Project Manager" },
+                                  { id: "del", label: "❌ Delete User" },
                                 ].map((role) => (
                                   <button
                                     key={role.id}
@@ -345,7 +346,7 @@ export default function UsersManagement() {
                                         role.id,
                                       )
                                     }
-                                    className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors whitespace-nowrap"
+                                    className={`w-full ${role.id === "del" ? "text-rose-500 hover:bg-rose-100 text-left px-4 py-2 text-xs font-semibold  transition-colors whitespace-nowrap" : "text-left px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-indigo-600"} transition-colors whitespace-nowrap`}
                                   >
                                     {role.label}
                                   </button>

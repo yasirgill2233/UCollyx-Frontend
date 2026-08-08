@@ -67,15 +67,14 @@ const Dashboard = () => {
     queryFn: () => taskService.getTodayTasks(),
   });
 
-
   const { data: portfolioResponse } = useQuery({
-      queryKey: ['developer-project-dashboard'],
-      queryFn: async () => {
-        const res = await API.get('/projects/developer-project-dashboard'); 
-        return res.data;
-      },
-      refetchOnWindowFocus: false,
-    });
+    queryKey: ["developer-project-dashboard"],
+    queryFn: async () => {
+      const res = await API.get("/projects/developer-project-dashboard");
+      return res.data;
+    },
+    refetchOnWindowFocus: false,
+  });
 
   const user_name =
     JSON.parse(localStorage.getItem("user"))?.full_name || "Developer";
@@ -97,6 +96,10 @@ const Dashboard = () => {
       `/dev/board?projectId=${id}&projectName=${encodedName}${highlightParam}`,
     );
   };
+
+  const notCompletedMeetings = meetings.filter((meeting) => {
+    return meeting.status !== "completed";
+  });
 
   if (projectsLoading || tasksLoading) {
     return (
@@ -128,11 +131,11 @@ const Dashboard = () => {
               </span>
             </h1>
             <p className="text-slate-500 text-xs font-medium">
-              Your focus matrix reports{" "}
-              <span className="font-bold text-rose-500/90 underline decoration-wavy decoration-rose-300">
-                {criticalAlerts.length} urgent triggers
+              You have{" "}
+              <span className="font-bold text-rose-500/90">
+                {todaysTasks.length} Task(s)
               </span>{" "}
-              requiring immediate session binding.
+              that need to be completed.
             </p>
           </div>
 
@@ -340,7 +343,7 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8">
+          {/* <section className="bg-white backdrop-blur-2xl border border-gray-100 rounded-md shadow-sm p-6 md:p-8">
             <div className="flex items-center gap-2.5 mb-6">
               <div className="p-2 bg-white/80 rounded-sm text-slate-600 border border-white">
                 <Layout size={14} />
@@ -370,83 +373,112 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-          </section>
+          </section> */}
 
-          <section className="relative rounded-md shadow-sm p-5 bg-gradient-to-br from-slate-900/90 to-indigo-950/90 text-white overflow-hidden group">
+          <section className="relative rounded-md shadow-sm p-5 bg-gradient-to-br text-white overflow-hidden group">
             {/* <div className="absolute -top-10 -right-10 w-36 h-36 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" /> */}
 
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-lg text-indigo-300 border border-white/10">
-                  <Activity size={14} className="animate-pulse" />
+                <div className="text-base font-black text-slate-900 flex items-center gap-2 tracking-tight">
+                  <Activity size={14} className="animate-pulse" /> Ecosystem
+                  Sync
                 </div>
-                <span className="text-[9px] font-black tracking-[0.2em] text-indigo-300 uppercase">
-                  Ecosystem Sync
-                </span>
               </div>
               <button
                 onClick={() => navigate("/dev/meetings")}
-                className="text-[9px] font-black text-indigo-300/80 hover:text-white bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/5 transition-all tracking-wider uppercase backdrop-blur-md"
+                className="text-[9px] font-black text-black/80 hover:text-Black/80 hover:cursor-pointer bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/5 transition-all tracking-wider uppercase backdrop-blur-md"
               >
                 All Meetings
               </button>
             </div>
 
-            {meetings.map((meeting) => {
-              // Date aur Time ko beautiful read-only local formats mein transform kiya
-              const meetingDate = new Date(
-                meeting?.start_time,
-              ).toLocaleDateString([], {
-                month: "short",
-                day: "numeric",
-              });
-
-              const startTime = new Date(
-                meeting?.start_time,
-              ).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-
-              const endTime = new Date(meeting?.end_time).toLocaleTimeString(
-                [],
-                {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                },
-              );
-
-              return (
-                <div
-                  key={meeting?.id || meeting?._id}
-                  className="bg-white/[0.03] backdrop-blur-xl border mb-4 border-white/[0.06] rounded-2xl p-4 relative z-10"
-                >
-                  <h3 className="text-sm font-black tracking-tight mb-0.5 text-white truncate">
-                    {meeting?.title}
-                  </h3>
-
-                  {/* 🗓️ Displaying Date along with clear Start & End Time strings */}
-                  <p className="text-[10px] text-slate-400 font-semibold mb-4 flex items-center gap-1.5">
-                    <Clock size={11} className="text-indigo-400 shrink-0" />
-                    <span className="text-slate-300">{meetingDate}</span>
-                    <span className="text-slate-500">•</span>
-                    <span>
-                      {startTime} — {endTime}
-                    </span>
-                  </p>
-
-                  {/* 🎯 Perfectly Anchored New-Tab Open Action Button */}
-                  <a
-                    href={meeting?.meeting_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-white text-slate-950 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all flex items-center justify-center gap-1.5 shadow-md no-underline"
-                  >
-                    Join Stream Room <ExternalLink size={11} />
-                  </a>
+            <div className="max-h-[380px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-transparent">
+              {notCompletedMeetings.length === 0 ? (
+                <div className="text-center py-8 text-[11px] font-bold text-slate-400 border border-dashed border-slate-200 rounded-2xl">
+                  No upcoming meetings scheduled.
                 </div>
-              );
-            })}
+              ) : (
+                notCompletedMeetings.map((meeting) => {
+                  const meetingDate = new Date(
+                    meeting?.start_time,
+                  ).toLocaleDateString([], {
+                    month: "short",
+                    day: "numeric",
+                  });
+
+                  const startTime = new Date(
+                    meeting?.start_time,
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+
+                  const endTime = new Date(
+                    meeting?.end_time,
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+
+                  return (
+                    <div
+                      key={meeting?.id || meeting?._id}
+                      className="mb-4 rounded-2xl bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-md"
+                    >
+                      {/* Header */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          {/* Meeting Icon */}
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600">
+                            <Video size={17} className="text-white" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <h3 className="truncate text-sm font-black tracking-tight text-slate-900">
+                              {meeting?.title}
+                            </h3>
+
+                            <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-blue-600">
+                              Upcoming Meeting
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Meeting Badge */}
+                        <span className="shrink-0 rounded-lg bg-blue-600 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest text-white">
+                          Meeting
+                        </span>
+                      </div>
+
+                      {/* Date & Time */}
+                      <div className="mt-4 flex items-center gap-2 text-[10px] font-semibold text-slate-900">
+                        <Clock size={12} className="shrink-0 text-blue-600" />
+
+                        <span>{meetingDate}</span>
+
+                        <span className="text-slate-300">•</span>
+
+                        <span>
+                          {startTime} — {endTime}
+                        </span>
+                      </div>
+
+                      {/* Join Button */}
+                      <a
+                        href={meeting?.meeting_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 py-2.5 text-[10px] font-black uppercase tracking-widest text-white no-underline transition-all duration-300 hover:bg-blue-700"
+                      >
+                        Join Stream Room
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </section>
         </div>
       </div>

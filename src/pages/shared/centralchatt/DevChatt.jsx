@@ -50,6 +50,7 @@ import AddMemberModal from "./AddMemberModal";
 import ScheduleMeetingModal from "./Video/ScheduleMeetingModal";
 import { triggerToast } from "../../../utils/toastHelper";
 import { useMeeting } from "../../../hooks/useMeeting";
+import { TranscriptWrapper } from "../transcript/TranscriptWrapper";
 
 // 1. Helper function to categorize dates (Component ke bahar rakh sakte hain)
 const getChatGroupLabel = (dateString) => {
@@ -776,8 +777,10 @@ const DevChat = () => {
 
   // ==========================================
 
-
-  console.log("#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",groupedMessages)
+  console.log(
+    "#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
+    groupedMessages,
+  );
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
@@ -1251,28 +1254,9 @@ const DevChat = () => {
 
                                   {msg.call_status === "ended" &&
                                     msg.transcript && (
-                                      <div className="mt-3 p-2.5 bg-slate-50 rounded-xl border border-slate-300">
-                                        <p className="text-[10px] font-bold text-slate-400 mb-1 uppercase">
-                                          Meeting Transcript
-                                        </p>
-                                        <p className="text-xs text-slate-600 line-clamp-2 italic">
-                                          "{msg.transcript}"
-                                        </p>
-                                        {/* {msg.audio_url && (
-                                          <audio
-                                            controls
-                                            className="w-full h-8 mt-2 scale-90 origin-left"
-                                          >
-                                            <source
-                                              src={msg.audio_url}
-                                              type="audio/mpeg"
-                                            />
-                                          </audio>
-                                        )} */}
-                                        <button className="mt-1.5 text-blue-600 text-[10px] font-black hover:underline">
-                                          READ FULL SUMMARY
-                                        </button>
-                                      </div>
+                                      <TranscriptWrapper
+                                        transcript={msg.transcript}
+                                      />
                                     )}
                                 </div>
                               ) : (
