@@ -153,14 +153,12 @@ const ProjectDetailView = () => {
     return `${parts.join(" and ")}. Consider workload rebalancing.`;
   };
 
+  const { data: serverBugs = [] } = useIssues(project?.id);
 
-
-
-
-
-    const { data: serverBugs = [] } = useIssues(project?.id);
-
-    console.log("#######################@@@@@@@@@@@@@@@@#########################",serverBugs)
+  console.log(
+    "#######################@@@@@@@@@@@@@@@@#########################",
+    serverBugs,
+  );
 
   if (!project) {
     return (
@@ -243,87 +241,61 @@ const ProjectDetailView = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
-        {/* Risks */}
-        <div className="bg-white border border-slate-100 rounded-md p-8 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-black text-slate-800 tracking-tight">
-              Open Risks & Red Cards
-            </h2>
-            <button className="bg-red-600 text-white text-[10px] font-black px-4 py-2 rounded-md uppercase shadow-lg shadow-red-100 tracking-wider">
-              View All Red Cards
-            </button>
-          </div>
-          <div className="space-y-4">
-            <RiskItem
-              id="RED-892"
-              title="Production API gateway timeout - payment failures"
-              priority="Critical"
-              status="In Progress"
-              color="red"
-            />
-            <RiskItem
-              id="RED-885"
-              title="Database connection pool exhaustion under load"
-              priority="High"
-              status="Investigating"
-              color="orange"
-            />
-          </div>
-        </div>
+        
 
         {/* Team Load */}
         <div className="bg-white border border-slate-100 rounded-[24px] p-8 shadow-sm">
-  <div className="flex justify-between items-center mb-6">
-    <h2 className="font-black text-slate-800 tracking-tight">
-      Team Load Snapshot
-    </h2>
-    
-    {/* 🌟 Dynamic Badge Area */}
-    {overloadedCount > 0 || underutilizedCount > 0 ? (
-      <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-xl border border-yellow-100">
-        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-        <span className="text-[10px] font-black text-yellow-700 uppercase tracking-wider">
-          Load Imbalance Detected
-        </span>
-      </div>
-    ) : (
-      <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">
-        <div className="w-2 h-2 rounded-full bg-green-500" />
-        <span className="text-[10px] font-black text-green-700 uppercase tracking-wider">
-          Team Load Balanced
-        </span>
-      </div>
-    )}
-  </div>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-black text-slate-800 tracking-tight">
+              Team Load Snapshot
+            </h2>
 
-  {/* 👥 Grid container looping updated cards */}
-  <div className="grid grid-cols-3 gap-4 mb-6">
-    {members.map((mem) => (
-      <TeamMemberCard
-        key={mem.id}
-        name={mem.name}
-        tasks={mem.tasks}
-        status={mem.status}
-        color={mem.color}
-        avatar={mem.avatar} // 🌟 Passed user avatar url dynamically here
-      />
-    ))}
-  </div>
+            {/* 🌟 Dynamic Badge Area */}
+            {overloadedCount > 0 || underutilizedCount > 0 ? (
+              <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-xl border border-yellow-100">
+                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                <span className="text-[10px] font-black text-yellow-700 uppercase tracking-wider">
+                  Load Imbalance Detected
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <span className="text-[10px] font-black text-green-700 uppercase tracking-wider">
+                  Team Load Balanced
+                </span>
+              </div>
+            )}
+          </div>
 
-  {/* 🌟 Dynamic Note Area */}
-  <div
-    className={`p-4 rounded-xl border transition-all duration-300 ${
-      overloadedCount > 0 || underutilizedCount > 0
-        ? "bg-yellow-50/50 border-yellow-100 text-yellow-800"
-        : "bg-green-50/50 border-green-100 text-green-800"
-    }`}
-  >
-    <p className="text-[11px] font-medium">
-      <span className="font-black italic mr-1">Note:</span>
-      {getNoteText()}
-    </p>
-  </div>
-</div>
+          {/* 👥 Grid container looping updated cards */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {members.map((mem) => (
+              <TeamMemberCard
+                key={mem.id}
+                name={mem.name}
+                tasks={mem.tasks}
+                status={mem.status}
+                color={mem.color}
+                avatar={mem.avatar} // 🌟 Passed user avatar url dynamically here
+              />
+            ))}
+          </div>
+
+          {/* 🌟 Dynamic Note Area */}
+          <div
+            className={`p-4 rounded-xl border transition-all duration-300 ${
+              overloadedCount > 0 || underutilizedCount > 0
+                ? "bg-yellow-50/50 border-yellow-100 text-yellow-800"
+                : "bg-green-50/50 border-green-100 text-green-800"
+            }`}
+          >
+            <p className="text-[11px] font-medium">
+              <span className="font-black italic mr-1">Note:</span>
+              {getNoteText()}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -369,7 +341,7 @@ const ProjectDetailView = () => {
         {serverBugs.map((card) => (
           <div
             key={card.id}
-            className={`bg-white border border-slate-100 border-l-4 ${card.status === 'In Progress' ? 'border-l-blue-500' : card.status === 'New' ? 'border-l-red-500': card.status === 'Acknowledged' ? 'border-l-yellow-500' : card.status === 'Resolved' ? 'border-l-green-500':'border-l-purple-500'} rounded-md p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
+            className={`bg-white border border-slate-100 border-l-4 ${card.status === "In Progress" ? "border-l-blue-500" : card.status === "New" ? "border-l-red-500" : card.status === "Acknowledged" ? "border-l-yellow-500" : card.status === "Resolved" ? "border-l-green-500" : "border-l-purple-500"} rounded-md p-6 shadow-sm flex items-center justify-between hover:shadow-md transition-all`}
           >
             <div className="flex items-start gap-6">
               <div className="mt-1">
@@ -393,19 +365,19 @@ const ProjectDetailView = () => {
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
                     <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                {card?.assignee?.avatar_url ? (
-                  <img
-                    src={card?.assignee?.avatar_url}
-                    alt="Avatar"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
-                ) : card?.assignee?.full_name ? (
-                  card?.assignee?.full_name[0]
-                ) : (
-                  "U"
-                )}
-              </div>
+                      {card?.assignee?.avatar_url ? (
+                        <img
+                          src={card?.assignee?.avatar_url}
+                          alt="Avatar"
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : card?.assignee?.full_name ? (
+                        card?.assignee?.full_name[0]
+                      ) : (
+                        "U"
+                      )}
+                    </div>
                     {/* Avatar Placeholder */}
                     <span className="text-xs font-bold text-slate-700">
                       {card?.assignee?.full_name}
@@ -421,7 +393,7 @@ const ProjectDetailView = () => {
 
             <div className="flex flex-col items-end">
               <span
-                className={`text-[9px] font-black px-3 py-1 rounded-full border ${card.status === 'In Progress' ? 'text-blue-600 bg-blue-50 border-blue-100' : card.status === 'New' ? 'text-red-600 bg-red-50 border-red-100': card.status === 'Acknowledged' ? 'text-yellow-600 bg-yellow-50 border-yellow-100' : card.status === 'Resolved' ? 'text-green-600 bg-green-50 border-green-100':'text-purple-600 bg-purple-50 border-purple-100'}`}
+                className={`text-[9px] font-black px-3 py-1 rounded-full border ${card.status === "In Progress" ? "text-blue-600 bg-blue-50 border-blue-100" : card.status === "New" ? "text-red-600 bg-red-50 border-red-100" : card.status === "Acknowledged" ? "text-yellow-600 bg-yellow-50 border-yellow-100" : card.status === "Resolved" ? "text-green-600 bg-green-50 border-green-100" : "text-purple-600 bg-purple-50 border-purple-100"}`}
               >
                 {card.status}
               </span>
@@ -675,9 +647,9 @@ const RiskItem = ({ id, title, priority, status, color }) => (
 const TeamMemberCard = ({ name, tasks, status, color, avatar }) => {
   // Name ke initials nikalne ke liye logic (e.g., "Yasir Saleem" -> "YS")
   const initials = name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 
@@ -687,36 +659,52 @@ const TeamMemberCard = ({ name, tasks, status, color, avatar }) => {
         <div className="flex items-center gap-3">
           {/* 🖼️ Avatar Section */}
           <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                {avatar ? (
-                  <img
-                    src={avatar}
-                    alt="Avatar"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
-                ) : name ? (
-                  initials
-                ) : (
-                  "U"
-                )}
-              </div>
-          
+            {avatar ? (
+              <img
+                src={avatar}
+                alt="Avatar"
+                crossOrigin="anonymous"
+                className="w-full h-full object-cover"
+              />
+            ) : name ? (
+              initials
+            ) : (
+              "U"
+            )}
+          </div>
+
           <div>
-            <p className="text-xs font-black text-slate-800 leading-tight">{name}</p>
-            <p className="text-[10px] text-slate-400 font-bold mt-0.5">{tasks} tasks assigned</p>
+            <p className="text-xs font-black text-slate-800 leading-tight">
+              {name}
+            </p>
+            <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+              {tasks} tasks assigned
+            </p>
           </div>
         </div>
-        
+
         {/* Dynamic Status Dot */}
-        <div className={`w-2 h-2 rounded-full mt-1 ${
-          status === 'Overloaded' ? 'bg-red-500' : status === 'Underutilized' ? 'bg-yellow-500' : 'bg-green-500'
-        }`} />
+        <div
+          className={`w-2 h-2 rounded-full mt-1 ${
+            status === "Overloaded"
+              ? "bg-red-500"
+              : status === "Underutilized"
+                ? "bg-yellow-500"
+                : "bg-green-500"
+          }`}
+        />
       </div>
-      
+
       <div className="mt-4 flex justify-end">
-        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase ${
-          status === 'Overloaded' ? 'bg-red-50 text-red-600' : status === 'Underutilized' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600'
-        }`}>
+        <span
+          className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase ${
+            status === "Overloaded"
+              ? "bg-red-50 text-red-600"
+              : status === "Underutilized"
+                ? "bg-yellow-50 text-yellow-600"
+                : "bg-green-50 text-green-600"
+          }`}
+        >
           {status}
         </span>
       </div>
