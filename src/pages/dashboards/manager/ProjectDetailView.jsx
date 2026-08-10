@@ -584,9 +584,9 @@ const ProjectDetailView = () => {
                 </button>
               ))}
             </div>
-            <button className="flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-md text-xs font-bold text-slate-500 hover:bg-white">
+            {/* <button className="flex items-center gap-2 border border-slate-200 px-3 py-2 rounded-md text-xs font-bold text-slate-500 hover:bg-white">
               This Sprint <ChevronDown size={14} />
-            </button>
+            </button> */}
           </div>
         </div>
 
