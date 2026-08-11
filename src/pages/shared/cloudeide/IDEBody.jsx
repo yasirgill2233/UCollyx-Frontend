@@ -411,9 +411,6 @@ const IDEBody = () => {
   };
 
   const addItem = async (parentId, type) => {
-    alert(parentId, "par add karna ha", type);
-
-    // alert(parentId, "par add karna ha", type);
     const name = prompt(`Enter ${type} name:`);
     if (!name) return;
 
