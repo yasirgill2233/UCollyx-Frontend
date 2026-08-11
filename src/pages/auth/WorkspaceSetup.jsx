@@ -122,10 +122,8 @@ export default function WorkspaceSetup() {
   return (
     <div className="min-h-screen w-full flex bg-[#f8fafc] font-sans overflow-hidden">
       
-      {/* LEFT SIDE PANEL: Spacious and High-Width Form Engine */}
       <div className="w-full lg:w-[55%] flex flex-col justify-between p-8 md:p-14 lg:p-20 bg-white relative z-10 overflow-y-auto">
-        
-        {/* Brand Header */}
+
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3b59ff] to-[#00f2fe] flex items-center justify-center font-black text-white shadow-lg text-sm">
             U
@@ -133,10 +131,8 @@ export default function WorkspaceSetup() {
           <span className="text-xl font-black text-[#1e2238] tracking-wider">UCollyx</span>
         </div>
 
-        {/* Dynamic Multi-step Form Content Wrapper */}
         <div className="w-full max-w-xl mx-auto my-auto py-10">
           
-          {/* Global Process Navigation Stepper */}
           <div className="flex items-center gap-4 mb-10 text-xs font-bold uppercase tracking-widest text-gray-400">
             <span className={`transition-colors ${step === 1 ? "text-[#3b59ff]" : "text-gray-400"}`}>01. Info</span>
             <div className={`h-[2px] w-12 rounded ${step === 2 ? "bg-[#9d4edd]" : "bg-gray-200"}`} />
@@ -144,7 +140,6 @@ export default function WorkspaceSetup() {
           </div>
 
           {step === 1 ? (
-            /* STEP 1: Broad Inputs View */
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-7">
               <div>
                 <h1 className="text-3xl font-black text-[#1a1d2f] tracking-tight mb-2">
@@ -154,7 +149,6 @@ export default function WorkspaceSetup() {
               </div>
 
               <div className="space-y-5">
-                {/* Workspace Name Input */}
                 <div>
                   <label className="block text-[#565d7a] text-xs font-bold uppercase tracking-wider mb-2">
                     Workspace Name
@@ -168,7 +162,6 @@ export default function WorkspaceSetup() {
                   />
                 </div>
 
-                {/* Workspace URL Route Input */}
                 <div>
                   <label className="block text-[#565d7a] text-xs font-bold uppercase tracking-wider mb-2">
                     Workspace Routing Slug URL
@@ -187,7 +180,6 @@ export default function WorkspaceSetup() {
                   </div>
                 </div>
 
-                {/* Grid Container for Timezone & Admin Owner Email */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[#565d7a] text-xs font-bold uppercase tracking-wider mb-2">
@@ -218,8 +210,8 @@ export default function WorkspaceSetup() {
                   </div>
                 </div>
 
-                {/* Flexible Logo Asset Row */}
-                <div className="bg-[#f8fafc] border border-gray-200/60 p-4 rounded-xl flex items-center justify-between gap-4">
+                {/* Workspace Logo */}
+                {/* <div className="bg-[#f8fafc] border border-gray-200/60 p-4 rounded-xl flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
                     <div className="w-12 h-12 border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden bg-white relative group shadow-sm shrink-0">
                       {logoPreview ? (
@@ -252,10 +244,9 @@ export default function WorkspaceSetup() {
                     <Upload size={14} />
                     <span>{logoPreview ? "Change File" : "Upload"}</span>
                   </button>
-                </div>
+                </div> */}
               </div>
 
-              {/* Action Button Segment */}
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => navigate(-1)}
@@ -273,7 +264,6 @@ export default function WorkspaceSetup() {
               </div>
             </div>
           ) : (
-            /* STEP 2: Wide Team Slots Onboarding */
             <div className="animate-in fade-in slide-in-from-right duration-300 space-y-6">
               <div>
                 <h1 className="text-3xl font-black text-[#1a1d2f] tracking-tight mb-2">
@@ -315,7 +305,6 @@ export default function WorkspaceSetup() {
                 </button>
               </div>
 
-              {/* Step 2 Action Triggers */}
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setStep(1)}
@@ -351,7 +340,6 @@ export default function WorkspaceSetup() {
           )}
         </div>
 
-        {/* Footer Meta */}
         <p className="text-center lg:text-left text-xs text-gray-400 font-medium">
           Protected instance encryption. Powered by UCollyx Engine Core.
         </p>

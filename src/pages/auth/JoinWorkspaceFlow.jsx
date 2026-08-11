@@ -97,35 +97,23 @@ export default function JoinWorkspaceFlow() {
   };
 
   const isJoining = joinMutation.isPending;
-
-  // Find label of active selected role for preview panel
   const activeRoleLabel = roles.find(r => r.id === role)?.label || "Not Configured";
 
   return (
     <div className="min-h-screen w-full flex bg-[#f8fafc] font-sans overflow-hidden">
-      
-      {/* LEFT SIDE PANEL: Spacious and High-Width Action Flow */}
       <div className="w-full lg:w-[55%] flex flex-col justify-between p-8 md:p-14 lg:p-20 bg-white relative z-10 overflow-y-auto">
-        
-        {/* Brand Header */}
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3b59ff] to-[#00f2fe] flex items-center justify-center font-black text-white shadow-lg text-sm">
             U
           </div>
           <span className="text-xl font-black text-[#1e2238] tracking-wider">UCollyx</span>
         </div>
-
-        {/* Dynamic Context Wrapper */}
         <div className="w-full max-w-xl mx-auto my-auto py-10">
-          
-          {/* Top Progress Segment */}
           <div className="flex items-center gap-4 mb-10 text-xs font-bold uppercase tracking-widest text-gray-400">
             <span className={`transition-colors ${step === "role-selection" ? "text-[#3b59ff]" : "text-gray-400 font-medium"}`}>01. Profile Role</span>
             <div className={`h-[2px] w-12 rounded ${step === "join-method" ? "bg-[#9d4edd]" : "bg-gray-200"}`} />
             <span className={`transition-colors ${step === "join-method" ? "text-[#9d4edd]" : "text-gray-400 font-medium"}`}>02. Instance Gateway</span>
           </div>
-
-          {/* STEP 1: ROLE SELECTION */}
           {step === "role-selection" && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-7">
               <div>
@@ -173,7 +161,6 @@ export default function JoinWorkspaceFlow() {
             </div>
           )}
 
-          {/* STEP 2: JOIN METHOD (INVITE OR BROWSE) */}
           {step === "join-method" && (
             <div className="animate-in fade-in slide-in-from-right duration-300 space-y-6">
               <div>
@@ -183,7 +170,6 @@ export default function JoinWorkspaceFlow() {
                 <p className="text-gray-500 text-sm">Provide your cryptographical invite target code or request authorization credentials.</p>
               </div>
 
-              {/* High Profile Translucent Tabs */}
               <div className="flex bg-[#f1f5f9] p-1.5 rounded-xl w-full">
                 <button
                   onClick={() => setTab("invite")}
@@ -203,7 +189,6 @@ export default function JoinWorkspaceFlow() {
                 </button>
               </div>
 
-              {/* TAB CONTENT: ENTER PASS-CODE */}
               {tab === "invite" ? (
                 <div className="space-y-2 animate-in fade-in duration-200">
                   <label className="block text-[#565d7a] text-xs font-bold uppercase tracking-wider">
@@ -221,7 +206,7 @@ export default function JoinWorkspaceFlow() {
                   </p>
                 </div>
               ) : (
-                /* TAB CONTENT: CLUSTER ENTRIES LIST */
+
                 <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 animate-in fade-in duration-200">
                   <label className="block text-[#565d7a] text-xs font-bold uppercase tracking-wider mb-1">
                     Select Available Corporate Node
@@ -261,7 +246,6 @@ export default function JoinWorkspaceFlow() {
                 </div>
               )}
 
-              {/* Step 2 Trigger Controllers */}
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={() => setStep("role-selection")}
@@ -290,25 +274,20 @@ export default function JoinWorkspaceFlow() {
           )}
         </div>
 
-        {/* Footer Meta */}
         <p className="text-center lg:text-left text-xs text-gray-400 font-medium">
           Protected handshake encryption. Powered by UCollyx Identity Manager.
         </p>
       </div>
 
-      {/* RIGHT SIDE PANEL: Real-time Runtime Status Mockup Panel */}
       <div className="hidden lg:flex lg:w-[45%] bg-[#121424] relative flex-col justify-between p-16 overflow-hidden border-l border-white/5">
         
-        {/* Intense Light Background Auras */}
         <div className="absolute top-[-20%] right-[-20%] w-[500px] h-[500px] bg-[#3b59ff]/25 rounded-full blur-[110px]" />
         <div className="absolute bottom-[-15%] left-[-10%] w-[450px] h-[450px] bg-[#9d4edd]/15 rounded-full blur-[100px]" />
 
-        {/* Top Segment Info */}
         <div className="relative z-10 flex items-center gap-2 text-white/40 text-xs font-bold uppercase tracking-widest">
           <Layers size={14} className="text-[#00f2fe]" /> Session Handshake Parameters
         </div>
 
-        {/* Center Live Synchronized Identity Matrix State Box */}
         <div className="relative z-10 w-full max-w-sm mx-auto bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl space-y-5">
           <div className="border-b border-white/5 pb-3.5">
             <h4 className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Target Configuration</h4>
@@ -318,7 +297,6 @@ export default function JoinWorkspaceFlow() {
           </div>
 
           <div className="space-y-2.5">
-            {/* Field Status 1: Target Role */}
             <div className="flex items-center justify-between text-xs bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl">
               <div className="flex items-center gap-2.5 text-white/70">
                 <UserCheck size={14} className="text-[#3b59ff]" />
@@ -329,7 +307,6 @@ export default function JoinWorkspaceFlow() {
               </span>
             </div>
 
-            {/* Field Status 2: Allocation Router Target */}
             <div className="flex items-center justify-between text-xs bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl">
               <div className="flex items-center gap-2.5 text-white/70">
                 <Fingerprint size={14} className="text-[#9d4edd]" />
@@ -340,7 +317,6 @@ export default function JoinWorkspaceFlow() {
               </span>
             </div>
 
-            {/* Field Status 3: Live Input Verification Value */}
             <div className="flex items-center justify-between text-xs bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl">
               <div className="flex items-center gap-2.5 text-white/70">
                 <Terminal size={14} className="text-[#00f2fe]" />
@@ -355,7 +331,6 @@ export default function JoinWorkspaceFlow() {
           </div>
         </div>
 
-        {/* Bottom Panel Description */}
         <div className="relative z-10 space-y-2">
           <h3 className="text-white font-black text-xl tracking-tight">
             Seamless Infrastructure Binding
