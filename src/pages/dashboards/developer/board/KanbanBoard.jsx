@@ -436,7 +436,7 @@ const DraggableCard = ({
                 >
                   <MessageSquare size={13} />
                 </button>
-                <button
+                {/* <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onMeetingClick();
@@ -444,7 +444,7 @@ const DraggableCard = ({
                   className="hover:text-red-500 text-slate-300 transition-colors p-1"
                 >
                   <Video size={13} />
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
