@@ -211,7 +211,7 @@ export default function WorkspaceSetup() {
                 </div>
 
                 {/* Workspace Logo */}
-                {/* <div className="bg-[#f8fafc] border border-gray-200/60 p-4 rounded-xl flex items-center justify-between gap-4">
+                <div className="bg-[#f8fafc] border border-gray-200/60 p-4 rounded-xl flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
                     <div className="w-12 h-12 border border-gray-200 rounded-xl flex items-center justify-center overflow-hidden bg-white relative group shadow-sm shrink-0">
                       {logoPreview ? (
@@ -244,7 +244,7 @@ export default function WorkspaceSetup() {
                     <Upload size={14} />
                     <span>{logoPreview ? "Change File" : "Upload"}</span>
                   </button>
-                </div> */}
+                </div>
               </div>
 
               <div className="flex gap-4 pt-4">
