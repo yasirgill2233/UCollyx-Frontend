@@ -145,7 +145,7 @@ export default function JoinWorkspace() {
                   <Loader2 className="animate-spin" size={20} />
                 ) : (
                   <>
-                    Join Workspace 
+                    Login to Your Workspace 
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
