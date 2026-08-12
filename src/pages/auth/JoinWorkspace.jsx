@@ -68,19 +68,20 @@ export default function JoinWorkspace() {
 
   // Handler for Existing User (Fixes the e.preventDefault undefined crash)
   const handleDirectJoin = () => {
-    acceptMutation.mutate(
-      { token, password: "" },
-      {
-        onSuccess: (res) => {
-          if (res.token) localStorage.setItem("token", res.token);
-          triggerToast("Successfully joined the workspace!", "success");
-          navigate(`/`);
-        },
-        onError: (err) => {
-          triggerToast(err.response?.data?.message || "Failed to join workspace", "error");
-        },
-      }
-    );
+    navigate(`/`);
+    // acceptMutation.mutate(
+    //   { token, password: "" },
+    //   {
+    //     onSuccess: (res) => {
+    //       if (res.token) localStorage.setItem("token", res.token);
+    //       triggerToast("Successfully joined the workspace!", "success");
+    //       navigate(`/`);
+    //     },
+    //     onError: (err) => {
+    //       triggerToast(err.response?.data?.message || "Failed to join workspace", "error");
+    //     },
+    //   }
+    // );
   };
 
   // Verifying / Loading State (Indigo Theme matched)
