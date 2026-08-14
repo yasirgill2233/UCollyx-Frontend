@@ -18,29 +18,11 @@ import {
   Terminal,
   Compass,
 } from "lucide-react";
-import InstanceActivityMatrix from "../../../logs/InstanceActivityMatrix";
+import InstanceActivityMatrix from "../../../components/layout/logs/InstanceActivityMatrix";
 import API from "../../../api/axios";
 
 const OrganizationDashboard = () => {
-  const backendLogs = [
-    {
-      id: 101,
-      level: "info",
-      user_id: "yasir@devnex.com",
-      message: "updated workspace settings and quota limit",
-      action_type: "update",
-      timestamp: "2026-08-14T11:10:00Z",
-    },
-    {
-      id: 102,
-      level: "error",
-      user_id: "SystemAlert",
-      message: "failed to dispatch webhook response",
-      action_type: "error",
-      timestamp: "2026-08-14T10:45:00Z",
-    },
-  ];
-
+ 
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
