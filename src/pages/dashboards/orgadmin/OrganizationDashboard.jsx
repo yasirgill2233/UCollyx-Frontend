@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import InviteModal from "./InviteModal";
 import Modal from "../../../components/ui/Modal";
@@ -7,20 +7,67 @@ import PendingRequestsModal from "./PendingRequestsModal";
 import { useDashboardStats } from "../../../hooks/useWorkspace";
 import { useQueryClient } from "@tanstack/react-query";
 import useLocalStorage from "../../../hooks/custom/useLocalStorage";
-import { 
-  Users, 
-  Layers, 
-  ShieldAlert, 
-  History, 
-  ArrowRight, 
-  Sparkles, 
-  Hexagon, 
+import {
+  Users,
+  Layers,
+  ShieldAlert,
+  History,
+  ArrowRight,
+  Sparkles,
+  Hexagon,
   Terminal,
-  Compass
+  Compass,
 } from "lucide-react";
+import InstanceActivityMatrix from "../../../logs/InstanceActivityMatrix";
+import API from "../../../api/axios";
 
 const OrganizationDashboard = () => {
-  const [user] = useLocalStorage('user', null);
+  const backendLogs = [
+    {
+      id: 101,
+      level: "info",
+      user_id: "yasir@devnex.com",
+      message: "updated workspace settings and quota limit",
+      action_type: "update",
+      timestamp: "2026-08-14T11:10:00Z",
+    },
+    {
+      id: 102,
+      level: "error",
+      user_id: "SystemAlert",
+      message: "failed to dispatch webhook response",
+      action_type: "error",
+      timestamp: "2026-08-14T10:45:00Z",
+    },
+  ];
+
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLogs = async () => {
+    try {
+      const response = await API.get('/activity-matrix');
+      console.log("Fetched logs from backend:", response);
+      const data = await response.data;
+      setLogs(data);
+    } catch (err) {
+      console.error("Error loading logs from backend file:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    
+    // Optional: Auto-refresh logs every 10 seconds for real-time tracking
+    const interval = setInterval(fetchLogs, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  console.log(logs)
+
+  const [user] = useLocalStorage("user", null);
   const id = user?.workspace_id;
 
   const queryClient = useQueryClient();
@@ -36,24 +83,58 @@ const OrganizationDashboard = () => {
   // Handle Request Action
   const handleRequestAction = (message) => {
     toast.success(message);
-    queryClient.invalidateQueries(['dashboard-stats', id]);
-    
+    queryClient.invalidateQueries(["dashboard-stats", id]);
+
     if (stats?.pendingList?.length <= 1) {
       setIsPendingModalOpen(false);
     }
   };
 
   const recentActions = [
-    { id: 1, user: "Sarah Johnson", action: "added as Developer", time: "2 hours ago", icon: "👤" },
-    { id: 2, user: "Mike Chen's", action: "role changed to Manager", time: "5 hours ago", icon: "⚙️" },
-    { id: 3, user: "New project", action: '"Mobile App Redesign" created', time: "Yesterday", icon: "📁" },
-    { id: 4, user: "3 team invitations", action: "sent", time: "2 days ago", icon: "📩" },
-    { id: 5, user: "Billing plan", action: "upgraded to Business", time: "3 days ago", icon: "💳" },
+    {
+      id: 1,
+      user: "Sarah Johnson",
+      action: "added as Developer",
+      time: "2 hours ago",
+      icon: "👤",
+    },
+    {
+      id: 2,
+      user: "Mike Chen's",
+      action: "role changed to Manager",
+      time: "5 hours ago",
+      icon: "⚙️",
+    },
+    {
+      id: 3,
+      user: "New project",
+      action: '"Mobile App Redesign" created',
+      time: "Yesterday",
+      icon: "📁",
+    },
+    {
+      id: 4,
+      user: "3 team invitations",
+      action: "sent",
+      time: "2 days ago",
+      icon: "📩",
+    },
+    {
+      id: 5,
+      user: "Billing plan",
+      action: "upgraded to Business",
+      time: "3 days ago",
+      icon: "💳",
+    },
   ];
 
   const total = stats?.users?.total || 0;
-  const devPercentage = total ? Math.round((stats?.users?.developers / total) * 100) : 0;
-  const managerPercentage = total ? Math.round((stats?.users?.managers / total) * 100) : 0;
+  const devPercentage = total
+    ? Math.round((stats?.users?.developers / total) * 100)
+    : 0;
+  const managerPercentage = total
+    ? Math.round((stats?.users?.managers / total) * 100)
+    : 0;
   const qaPercentage = total ? Math.round((stats?.users?.qa / total) * 100) : 0;
 
   if (isLoading)
@@ -68,7 +149,7 @@ const OrganizationDashboard = () => {
       </div>
     );
 
-  if (isError) 
+  if (isError)
     return (
       <div className="min-h-screen flex items-center justify-center text-sm font-bold text-red-500 bg-[#f8fafc]">
         Data telemetry sync failed. Check cloud instance connection routing.
@@ -77,11 +158,10 @@ const OrganizationDashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-8 lg:p-12 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
-      
       {/* Structural Ambient Mesh Background Layers */}
       <div className="absolute top-[-10%] right-[-5%] w-[650px] h-[650px] bg-gradient-to-bl from-[#3b59ff]/10 to-[#00f2fe]/15 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-[#9d4edd]/10 to-[#3b59ff]/10 rounded-full blur-[100px] pointer-events-none" />
-      
+
       <Modal />
 
       {/* DYNAMIC MASTER HEADER BANNER CONTAINER */}
@@ -101,13 +181,14 @@ const OrganizationDashboard = () => {
               {stats?.workspace?.name || "Target Instance"}
             </h1>
             <p className="text-gray-400 text-xs font-medium mt-0.5">
-              Live routing status updates and key infrastructure metrics dashboard.
+              Live routing status updates and key infrastructure metrics
+              dashboard.
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => setIsPendingModalOpen(true)}
             className="relative px-4 py-2.5 bg-white border border-gray-100 hover:border-[#3b59ff]/30 text-gray-700 font-bold text-xs rounded-md shadow-sm flex items-center gap-2 transition-all active:scale-95"
           >
@@ -130,14 +211,14 @@ const OrganizationDashboard = () => {
 
       {/* DASHBOARD MODULAR GRID ENGINE */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
-        
         {/* PANEL 1: TEAM & ACCESS SYSTEM */}
         <div className="lg:col-span-2 bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border flex flex-col justify-between group">
           <div>
             <div className="flex justify-between items-start mb-10">
               <div className="space-y-1">
                 <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
-                  <Users size={16} className="text-[#3b59ff]" /> Users & Access Index
+                  <Users size={16} className="text-[#3b59ff]" /> Users & Access
+                  Index
                 </h3>
                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                   Active operators and telemetry pipelines
@@ -151,16 +232,26 @@ const OrganizationDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-b border-gray-100/60 pb-8 mb-8">
               <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-md shadow-sm flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-gray-400 block mb-0.5">Total Users Assigned</span>
-                  <span className="text-3xl font-black text-[#1a1d2f] tracking-tight">{stats?.users?.total || 0}</span>
+                  <span className="text-xs font-bold text-gray-400 block mb-0.5">
+                    Total Users Assigned
+                  </span>
+                  <span className="text-3xl font-black text-[#1a1d2f] tracking-tight">
+                    {stats?.users?.total || 0}
+                  </span>
                 </div>
-                <div className="p-2.5 bg-[#3b59ff]/5 rounded-md shadow-sm text-[#3b59ff] text-xs font-bold">Live Node</div>
+                <div className="p-2.5 bg-[#3b59ff]/5 rounded-md shadow-sm text-[#3b59ff] text-xs font-bold">
+                  Live Node
+                </div>
               </div>
 
               <div className="bg-[#f8fafc]/80 border border-gray-100 p-5 rounded-md shadow-sm flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-gray-400 block mb-0.5">Pending Approvals</span>
-                  <span className="text-3xl font-black text-amber-500 tracking-tight">{stats?.users?.pending || 0}</span>
+                  <span className="text-xs font-bold text-gray-400 block mb-0.5">
+                    Pending Approvals
+                  </span>
+                  <span className="text-3xl font-black text-amber-500 tracking-tight">
+                    {stats?.users?.pending || 0}
+                  </span>
                 </div>
                 <button
                   onClick={() => setIsPendingModalOpen(true)}
@@ -174,35 +265,60 @@ const OrganizationDashboard = () => {
 
             {/* METRIC SECTOR LOADING PROGRESS STATS */}
             <div className="space-y-5">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role Allocation Shares</h4>
-              
+              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                Role Allocation Shares
+              </h4>
+
               <div className="space-y-2">
                 <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                  <span className="flex items-center gap-2"><Terminal size={12} className="text-[#3b59ff]" /> Developers</span>
-                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">{stats?.users?.developers || 0}</span>
+                  <span className="flex items-center gap-2">
+                    <Terminal size={12} className="text-[#3b59ff]" /> Developers
+                  </span>
+                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">
+                    {stats?.users?.developers || 0}
+                  </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#3b59ff] to-[#00f2fe] rounded-full transition-all duration-1000 ease-out" style={{ width: `${devPercentage}%` }} />
+                  <div
+                    className="h-full bg-gradient-to-r from-[#3b59ff] to-[#00f2fe] rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${devPercentage}%` }}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                  <span className="flex items-center gap-2"><Compass size={12} className="text-amber-500" /> System Managers</span>
-                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">{stats?.users?.managers || 0}</span>
+                  <span className="flex items-center gap-2">
+                    <Compass size={12} className="text-amber-500" /> System
+                    Managers
+                  </span>
+                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">
+                    {stats?.users?.managers || 0}
+                  </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${managerPercentage}%` }} />
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${managerPercentage}%` }}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                  <span className="flex items-center gap-2"><Layers size={12} className="text-emerald-500" /> Quality Engineers</span>
-                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">{stats?.users?.qa || 0}</span>
+                  <span className="flex items-center gap-2">
+                    <Layers size={12} className="text-emerald-500" /> Quality
+                    Engineers
+                  </span>
+                  <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-[#1a1d2f]">
+                    {stats?.users?.qa || 0}
+                  </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-out" style={{ width: `${qaPercentage}%` }} />
+                  <div
+                    className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-out"
+                    style={{ width: `${qaPercentage}%` }}
+                  />
                 </div>
               </div>
             </div>
@@ -212,8 +328,11 @@ const OrganizationDashboard = () => {
             onClick={() => navigate("/org-admin/users")}
             className="mt-10 text-xs font-black text-[#3b59ff] hover:text-[#2a44d4] flex items-center gap-1.5 group/btn border-t border-gray-100/70 pt-4"
           >
-            <span>Enter User Management Panel</span> 
-            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            <span>Enter User Management Panel</span>
+            <ArrowRight
+              size={14}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </button>
         </div>
 
@@ -223,7 +342,8 @@ const OrganizationDashboard = () => {
             <div className="flex justify-between items-start mb-10">
               <div className="space-y-1">
                 <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
-                  <Layers size={16} className="text-[#9d4edd]" /> Project Directories
+                  <Layers size={16} className="text-[#9d4edd]" /> Project
+                  Directories
                 </h3>
                 <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                   Repositories & Scope clusters
@@ -236,23 +356,47 @@ const OrganizationDashboard = () => {
 
             <div className="divide-y divide-gray-100/80">
               {[
-                { label: "Active Code Clusters", val: stats?.projects?.active, status: "Active" },
-                { label: "Unassigned Scopes", val: stats?.projects?.withoutManager, tag: "Action Needed" },
-                { label: "Archived Nodes", val: stats?.projects?.archived, status: "Cold Storage" },
+                {
+                  label: "Active Code Clusters",
+                  val: stats?.projects?.active,
+                  status: "Active",
+                },
+                {
+                  label: "Unassigned Scopes",
+                  val: stats?.projects?.withoutManager,
+                  tag: "Action Needed",
+                },
+                {
+                  label: "Archived Nodes",
+                  val: stats?.projects?.archived,
+                  status: "Cold Storage",
+                },
               ].map((row, i) => (
-                <div key={i} className="py-4.5 flex justify-between items-center group/row cursor-default">
+                <div
+                  key={i}
+                  className="py-4.5 flex justify-between items-center group/row cursor-default"
+                >
                   <div className="space-y-1">
                     <span className="text-sm font-bold text-gray-600 group-hover/row:text-[#1a1d2f] transition-colors">
                       {row.label}
                     </span>
                     {row.tag && (
-                      <span onClick={() => navigate('/org-admin/projects')} className="block w-max bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider cursor-pointer">
+                      <span
+                        onClick={() => navigate("/org-admin/projects")}
+                        className="block w-max bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider cursor-pointer"
+                      >
                         {row.tag}
                       </span>
                     )}
-                    {row.status && <span className="block text-[10px] text-gray-400 font-medium">{row.status}</span>}
+                    {row.status && (
+                      <span className="block text-[10px] text-gray-400 font-medium">
+                        {row.status}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-2xl font-black text-[#1a1d2f] font-mono">{row.val || 0}</span>
+                  <span className="text-2xl font-black text-[#1a1d2f] font-mono">
+                    {row.val || 0}
+                  </span>
                 </div>
               ))}
             </div>
@@ -271,7 +415,8 @@ const OrganizationDashboard = () => {
           <div>
             <div className="space-y-1 mb-8">
               <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
-                <ShieldAlert size={16} className="text-amber-500" /> Conflict Guard
+                <ShieldAlert size={16} className="text-amber-500" /> Conflict
+                Guard
               </h3>
               <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
                 Permission alerts and loose role handling
@@ -282,9 +427,12 @@ const OrganizationDashboard = () => {
             <div className="bg-amber-50/70 border border-amber-200/50 p-4.5 rounded-md shadow-sm mb-8 flex gap-3.5 items-center">
               <div className="w-1.5 h-10 bg-amber-500 rounded-full shrink-0" />
               <div>
-                <h4 className="text-[9px] font-black text-amber-800 uppercase tracking-widest">Telemetries Mismatch</h4>
+                <h4 className="text-[9px] font-black text-amber-800 uppercase tracking-widest">
+                  Telemetries Mismatch
+                </h4>
                 <p className="text-xs font-bold text-gray-700 mt-0.5">
-                  {stats?.alerts?.withoutRoles || 0} active instances running without permissions keys.
+                  {stats?.alerts?.withoutRoles || 0} active instances running
+                  without permissions keys.
                 </p>
               </div>
             </div>
@@ -292,14 +440,24 @@ const OrganizationDashboard = () => {
             <div className="divide-y divide-gray-100/80">
               <div className="py-4.5 flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-gray-600">Unassigned Profiles</span>
-                  <span className="bg-red-50 text-red-500 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Urgent</span>
+                  <span className="text-sm font-bold text-gray-600">
+                    Unassigned Profiles
+                  </span>
+                  <span className="bg-red-50 text-red-500 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                    Urgent
+                  </span>
                 </div>
-                <span className="text-xl font-black text-[#1a1d2f] font-mono">{stats?.alerts?.withoutRoles || 0}</span>
+                <span className="text-xl font-black text-[#1a1d2f] font-mono">
+                  {stats?.alerts?.withoutRoles || 0}
+                </span>
               </div>
               <div className="py-4.5 flex justify-between items-center">
-                <span className="text-sm font-bold text-gray-600">Access Overlaps</span>
-                <span className="text-xl font-black text-[#1a1d2f] font-mono">{stats?.alerts?.conflicts || 0}</span>
+                <span className="text-sm font-bold text-gray-600">
+                  Access Overlaps
+                </span>
+                <span className="text-xl font-black text-[#1a1d2f] font-mono">
+                  {stats?.alerts?.conflicts || 0}
+                </span>
               </div>
             </div>
           </div>
@@ -310,7 +468,7 @@ const OrganizationDashboard = () => {
         </div>
 
         {/* PANEL 4: STREAM REALTIME ACTIONS */}
-        <div className="bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border lg:col-span-2 flex flex-col justify-between">
+        {/* <div className="bg-white/70 backdrop-blur-xl rounded-md shadow-sm  border-gray-100 p-8 border lg:col-span-2 flex flex-col justify-between">
           <div>
             <div className="space-y-1 mb-8">
               <h3 className="text-base font-black text-[#1a1d2f] flex items-center gap-2">
@@ -343,8 +501,12 @@ const OrganizationDashboard = () => {
           <button className="mt-10 text-xs font-black text-[#3b59ff] hover:text-[#2a44d4] flex items-center gap-1.5 border-t border-gray-100/70 pt-4">
             <span>Query Full Activity Logs</span> <ArrowRight size={14} />
           </button>
-        </div>
+        </div> */}
 
+        <InstanceActivityMatrix
+          logs={logs}
+          onQueryFullLogs={() => console.log("Navigate to full logs page")}
+        />
       </div>
 
       {/* MODAL MOUNT ROUTERS */}

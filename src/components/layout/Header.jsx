@@ -54,13 +54,6 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Notifications */}
-          <div className="relative cursor-pointer mr-2">
-            <Bell className="w-5 h-5 text-gray-400" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-3.5 h-3.5 flex items-center justify-center rounded-full">
-              3
-            </span>
-          </div>
 
           {/* Profile Section with Dropdown Logic */}
           <div className="relative">
@@ -69,19 +62,38 @@ const Header = () => {
               className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all"
             >
               {/* Circular Avatar using first letters of Full Name */}
-              <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                {currentUser?.avatar_url ? (
-                  <img
-                    src={currentUser?.avatar_url}
-                    alt="Avatar"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
-                ) : currentUser?.full_name ? (
-                  currentUser?.full_name[0]
-                ) : (
-                  "U"
-                )}
+              <div className="flex items-center gap-2.5 bg-gradient-to-r from-slate-900/90 to-slate-800/90 text-white p-1.5 pl-4 rounded-full border border-slate-700/60 shadow-lg shadow-slate-950/20 backdrop-blur-md transition-all duration-300 hover:border-slate-500 hover:shadow-slate-950/40 group">
+                {/* Role Label */}
+                <div className="text-[11px] font-black tracking-widest uppercase text-slate-200 group-hover:text-white transition-colors">
+                  {currentUser?.role
+                    ? currentUser.role.split("_").join(" ")
+                    : "USER"}
+                </div>
+
+                {/* Avatar Container with Active Outer Ring */}
+                <div className="relative flex items-center justify-center">
+                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-[2px] shadow-sm transition-transform duration-300 group-hover:scale-105">
+                    <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-xs uppercase overflow-hidden">
+                      {currentUser?.avatar_url ? (
+                        <img
+                          src={currentUser.avatar_url}
+                          alt="Avatar"
+                          crossOrigin="anonymous"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                      ) : (
+                        <span className="bg-gradient-to-br from-blue-500 to-indigo-600 w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                          {currentUser?.full_name
+                            ? currentUser.full_name[0]
+                            : "U"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Online Status Dot indicator */}
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-sm"></span>
+                </div>
               </div>
               <ChevronDown
                 className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}

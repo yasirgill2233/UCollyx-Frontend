@@ -396,9 +396,10 @@ useEffect(() => {
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg transition-colors duration-500 ${
             path.startsWith('/manager') ? 'bg-amber-500 shadow-amber-100' :
             path.startsWith('/qa') ? 'bg-rose-500 shadow-rose-100' :
-            path.startsWith('/super-admin') ? 'bg-slate-900 shadow-slate-100' : 'bg-blue-600 shadow-blue-100'
+            path.startsWith('/super-admin') ? 'bg-slate-900 shadow-slate-100' :
+            path.startsWith('/org-admin') ? 'bg-indigo-500 shadow-indigo-100' : 'bg-blue-600 shadow-blue-100'
           }`}>
-            {path.startsWith('/manager') ? 'M' : path.startsWith('/qa') ? 'Q' : path.startsWith('/super-admin') ? 'A' : 'D'}
+            {path.startsWith('/manager') ? 'M' : path.startsWith('/qa') ? 'Q' : path.startsWith('/super-admin') ? 'SA' : path.startsWith('/org-admin') ? 'A' : 'D'}
           </div>
         </div>
 
