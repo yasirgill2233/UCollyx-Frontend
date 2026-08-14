@@ -5,26 +5,26 @@ import TeamManagementModal from "./TeamManagementModal";
 import ArchiveProjectModal from "./ArchiveProjectModal";
 import ActiveProjectModal from "./ActiveProjectModal copy";
 import { triggerToast } from "../../../utils/toastHelper";
-import { useProjectMutations, useProjectsData } from "../../../hooks/useProjects";
+import {
+  useProjectMutations,
+  useProjectsData,
+} from "../../../hooks/useProjects";
 
 const AdminProjectsView = () => {
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const [selectedProjectForSidebar, setSelectedProjectForSidebar] = useState(null);
+  const [selectedProjectForSidebar, setSelectedProjectForSidebar] =
+    useState(null);
   const [activeTab, setActiveTab] = useState("Overview");
   const [selectedUserId, setSelectedUserId] = useState("");
   const { data: serverData, isLoading } = useProjectsData();
-  const {
-    createMutation,
-    teamMutation,
-    archiveMutation,
-    activeMutation,
-  } = useProjectMutations();
+  const { createMutation, teamMutation, archiveMutation, activeMutation } =
+    useProjectMutations();
 
   const [activeFilter, setActiveFilter] = useState("All Projects");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeModal, setActiveModal] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [projectTeam, setProjectTeam] = useState([]); 
+  const [projectTeam, setProjectTeam] = useState([]);
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
@@ -42,7 +42,8 @@ const AdminProjectsView = () => {
 
   const stats = useMemo(() => {
     const noManagerCount = projects.filter(
-      (p) => !p.members?.some((m) => m.ProjectMember?.project_role === "Manager")
+      (p) =>
+        !p.members?.some((m) => m.ProjectMember?.project_role === "Manager"),
     ).length;
     return { ...baseStats, noManager: noManagerCount };
   }, [projects, baseStats]);
@@ -54,8 +55,10 @@ const AdminProjectsView = () => {
         p.project_code?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const status = p.status?.toUpperCase();
-      if (activeFilter === "Active") return matchesSearch && status === "ACTIVE";
-      if (activeFilter === "Archived") return matchesSearch && status === "ARCHIVED";
+      if (activeFilter === "Active")
+        return matchesSearch && status === "ACTIVE";
+      if (activeFilter === "Archived")
+        return matchesSearch && status === "ARCHIVED";
       if (activeFilter === "No Manager") return matchesSearch && !p.manager_id;
 
       return matchesSearch;
@@ -83,11 +86,13 @@ const AdminProjectsView = () => {
         },
         onError: (err) => {
           const errorMsg = err.response?.data?.errors
-            ? err.response.data.errors.map((e) => `${e.field}: ${e.message}`).join("\n")
+            ? err.response.data.errors
+                .map((e) => `${e.field}: ${e.message}`)
+                .join("\n")
             : err.response?.data?.message || "Creation failed";
           triggerToast(errorMsg, "error");
         },
-      }
+      },
     );
   };
 
@@ -99,7 +104,8 @@ const AdminProjectsView = () => {
           const user = allUsers.find((u) => u.id === id);
           return {
             ...user,
-            role: user?.full_name === currentProj.manager ? "Manager" : "Member",
+            role:
+              user?.full_name === currentProj.manager ? "Manager" : "Member",
           };
         });
         setProjectTeam(initialTeam);
@@ -125,14 +131,20 @@ const AdminProjectsView = () => {
     if (user) {
       const newMemberWithPivot = {
         ...user,
-        ProjectMember: { project_role: "Member" }
+        ProjectMember: { project_role: "Member" },
       };
       setSelectedProject((prevProject) => {
         if (!prevProject) return prevProject;
-        return { ...prevProject, members: [...currentMembers, newMemberWithPivot] };
+        return {
+          ...prevProject,
+          members: [...currentMembers, newMemberWithPivot],
+        };
       });
       setSelectedUserId("");
-      triggerToast(`${user.full_name || 'Member'} staging context bound!`, "success");
+      triggerToast(
+        `${user.full_name || "Member"} staging context bound!`,
+        "success",
+      );
     } else {
       triggerToast("User context resource not found", "error");
     }
@@ -145,11 +157,20 @@ const AdminProjectsView = () => {
         const currentPivot = m.ProjectMember || { project_role: "Member" };
         if (newRole === "Manager") {
           return m.id === memberId
-            ? { ...m, ProjectMember: { ...currentPivot, project_role: "Manager" } }
-            : { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } };
+            ? {
+                ...m,
+                ProjectMember: { ...currentPivot, project_role: "Manager" },
+              }
+            : {
+                ...m,
+                ProjectMember: { ...currentPivot, project_role: "Member" },
+              };
         } else {
           return m.id === memberId
-            ? { ...m, ProjectMember: { ...currentPivot, project_role: "Member" } }
+            ? {
+                ...m,
+                ProjectMember: { ...currentPivot, project_role: "Member" },
+              }
             : m;
         }
       });
@@ -162,7 +183,9 @@ const AdminProjectsView = () => {
       if (!prevProject) return prevProject;
       return {
         ...prevProject,
-        members: prevProject.members ? prevProject.members.filter((m) => m.id !== userId) : []
+        members: prevProject.members
+          ? prevProject.members.filter((m) => m.id !== userId)
+          : [],
       };
     });
   };
@@ -171,7 +194,7 @@ const AdminProjectsView = () => {
     const membersList = selectedProject?.members || [];
     const formattedMembers = membersList.map((m) => ({
       id: m.id,
-      role: m.ProjectMember?.project_role || "Member", 
+      role: m.ProjectMember?.project_role || "Member",
     }));
 
     teamMutation.mutate(
@@ -182,9 +205,12 @@ const AdminProjectsView = () => {
           setActiveModal(null);
         },
         onError: (error) => {
-          triggerToast(error?.response?.data?.message || "Failed to save team.", "error");
-        }
-      }
+          triggerToast(
+            error?.response?.data?.message || "Failed to save team.",
+            "error",
+          );
+        },
+      },
     );
   };
 
@@ -215,18 +241,18 @@ const AdminProjectsView = () => {
               className={`w-9 h-9 rounded-full overflow-hidden border-white flex items-center justify-center text-[9px] font-bold text-white shadow-sm ring-1 ring-slate-200 ${user?.color || "bg-slate-400"}`}
             >
               {/* <div  className="rounded-full border border-blue-100 bg-blue-600 w-full h-full flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden"> */}
-                {user?.avatar_url ? (
-                  <img
-                    src={user?.avatar_url}
-                    alt="Avatar"
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
-                ) : user?.full_name ? (
-                  user?.full_name[0].toUpperCase()
-                ) : (
-                  "U"
-                )}
+              {user?.avatar_url ? (
+                <img
+                  src={user?.avatar_url}
+                  alt="Avatar"
+                  crossOrigin="anonymous"
+                  className="w-full h-full object-cover"
+                />
+              ) : user?.full_name ? (
+                user?.full_name[0].toUpperCase()
+              ) : (
+                "U"
+              )}
               {/* </div> */}
             </div>
           );
@@ -242,14 +268,11 @@ const AdminProjectsView = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#fff7f5] via-[#faf9ff] to-[#f4f7ff] p-4 sm:p-8 lg:p-12 text-left font-sans relative overflow-x-hidden selection:bg-indigo-100">
-      
-  
       <div className="absolute top-0 left-0 w-[45vw] h-[45vw] max-w-[450px] bg-gradient-to-br from-cyan-200/20 to-blue-300/15 rounded-full filter blur-[100px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-[35vw] h-[35vw] max-w-[400px] bg-gradient-to-bl from-purple-200/25 to-fuchsia-200/15 rounded-full filter blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[40vw] h-[40vw] max-w-[450px] bg-gradient-to-tr from-amber-100/15 to-pink-200/20 rounded-full filter blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 mx-auto">
-        
         {/* --- HEADER BLOCK --- */}
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
           <div>
@@ -257,7 +280,8 @@ const AdminProjectsView = () => {
               Product Catalog
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-normal mt-1">
-              It’s about connecting the right circles. Manage work and ownership.
+              It’s about connecting the right circles. Manage work and
+              ownership.
             </p>
           </div>
           <button
@@ -276,7 +300,9 @@ const AdminProjectsView = () => {
                 key={tab}
                 onClick={() => setActiveFilter(tab)}
                 className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  activeFilter === tab ? "bg-slate-900 text-white shadow-sm" : "text-slate-500 hover:text-slate-900 bg-transparent"
+                  activeFilter === tab
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-900 bg-transparent"
                 }`}
               >
                 {tab}
@@ -285,7 +311,9 @@ const AdminProjectsView = () => {
           </div>
 
           <div className="relative w-full md:w-80">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+              🔍
+            </span>
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -298,21 +326,101 @@ const AdminProjectsView = () => {
         {/* --- STATS GRID --- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
-            { label: "Total Managed", value: stats.total, color: "text-slate-800", ring: "border-t-slate-400" },
-            { label: "Active Pipelines", value: stats.active, color: "text-blue-600", ring: "border-t-blue-500" },
-            { label: "Awaiting Manager", value: stats.noManager, color: "text-purple-600", ring: "border-t-purple-500" },
-            { label: "Archived Assets", value: stats.archived, color: "text-slate-400", ring: "border-t-slate-300" },
-          ].map((s, i) => (
-            <div
-              key={i}
-              className={`p-5 bg-white/60 backdrop-blur-lg border border-white/60 border-t-4 ${s.ring} rounded-md shadow-sm flex flex-col justify-between`}
-            >
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.label}</p>
-              <p className={`text-2xl font-extrabold tracking-tight ${s.color} mt-2`}>
-                {s.value < 10 ? `0${s.value}` : s.value}
-              </p>
-            </div>
-          ))}
+            {
+              label: "Total Managed",
+              value: stats.total,
+              color: "text-slate-800",
+              stroke: "#334155",
+              ring: "border-t-slate-400",
+            },
+            {
+              label: "Active Pipelines",
+              value: stats.active,
+              color: "text-blue-600",
+              stroke: "#2563eb",
+              ring: "border-t-blue-500",
+            },
+            {
+              label: "Awaiting Manager",
+              value: stats.noManager,
+              color: "text-purple-600",
+              stroke: "#9333ea",
+              ring: "border-t-purple-500",
+            },
+            {
+              label: "Archived Assets",
+              value: stats.archived,
+              color: "text-slate-400",
+              stroke: "#94a3b8",
+              ring: "border-t-slate-300",
+            },
+          ].map((s, i) => {
+            // Total mein se percentage calculate karna
+            const percentage =
+              stats.total > 0
+                ? Math.min(100, Math.round((s.value / stats.total) * 100))
+                : 0;
+
+            // Half-Pie Chart Dash Calculation (Circumference based)
+            const radius = 16;
+            const circumference = Math.PI * radius; // Half circle
+            const strokeDashoffset =
+              circumference - (percentage / 100) * circumference;
+
+            return (
+              <div
+                key={i}
+                className={`p-5 bg-white/60 backdrop-blur-lg border border-white/60 border-t-4 ${s.ring} rounded-md shadow-sm flex items-center justify-between`}
+              >
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {s.label}
+                  </p>
+                  <p
+                    className={`text-2xl font-extrabold tracking-tight ${s.color} mt-1`}
+                  >
+                    {s.value < 10 ? `0${s.value}` : s.value}
+                  </p>
+                  <span className="text-[10px] font-medium text-slate-400 mt-1 block">
+                    {percentage}% of total
+                  </span>
+                </div>
+
+                {/* Half Donut / Gauge Chart */}
+                <div className="relative w-14 h-16 flex items-center justify-center overflow-hidden">
+                  <svg
+                    className="w-14 h-14 transform -rotate-180"
+                    viewBox="0 0 40 40"
+                  >
+                    {/* Background Track */}
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r={radius}
+                      className="text-slate-200"
+                      strokeWidth="4"
+                      stroke="currentColor"
+                      fill="transparent"
+                      strokeDasharray={circumference}
+                    />
+                    {/* Value Progress */}
+                    <circle
+                      cx="20"
+                      cy="20"
+                      r={radius}
+                      stroke={s.stroke}
+                      strokeWidth="4"
+                      fill="transparent"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      className="transition-all duration-500 ease-out"
+                    />
+                  </svg>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* ========================================================================= */}
@@ -323,31 +431,57 @@ const AdminProjectsView = () => {
             <table className="w-full text-left border-collapse">
               <thead className="bg-slate-50/50 backdrop-blur-md border-b border-slate-100/80">
                 <tr>
-                  <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[28%]">Project Context</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center w-[12%]">Status</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[25%]">Assigned Lead / Owner</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[15%]">Team</th>
-                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[15%]">Created At</th>
+                  <th className="pl-6 pr-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[28%]">
+                    Project Context
+                  </th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center w-[12%]">
+                    Status
+                  </th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[25%]">
+                    Assigned Lead / Owner
+                  </th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[15%]">
+                    Team
+                  </th>
+                  <th className="px-4 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-[15%]">
+                    Created At
+                  </th>
                   <th className="pr-6 pl-4 py-4 w-[5%]"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100/60">
                 {filteredProjects.map((project) => (
-                  <tr key={project?.id} className="hover:bg-white/60 group transition-all duration-150">
+                  <tr
+                    key={project?.id}
+                    className="hover:bg-white/60 group transition-all duration-150"
+                  >
                     <td
-                      onClick={() => { setSelectedProjectForSidebar(project); setActiveTab("Overview"); }}
+                      onClick={() => {
+                        setSelectedProjectForSidebar(project);
+                        setActiveTab("Overview");
+                      }}
                       className="pl-6 pr-4 py-4 hover:cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-md flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-xs shadow-sm">
-                          {project?.name ? project.name.charAt(0).toUpperCase() : "P"}
+                          {project?.name
+                            ? project.name.charAt(0).toUpperCase()
+                            : "P"}
                         </div>
                         <div className="overflow-hidden">
-                          <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate">{project?.name || "Untitled Project"}</p>
+                          <p className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors truncate">
+                            {project?.name || "Untitled Project"}
+                          </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-slate-400 font-medium tracking-tight truncate">{project?.code || "N/A"}</span>
+                            <span className="text-[10px] text-slate-400 font-medium tracking-tight truncate">
+                              {project?.code || "N/A"}
+                            </span>
                             <span className="text-[9px] text-indigo-500/90 font-semibold bg-indigo-50/50 px-1 py-0.2 rounded border border-indigo-100/40 shrink-0">
-                              #{project?.name?.toLowerCase().replace(/\s+/g, "-").slice(0, 12) || "proj"}
+                              #
+                              {project?.name
+                                ?.toLowerCase()
+                                .replace(/\s+/g, "-")
+                                .slice(0, 12) || "proj"}
                             </span>
                           </div>
                         </div>
@@ -355,43 +489,73 @@ const AdminProjectsView = () => {
                     </td>
 
                     <td className="px-4 py-4 text-center whitespace-nowrap">
-                      <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
-                        project.status === "ACTIVE" ? "bg-emerald-50/70 text-emerald-600 border-emerald-100" : "bg-rose-50/70 text-rose-600 border-rose-100"
-                      }`}>
+                      <span
+                        className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
+                          project.status === "ACTIVE"
+                            ? "bg-emerald-50/70 text-emerald-600 border-emerald-100"
+                            : "bg-rose-50/70 text-rose-600 border-rose-100"
+                        }`}
+                      >
                         {project.status || "UNKNOWN"}
                       </span>
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap">
                       {(() => {
-                        const manager = project.members?.find((m) => m.ProjectMember?.project_role === "Manager");
+                        const manager = project.members?.find(
+                          (m) => m.ProjectMember?.project_role === "Manager",
+                        );
                         return manager ? (
                           <div className="flex items-center gap-2.5">
                             <div className="w-7 h-7 shrink-0 bg-white border border-slate-200 rounded-full flex items-center justify-center text-[9px] font-bold text-slate-600 shadow-sm">
-                              {manager.full_name?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                              {manager.full_name
+                                ?.split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2)}
                             </div>
                             <div className="overflow-hidden">
-                              <p className="text-xs font-semibold text-slate-700 truncate">{manager.full_name}</p>
-                              <p className="text-[10px] text-slate-400 truncate mt-0.5">{manager.email}</p>
+                              <p className="text-xs font-semibold text-slate-700 truncate">
+                                {manager.full_name}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                {manager.email}
+                              </p>
                             </div>
                           </div>
                         ) : (
-                          <span className="bg-amber-50/60 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded border border-amber-200/60 uppercase tracking-wide">Unassigned</span>
+                          <span className="bg-amber-50/60 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded border border-amber-200/60 uppercase tracking-wide">
+                            Unassigned
+                          </span>
                         );
                       })()}
                     </td>
 
                     <td className="px-4 py-4">
-                      <div className="flex justify-start">{renderAvatarGroup(project.members?.map((m) => m.id || m))}</div>
+                      <div className="flex justify-start">
+                        {renderAvatarGroup(
+                          project.members?.map((m) => m.id || m),
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-4 py-4 text-xs font-semibold text-slate-400 whitespace-nowrap">
-                      {project.createdAt ? new Date(project.createdAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "—"}
+                      {project.createdAt
+                        ? new Date(project.createdAt).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "2-digit", year: "numeric" },
+                          )
+                        : "—"}
                     </td>
 
                     <td className="pr-6 pl-4 py-4 text-right relative whitespace-nowrap">
                       <button
-                        onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
+                        onClick={() =>
+                          setOpenDropdownId(
+                            openDropdownId === project.id ? null : project.id,
+                          )
+                        }
                         className="text-slate-400 hover:text-slate-700 text-sm font-black p-1.5 rounded-md hover:bg-white/80"
                       >
                         ⋮
@@ -401,7 +565,12 @@ const AdminProjectsView = () => {
                           <button
                             onClick={() => {
                               setSelectedProject(project);
-                              const initialTeam = project.members.map((member) => ({ ...member, role: member.ProjectMember?.project_role }));
+                              const initialTeam = project.members.map(
+                                (member) => ({
+                                  ...member,
+                                  role: member.ProjectMember?.project_role,
+                                }),
+                              );
                               setProjectTeam(initialTeam);
                               setActiveModal("team");
                               setOpenDropdownId(null);
@@ -411,14 +580,22 @@ const AdminProjectsView = () => {
                             Manage Team
                           </button>
                           <button
-                            onClick={() => { setSelectedProject(project); setActiveModal("active"); setOpenDropdownId(null); }}
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setActiveModal("active");
+                              setOpenDropdownId(null);
+                            }}
                             className="w-full px-4 py-2 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"
                           >
                             Active Project
                           </button>
                           <hr className="border-slate-100 my-1" />
                           <button
-                            onClick={() => { setSelectedProject(project); setActiveModal("archive"); setOpenDropdownId(null); }}
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setActiveModal("archive");
+                              setOpenDropdownId(null);
+                            }}
                             className="w-full px-4 py-2 text-[11px] font-semibold text-rose-500 hover:bg-rose-50 flex items-center gap-2"
                           >
                             Archive Project
@@ -438,15 +615,18 @@ const AdminProjectsView = () => {
         {/* ========================================================================= */}
         <div className="block md:hidden grid grid-cols-1 gap-4">
           {filteredProjects.map((project) => (
-            <div 
+            <div
               key={project?.id}
               className="bg-white/60 backdrop-blur-xl border border-white/80 p-5 rounded-md shadow-sm relative overflow-hidden flex flex-col justify-between group"
             >
               {/* Header inside Mobile Card */}
               <div className="flex justify-between items-start gap-2 mb-4">
-                <div 
+                <div
                   className="flex items-center gap-3 cursor-pointer overflow-hidden"
-                  onClick={() => { setSelectedProjectForSidebar(project); setActiveTab("Overview"); }}
+                  onClick={() => {
+                    setSelectedProjectForSidebar(project);
+                    setActiveTab("Overview");
+                  }}
                 >
                   <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-white to-slate-50 rounded-md flex items-center justify-center text-indigo-600 font-bold border border-slate-200/60 text-sm shadow-xs">
                     {project?.name ? project.name.charAt(0).toUpperCase() : "P"}
@@ -456,7 +636,14 @@ const AdminProjectsView = () => {
                       {project?.name || "Untitled Project"}
                     </h3>
                     <p className="text-[10px] text-slate-400 font-medium tracking-tight mt-0.5">
-                      {project?.project_code || "N/A"} • <span className="text-indigo-500 font-semibold">#{project?.name?.toLowerCase().replace(/\s+/g, "-").slice(0, 10)}</span>
+                      {project?.project_code || "N/A"} •{" "}
+                      <span className="text-indigo-500 font-semibold">
+                        #
+                        {project?.name
+                          ?.toLowerCase()
+                          .replace(/\s+/g, "-")
+                          .slice(0, 10)}
+                      </span>
                     </p>
                   </div>
                 </div>
@@ -464,7 +651,11 @@ const AdminProjectsView = () => {
                 {/* Mobile Action Actions Button */}
                 <div className="relative shrink-0">
                   <button
-                    onClick={() => setOpenDropdownId(openDropdownId === project.id ? null : project.id)}
+                    onClick={() =>
+                      setOpenDropdownId(
+                        openDropdownId === project.id ? null : project.id,
+                      )
+                    }
                     className="text-slate-400 hover:text-slate-700 font-black p-1.5 rounded-md bg-white/40 border border-slate-200/40 text-xs"
                   >
                     ⋮
@@ -474,7 +665,10 @@ const AdminProjectsView = () => {
                       <button
                         onClick={() => {
                           setSelectedProject(project);
-                          const initialTeam = project.members.map((member) => ({ ...member, role: member.ProjectMember?.project_role }));
+                          const initialTeam = project.members.map((member) => ({
+                            ...member,
+                            role: member.ProjectMember?.project_role,
+                          }));
                           setProjectTeam(initialTeam);
                           setActiveModal("team");
                           setOpenDropdownId(null);
@@ -484,14 +678,22 @@ const AdminProjectsView = () => {
                         Manage Cluster Team
                       </button>
                       <button
-                        onClick={() => { setSelectedProject(project); setActiveModal("active"); setOpenDropdownId(null); }}
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setActiveModal("active");
+                          setOpenDropdownId(null);
+                        }}
                         className="w-full px-4 py-2 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"
                       >
                         Restore Pipeline
                       </button>
                       <hr className="border-slate-100 my-1" />
                       <button
-                        onClick={() => { setSelectedProject(project); setActiveModal("archive"); setOpenDropdownId(null); }}
+                        onClick={() => {
+                          setSelectedProject(project);
+                          setActiveModal("archive");
+                          setOpenDropdownId(null);
+                        }}
                         className="w-full px-4 py-2 text-[11px] font-semibold text-rose-500 hover:bg-rose-50 flex items-center gap-2"
                       >
                         Archive Workspace
@@ -503,26 +705,38 @@ const AdminProjectsView = () => {
 
               {/* Status Badge Line */}
               <div className="flex justify-between items-center border-t border-slate-100/60 pt-3 mt-1">
-                <span className="text-[10px] text-slate-400 font-medium">Pipeline Status:</span>
-                <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
-                  project.status === "ACTIVE" ? "bg-emerald-50/70 text-emerald-600 border-emerald-100" : "bg-rose-50/70 text-rose-600 border-rose-100"
-                }`}>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Pipeline Status:
+                </span>
+                <span
+                  className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
+                    project.status === "ACTIVE"
+                      ? "bg-emerald-50/70 text-emerald-600 border-emerald-100"
+                      : "bg-rose-50/70 text-rose-600 border-rose-100"
+                  }`}
+                >
                   {project.status || "UNKNOWN"}
                 </span>
               </div>
 
               {/* Owner / Manager Line */}
               <div className="flex justify-between items-center mt-2.5">
-                <span className="text-[10px] text-slate-400 font-medium">Assigned Owner:</span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Assigned Owner:
+                </span>
                 <div>
                   {(() => {
-                    const manager = project.members?.find((m) => m.ProjectMember?.project_role === "Manager");
+                    const manager = project.members?.find(
+                      (m) => m.ProjectMember?.project_role === "Manager",
+                    );
                     return manager ? (
                       <span className="text-xs font-semibold text-slate-700 bg-white/80 border border-slate-200/40 px-2 py-1 rounded-md shadow-2xs">
                         {manager.full_name}
                       </span>
                     ) : (
-                      <span className="bg-amber-50/60 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded border border-amber-200/60 uppercase tracking-wide">Unassigned</span>
+                      <span className="bg-amber-50/60 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded border border-amber-200/60 uppercase tracking-wide">
+                        Unassigned
+                      </span>
                     );
                   })()}
                 </div>
@@ -530,19 +744,30 @@ const AdminProjectsView = () => {
 
               {/* Team Allocation Line */}
               <div className="flex justify-between items-center mt-2.5">
-                <span className="text-[10px] text-slate-400 font-medium">Allocated Cluster:</span>
-                <div className="flex justify-end">{renderAvatarGroup(project.members?.map((m) => m.id || m))}</div>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Allocated Cluster:
+                </span>
+                <div className="flex justify-end">
+                  {renderAvatarGroup(project.members?.map((m) => m.id || m))}
+                </div>
               </div>
 
               {/* Timestamp Line */}
               <div className="flex justify-between items-center mt-2.5 border-t border-slate-100/40 pt-2.5 text-[10px] font-semibold text-slate-400">
                 <span>Deployment Date:</span>
-                <span>{project.createdAt ? new Date(project.createdAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "—"}</span>
+                <span>
+                  {project.createdAt
+                    ? new Date(project.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "2-digit",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </span>
               </div>
             </div>
           ))}
         </div>
-
       </div>
 
       {/* --- MODAL INJECTION BOUNDS --- */}
@@ -586,7 +811,7 @@ const AdminProjectsView = () => {
                     setActiveModal(null);
                     setSelectedProjectForSidebar(null);
                     triggerToast("Project Archived!", "success");
-                  }
+                  },
                 });
               }}
             />
@@ -603,7 +828,7 @@ const AdminProjectsView = () => {
                     setActiveModal(null);
                     setSelectedProjectForSidebar(null);
                     triggerToast("Project Restored!", "success");
-                  }
+                  },
                 });
               }}
             />
@@ -612,19 +837,21 @@ const AdminProjectsView = () => {
       )}
 
       {/* --- SIDEBAR WORKSPACE DETAIL OVERVIEW --- */}
-      {activeModal !== "archive" && activeModal !== "team" && selectedProjectForSidebar && (
-        <ProjectSidebar
-          selectedProjectForSidebar={selectedProjectForSidebar}
-          setSelectedProjectForSidebar={setSelectedProjectForSidebar}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          allUsers={allUsers}
-          setActiveModal={setActiveModal}
-          setSelectedProjectId={setSelectedProject?.id}
-          setSelectedProject={setSelectedProject}
-          projects={projects}
-        />
-      )}
+      {activeModal !== "archive" &&
+        activeModal !== "team" &&
+        selectedProjectForSidebar && (
+          <ProjectSidebar
+            selectedProjectForSidebar={selectedProjectForSidebar}
+            setSelectedProjectForSidebar={setSelectedProjectForSidebar}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            allUsers={allUsers}
+            setActiveModal={setActiveModal}
+            setSelectedProjectId={setSelectedProject?.id}
+            setSelectedProject={setSelectedProject}
+            projects={projects}
+          />
+        )}
     </div>
   );
 };
