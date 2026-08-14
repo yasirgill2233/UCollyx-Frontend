@@ -18,7 +18,7 @@ import {
   Terminal,
   Compass,
 } from "lucide-react";
-import InstanceActivityMatrix from "../../../components/layout/logs/InstanceActivityMatrix";
+import InstanceActivityMatrix from "../../../components/InstanceActivityMatrix";
 import API from "../../../api/axios";
 
 const OrganizationDashboard = () => {
