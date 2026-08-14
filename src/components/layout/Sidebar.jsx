@@ -1,7 +1,8 @@
-// import React, { useState } from 'react';
+// import React, { useState, useEffect } from 'react';
 // import { NavLink, useLocation, useParams } from 'react-router-dom';
+// import axios from 'axios';
 // import { 
-//   LayoutGrid, Folder, Bug, ClipboardList, Code2, 
+//   LayoutGrid, Folder, Lock, Bug, ClipboardList, Code2, 
 //   MessageSquare, Video, FolderCheck, ShieldAlert, 
 //   UserCog, BarChart3, Briefcase, Settings, Users,
 //   FolderClock, Building, Menu, X,
@@ -11,19 +12,24 @@
 //   ChevronRight,
 //   ChevronLeft
 // } from 'lucide-react';
+// import API from '../../api/axios';
 
 // const Sidebar = () => {
 //   const location = useLocation();
 //   const path = location.pathname;
-//   const { workspaceSlug } = useParams();
+//   // const { workspaceSlug } = useParams();
   
 //   // 📱 Mobile responsive slide-toggle state
 //   const [isOpen, setIsOpen] = useState(false);
+  
+//   // 🔄 Dynamic Links State
+//   const [filteredNavItems, setFilteredNavItems] = useState([]);
 
 //   const user = JSON.parse(localStorage.getItem("user"));
+//   const workspaceSlug = JSON.parse(localStorage.getItem("user"))?.workspace_id;
 //   const userRole = user?.role;
 
-//   console.log("Console from Sidebar:", userRole, workspaceSlug);
+//   console.log("Console from Sidebar:", userRole, JSON.parse(localStorage.getItem("user")));
 
 //   // 1. Define Groups for each Role
 //   const navGroups = {
@@ -61,7 +67,7 @@
 //       { icon: Users, path: `/org-admin/users`, label: 'Users' },
 //       { icon: MessageSquare, path: `/org-admin/chat`, label: 'Chat' },
 //       { icon: Video, path: `/org-admin/meetings`, label: 'Meetings' },
-//       { icon: Video, path: `/org-admin/permissions`, label: 'Permissions' },
+//       { icon: Lock, path: `/org-admin/permissions`, label: 'Permissions' },
 //     ],
 //     superadmin: [
 //       { icon: LayoutGrid, path: `/super-admin/dashboard`, label: 'Admin Panel' },
@@ -70,19 +76,59 @@
 //     ]
 //   };
 
-//   let currentNavItems = navGroups.dev; // Default
-
-//   if (userRole === 'manager') {
-//     currentNavItems = navGroups.manager;
-//   } else if (userRole === 'qa') {
-//     currentNavItems = navGroups.qa;
-//   } else if (userRole === 'org_admin') { 
-//     currentNavItems = navGroups.orgadmin;
-//   } else if (userRole === 'super_admin') {
-//     currentNavItems = navGroups.superadmin;
-//   } else if (userRole === 'dev'){
-//     currentNavItems = navGroups.dev;
+// useEffect(() => {
+//   // 🚨 ABSOLUTE FIX: Agar super_admin hai, to bina kisi check ya API ke direct static items set karo
+//   if (userRole === 'super_admin') {
+//     setFilteredNavItems(navGroups.superadmin || []);
+//     return; // Yahin se baahir nikal jao
 //   }
+
+//   const fetchAndFilterPermissions = async () => {
+//     try {
+//       if (!workspaceSlug) return;
+
+//       // 📝 Passing dynamic workspaceSlug parameter in URL paths
+//       const response = await API.get(`/permissions/workspace/${workspaceSlug}`); 
+      
+//       console.log("Fetched isolated workspace permissions:", response);
+      
+//       if (response.data.success) {
+//         const dbPermissions = response.data.data;
+
+//         // Baki roles ke liye mapping aur filtering
+//         let dbMappedRole = userRole;
+//         if (userRole === 'org_admin') dbMappedRole = 'orgadmin';
+
+//         const staticConfigItems = navGroups[dbMappedRole] || [];
+
+//         // MySQL database safety (true ya 1 dono handle ho rahe hain)
+//         const activeRoutesFromDb = dbPermissions
+//           .filter(p => p.role === dbMappedRole && (p.enabled === true || p.enabled === 1))
+//           .map(p => p.route);
+
+//         const finalAllowedLinks = staticConfigItems.filter(item => 
+//           activeRoutesFromDb.includes(item.path)
+//         );
+
+//         setFilteredNavItems(finalAllowedLinks);
+//       }
+//     } catch (error) {
+//       console.error("Error updating fluid sidebar permissions:", error);
+//       // Fallback for remaining roles
+//       let dbMappedRole = userRole;
+//       if (userRole === 'org_admin') dbMappedRole = 'orgadmin';
+//       setFilteredNavItems(navGroups[dbMappedRole] || []);
+//     }
+//   };
+
+//   // Execution condition check
+//   if (userRole && (userRole === 'super_admin' || workspaceSlug)) {
+//     fetchAndFilterPermissions();
+//   }
+  
+//   // Reactivity barkrar rakhne ke liye dependencies update
+// }, [userRole, workspaceSlug]);
+
 
 //   if (!user) return null;
 
@@ -117,15 +163,16 @@
 //           <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-xs shadow-lg transition-colors duration-500 ${
 //             path.startsWith('/manager') ? 'bg-amber-500 shadow-amber-100' :
 //             path.startsWith('/qa') ? 'bg-rose-500 shadow-rose-100' :
-//             path.startsWith('/super-admin') ? 'bg-slate-900 shadow-slate-100' : 'bg-blue-600 shadow-blue-100'
+//             path.startsWith('/super-admin') ? 'bg-slate-900 shadow-slate-100' :
+//             path.startsWith('/org-admin') ? 'bg-indigo-500 shadow-indigo-100' : 'bg-blue-600 shadow-blue-100'
 //           }`}>
-//             {path.startsWith('/manager') ? 'M' : path.startsWith('/qa') ? 'Q' : path.startsWith('/super-admin') ? 'A' : 'D'}
+//             {path.startsWith('/manager') ? 'M' : path.startsWith('/qa') ? 'Q' : path.startsWith('/super-admin') ? 'SA' : path.startsWith('/org-admin') ? 'A' : 'D'}
 //           </div>
 //         </div>
 
 //         {/* Nav Items List Frame */}
 //         <div className="flex flex-col gap-2 items-center w-full px-2 overflow-y-auto no-scrollbar">
-//           {currentNavItems.map((item, index) => {
+//           {filteredNavItems.map((item, index) => {
 //             const Icon = item.icon;
 //             return (
 //               <NavLink
@@ -148,10 +195,6 @@
 //                       strokeWidth={isActive ? 2.2 : 2} 
 //                       className="group-hover:scale-110 transition-transform"
 //                     />
-                    
-//                     {/* <span className="absolute left-16 top-1/2 -translate-y-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded md:opacity-0 group-hover:opacity-100 hidden sm:block whitespace-nowrap pointer-events-none transition-opacity duration-200 z-50 shadow-md">
-//                       {item.label}
-//                     </span> */}
 //                   </>
 //                 )}
 //               </NavLink>
@@ -164,27 +207,6 @@
 // };
 
 // export default Sidebar;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
