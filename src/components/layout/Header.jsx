@@ -68,7 +68,7 @@ const Header = () => {
                   {currentUser?.role
                     ? currentUser.role.split("_").join(" ")
                     : "USER"}
-                </div>
+                </div> 
 
                 {/* Avatar Container with Active Outer Ring */}
                 <div className="relative flex items-center justify-center">
