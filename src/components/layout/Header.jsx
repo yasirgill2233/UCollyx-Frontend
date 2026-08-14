@@ -62,7 +62,7 @@ const Header = () => {
               className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all"
             >
               {/* Circular Avatar using first letters of Full Name */}
-              <div className="flex items-center gap-2.5 bg-gradient-to-r from-slate-900/90 to-slate-800/90 text-white p-1.5 pl-4 rounded-full border border-slate-700/60 shadow-lg shadow-slate-950/20 backdrop-blur-md transition-all duration-300 hover:border-slate-500 hover:shadow-slate-950/40 group">
+              <div className="flex items-center gap-2.5 bg-gradient-to-r from-slate-900/90 to-slate-800/90 text-white p-1 pl-4 rounded-full border border-slate-700/60 shadow-lg shadow-slate-950/20 backdrop-blur-md transition-all duration-300 hover:border-slate-500 hover:shadow-slate-950/40 group">
                 {/* Role Label */}
                 <div className="text-[11px] font-black tracking-widest uppercase text-slate-200 group-hover:text-white transition-colors">
                   {currentUser?.role

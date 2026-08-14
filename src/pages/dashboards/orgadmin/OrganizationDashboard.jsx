@@ -534,7 +534,7 @@ const OrganizationDashboard = () => {
     );
 
   return (
-    <div className="w-full bg-[#f8fafc] p-3 sm:p-6 lg:p-10 font-sans text-left relative selection:bg-[#3b59ff]/10 pb-20 sm:pb-8">
+    <div className="min-h-screen bg-[#f8fafc] p-4 sm:p-8 lg:p-12 font-sans text-left relative overflow-hidden selection:bg-[#3b59ff]/10">
       <div className="absolute top-[-5%] right-[-10%] w-[320px] sm:w-[650px] h-[320px] sm:h-[650px] bg-gradient-to-bl from-[#3b59ff]/10 to-[#00f2fe]/15 rounded-full blur-[70px] sm:blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-5%] left-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-tr from-[#9d4edd]/10 to-[#3b59ff]/10 rounded-full blur-[60px] sm:blur-[100px] pointer-events-none" />
 
