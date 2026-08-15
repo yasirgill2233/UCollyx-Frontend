@@ -1486,37 +1486,9 @@ const DevChat = () => {
 
             <div className="flex items-center justify-between px-3 rounded-b-2xl md:rounded-b-[23px]">
               <div className="flex items-center w-full h-[45px] justify-between gap-3.5 md:gap-5 text-slate-400">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current.click()}
-                  className="hover:text-blue-600 text-slate-500 transition-colors p-1 rounded-lg active:bg-slate-200/50"
-                >
-                  <Paperclip size={18} />
-                </button>
+                
 
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  multiple
-                  className="hidden"
-                  accept="image/*,.pdf,.doc,.docx,.zip"
-                />
-
-                <textarea
-                  value={inputText}
-                  onChange={handleInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="w-full pt-5 text-[14px] text-slate-700 outline-none resize-none min-h-[44px] md:min-h-[60px] font-medium bg-transparent"
-                  placeholder={`Text...`}
-                />
-
-                <div
+                 <div
                   className="relative flex items-center"
                   ref={emojiPickerRef}
                 >
@@ -1541,6 +1513,36 @@ const DevChat = () => {
                     </div>
                   )}
                 </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                  accept="image/*,.pdf,.doc,.docx,.zip"
+                />
+
+                <textarea
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="w-full pt-5 text-[14px] text-slate-700 outline-none resize-none min-h-[44px] md:min-h-[60px] font-medium bg-transparent"
+                  placeholder={`Text...`}
+                />
+
+               <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="hover:text-blue-600 text-slate-500 transition-colors p-1 rounded-lg active:bg-slate-200/50"
+                >
+                  <Paperclip size={18} />
+                </button>
 
                 <button
                   type="button"
