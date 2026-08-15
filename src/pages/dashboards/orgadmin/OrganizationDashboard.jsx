@@ -111,7 +111,7 @@ const OrganizationDashboard = () => {
         <div className="absolute top-0 right-0 w-24 sm:w-32 h-full bg-gradient-to-l from-[#3b59ff]/5 to-transparent pointer-events-none" />
 
         <div className="flex items-center gap-3.5 sm:gap-4.5">
-          <div className="w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-tr from-[#3b59ff] to-[#8a2be2] rounded-xl sm:rounded-md shadow-md shadow-blue-500/10 text-white shrink-0 flex items-center justify-center">
+          <div className={`w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-tr ${stats?.workspace?.logo_url ? 'bg-white': 'from-[#3b59ff] to-[#8a2be2]'} rounded-xl sm:rounded-md shadow-md shadow-blue-500/10 text-white shrink-0 flex items-center justify-center`}>
             {stats?.workspace?.logo_url ? (
               <img
                 src={stats?.workspace?.logo_url}
