@@ -783,7 +783,7 @@ const DevChat = () => {
   );
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
+    <div className="flex h-[calc(100vh-4rem)] bg-[#F8FAFC] font-sans overflow-hidden text-slate-900">
       <div
         className={`
           fixed inset-y-0 left-0 z-40 w-72 bg-white flex flex-col border-r border-slate-300
@@ -953,119 +953,128 @@ const DevChat = () => {
       {/* 2. Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white min-w-0 w-full h-full relative">
         {/* Chat Top Navbar Header */}
-        <div className="h-[68px] border-b border-slate-300 flex items-center justify-between px-4 md:px-8 bg-white/70 backdrop-blur-xl sticky top-0 z-10 flex-shrink-0">
-          <div className="flex items-center gap-2 md:gap-4 min-w-0">
-            {/* Mobile Sidebar Toggle Hamburger Trigger Button */}
-            <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-slate-100 rounded-xl md:hidden text-slate-600 flex-shrink-0"
-            >
-              <Menu size={20} />
-            </button>
+        <div className="h-[68px] w-full border-b border-slate-200/80 flex items-center justify-between px-2.5 sm:px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex-shrink-0 transition-all select-none">
+  
+  {/* LEFT SECTION: Hamburger + Title + Online Badge */}
+  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 mr-1">
+    {/* Mobile Sidebar Toggle Button */}
+    <button
+      onClick={() => setIsSidebarOpen(true)}
+      className="p-1.5 hover:bg-slate-100 rounded-xl md:hidden text-slate-600 flex-shrink-0 transition-colors touch-manipulation"
+      aria-label="Open Sidebar"
+    >
+      <Menu size={20} />
+    </button>
 
-            <div className="flex gap-2 md:gap-4 justify-center items-center min-w-0">
-              <h3 className="font-black text-slate-800 text-sm md:text-base flex items-center gap-1.5 md:gap-2 truncate">
-                {activeChat.type === "channel" ? (
-                  <Hash size={18} className="text-slate-400 flex-shrink-0" />
-                ) : (
-                  <MessageSquare
-                    size={18}
-                    className="text-slate-400 flex-shrink-0"
+    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+      {/* Icon + Channel Name */}
+      <div className="flex items-center gap-1 min-w-0 flex-shrink">
+        {activeChat.type === "channel" ? (
+          <Hash size={17} className="text-indigo-500 flex-shrink-0" />
+        ) : (
+          <MessageSquare size={17} className="text-indigo-500 flex-shrink-0" />
+        )}
+        <h3 className="font-extrabold text-slate-800 text-xs sm:text-base tracking-tight truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none">
+          {activeChat.type === "channel"
+            ? activeChat.name?.substring(1)
+            : activeChat.name}
+        </h3>
+      </div>
+
+      {/* Active Members Metric Badge (Mobile Responsive Compact) */}
+      {!isChatLoading && activeChat?.type === "channel" && (
+        <button
+          onClick={() => setIsMembersOpen(true)}
+          className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200/60 font-black px-1.5 sm:px-2 py-0.5 rounded-full hover:bg-emerald-100 transition-all flex items-center gap-1 flex-shrink-0 whitespace-nowrap touch-manipulation"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>
+            {channelMembers.filter((u) => u.User?.last_login !== null).length}
+            <span>
+              {" "}
+              / {channelMembers.length}
+            </span>
+          </span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  {/* RIGHT SECTION: Avatars + Action Utilities */}
+  <div className="flex items-center gap-1 flex-shrink-0">
+    
+    {/* Avatar Stack (Desktop Only) */}
+    {activeChat?.type === "channel" && (
+      <div className="hidden lg:flex items-center -space-x-2 mr-1">
+        <div
+          className="flex -space-x-2 cursor-pointer"
+          onClick={() => setIsMembersOpen(true)}
+        >
+          {channelMembers
+            ?.filter((member) => member.User?.last_login !== null)
+            .slice(0, 3)
+            .map((i) => (
+              <div
+                key={i.User?.id || i}
+                className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-extrabold overflow-hidden uppercase text-slate-600 shadow-2xs"
+              >
+                {i.User?.avatar_url ? (
+                  <img
+                    src={i.User?.avatar_url}
+                    alt={i.User?.full_name}
+                    crossOrigin="anonymous"
+                    className="w-full h-full object-cover"
                   />
+                ) : (
+                  <span>{i?.full_name?.charAt(0) || "U"}</span>
                 )}
-                <span className="truncate">
-                  {activeChat.type === "channel"
-                    ? activeChat.name?.substring(1)
-                    : activeChat.name}
-                </span>
-              </h3>
+              </div>
+            ))}
 
-              {/* Active Members Metric Display */}
-              <button
-                onClick={() => setIsMembersOpen(true)}
-                className="text-[10px] md:text-[11px] text-emerald-600 font-bold hover:cursor-pointer hover:text-emerald-700 transition-all flex items-center gap-1 flex-shrink-0 whitespace-nowrap"
-              >
-                {!isChatLoading && activeChat?.type === "channel" && (
-                  <span>
-                    {
-                      channelMembers.filter((u) => u.User.last_login !== null)
-                        .length
-                    }{" "}
-                    / {channelMembers.length} Online
-                  </span>
-                )}
-              </button>
+          {channelMembers?.filter((m) => m.User?.last_login !== null).length > 3 && (
+            <div className="w-7 h-7 rounded-full border-2 border-white bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-extrabold shadow-2xs">
+              +{channelMembers.filter((m) => m.User?.last_login !== null).length - 3}
             </div>
-          </div>
-
-          {/* Right Toolbar Action Utilities */}
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-            <div className="hidden sm:flex -space-x-2 mr-1 md:mr-2">
-              {activeChat?.type === "channel" && (
-                <div
-                  className="flex -space-x-2 hover:cursor-pointer"
-                  onClick={() => setIsMembersOpen(true)}
-                >
-                  {channelMembers
-                    ?.filter((member) => member.User?.last_login !== null)
-                    .slice(0, 4)
-                    .map((i) => (
-                      <div
-                        key={i.User.id || i}
-                        className="w-7 h-7 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-bold overflow-hidden uppercase text-slate-600"
-                      >
-                        {i.User?.avatar_url ? (
-                          <img
-                            src={i.User?.avatar_url}
-                            alt={i.User?.full_name}
-                            crossOrigin="anonymous"
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <span>{i?.full_name?.charAt(0) || "U"}</span>
-                        )}
-                      </div>
-                    ))}
-
-                  {channelMembers?.filter((m) => m.User?.last_login !== null)
-                    .length > 4 && (
-                    <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
-                      +
-                      {channelMembers.filter((m) => m.User?.last_login !== null)
-                        .length - 4}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Primary Communication CTA Icons Control Group */}
-            <div className="relative flex gap-1 md:gap-2 justify-center items-center">
-              {notifications.some((n) => !n.is_read) && (
-                <div className="absolute -top-0.5 right-0.5 w-2 h-2 bg-red-500 border-2 border-white rounded-full" />
-              )}
-              <button
-                onClick={handleStartMeeting}
-                className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <Video size={19} />
-              </button>
-              <button
-                onClick={() => setIsScheduleModalOpen(true)}
-                className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
-                title="Schedule a meeting"
-              >
-                <Plus size={19} strokeWidth={2.5} />
-              </button>
-              <button
-                onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-50 transition-colors"
-              >
-                <BellIcon size={19} />
-              </button>
-            </div>
-          </div>
+          )}
         </div>
+      </div>
+    )}
+
+    {/* Primary Communication Control Group */}
+    <div className="flex items-center gap-0.5 bg-slate-100/70 p-0.5 sm:p-1 rounded-xl border border-slate-200/50">
+      
+      {/* Video Call */}
+      <button
+        onClick={handleStartMeeting}
+        className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+        title="Start Video Meeting"
+      >
+        <Video size={17} />
+      </button>
+
+      {/* Schedule Meeting */}
+      <button
+        onClick={() => setIsScheduleModalOpen(true)}
+        className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+        title="Schedule a meeting"
+      >
+        <Plus size={17} strokeWidth={2.5} />
+      </button>
+
+      {/* Notifications */}
+      <button
+        onClick={() => setIsNotifOpen(!isNotifOpen)}
+        className="relative p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+        title="Notifications"
+      >
+        {notifications.some((n) => !n.is_read) && (
+          <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
+        )}
+        <BellIcon size={17} />
+      </button>
+    </div>
+  </div>
+</div>
 
         {/* Upcoming Meeting Banner Alert Element */}
         {upcomingMeeting && (
