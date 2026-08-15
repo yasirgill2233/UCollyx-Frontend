@@ -954,127 +954,130 @@ const DevChat = () => {
       <div className="flex-1 flex flex-col bg-white min-w-0 w-full h-full relative">
         {/* Chat Top Navbar Header */}
         <div className="h-[68px] w-full border-b border-slate-200/80 flex items-center justify-between px-2.5 sm:px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20 flex-shrink-0 transition-all select-none">
-  
-  {/* LEFT SECTION: Hamburger + Title + Online Badge */}
-  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 mr-1">
-    {/* Mobile Sidebar Toggle Button */}
-    <button
-      onClick={() => setIsSidebarOpen(true)}
-      className="p-1.5 hover:bg-slate-100 rounded-xl md:hidden text-slate-600 flex-shrink-0 transition-colors touch-manipulation"
-      aria-label="Open Sidebar"
-    >
-      <Menu size={20} />
-    </button>
+          {/* LEFT SECTION: Hamburger + Title + Online Badge */}
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 mr-1">
+            {/* Mobile Sidebar Toggle Button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-1.5 hover:bg-slate-100 rounded-xl md:hidden text-slate-600 flex-shrink-0 transition-colors touch-manipulation"
+              aria-label="Open Sidebar"
+            >
+              <Menu size={20} />
+            </button>
 
-    <div className="flex items-center gap-1.5 min-w-0 flex-1">
-      {/* Icon + Channel Name */}
-      <div className="flex items-center gap-1 min-w-0 flex-shrink">
-        {activeChat.type === "channel" ? (
-          <Hash size={17} className="text-indigo-500 flex-shrink-0" />
-        ) : (
-          <MessageSquare size={17} className="text-indigo-500 flex-shrink-0" />
-        )}
-        <h3 className="font-extrabold text-slate-800 text-xs sm:text-base tracking-tight truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none">
-          {activeChat.type === "channel"
-            ? activeChat.name?.substring(1)
-            : activeChat.name}
-        </h3>
-      </div>
-
-      {/* Active Members Metric Badge (Mobile Responsive Compact) */}
-      {!isChatLoading && activeChat?.type === "channel" && (
-        <button
-          onClick={() => setIsMembersOpen(true)}
-          className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200/60 font-black px-1.5 sm:px-2 py-0.5 rounded-full hover:bg-emerald-100 transition-all flex items-center gap-1 flex-shrink-0 whitespace-nowrap touch-manipulation"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>
-            {channelMembers.filter((u) => u.User?.last_login !== null).length}
-            <span>
-              {" "}
-              / {channelMembers.length}
-            </span>
-          </span>
-        </button>
-      )}
-    </div>
-  </div>
-
-  {/* RIGHT SECTION: Avatars + Action Utilities */}
-  <div className="flex items-center gap-1 flex-shrink-0">
-    
-    {/* Avatar Stack (Desktop Only) */}
-    {activeChat?.type === "channel" && (
-      <div className="hidden lg:flex items-center -space-x-2 mr-1">
-        <div
-          className="flex -space-x-2 cursor-pointer"
-          onClick={() => setIsMembersOpen(true)}
-        >
-          {channelMembers
-            ?.filter((member) => member.User?.last_login !== null)
-            .slice(0, 3)
-            .map((i) => (
-              <div
-                key={i.User?.id || i}
-                className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-extrabold overflow-hidden uppercase text-slate-600 shadow-2xs"
-              >
-                {i.User?.avatar_url ? (
-                  <img
-                    src={i.User?.avatar_url}
-                    alt={i.User?.full_name}
-                    crossOrigin="anonymous"
-                    className="w-full h-full object-cover"
-                  />
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {/* Icon + Channel Name */}
+              <div className="flex items-center gap-1 min-w-0 flex-shrink">
+                {activeChat.type === "channel" ? (
+                  <Hash size={17} className="text-indigo-500 flex-shrink-0" />
                 ) : (
-                  <span>{i?.full_name?.charAt(0) || "U"}</span>
+                  <MessageSquare
+                    size={17}
+                    className="text-indigo-500 flex-shrink-0"
+                  />
                 )}
+                <h3 className="font-extrabold text-slate-800 text-xs sm:text-base tracking-tight truncate max-w-[110px] xs:max-w-[160px] sm:max-w-none">
+                  {activeChat.type === "channel"
+                    ? activeChat.name?.substring(1)
+                    : activeChat.name}
+                </h3>
               </div>
-            ))}
 
-          {channelMembers?.filter((m) => m.User?.last_login !== null).length > 3 && (
-            <div className="w-7 h-7 rounded-full border-2 border-white bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-extrabold shadow-2xs">
-              +{channelMembers.filter((m) => m.User?.last_login !== null).length - 3}
+              {/* Active Members Metric Badge (Mobile Responsive Compact) */}
+              {!isChatLoading && activeChat?.type === "channel" && (
+                <button
+                  onClick={() => setIsMembersOpen(true)}
+                  className="text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-200/60 font-black px-1.5 sm:px-2 py-0.5 rounded-full hover:bg-emerald-100 transition-all flex items-center gap-1 flex-shrink-0 whitespace-nowrap touch-manipulation"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    {
+                      channelMembers.filter((u) => u.User?.last_login !== null)
+                        .length
+                    }
+                    <span> / {channelMembers.length}</span>
+                  </span>
+                </button>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* RIGHT SECTION: Avatars + Action Utilities */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {/* Avatar Stack (Desktop Only) */}
+            {activeChat?.type === "channel" && (
+              <div className="hidden lg:flex items-center -space-x-2 mr-1">
+                <div
+                  className="flex -space-x-2 cursor-pointer"
+                  onClick={() => setIsMembersOpen(true)}
+                >
+                  {channelMembers
+                    ?.filter((member) => member.User?.last_login !== null)
+                    .slice(0, 3)
+                    .map((i) => (
+                      <div
+                        key={i.User?.id || i}
+                        className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-extrabold overflow-hidden uppercase text-slate-600 shadow-2xs"
+                      >
+                        {i.User?.avatar_url ? (
+                          <img
+                            src={i.User?.avatar_url}
+                            alt={i.User?.full_name}
+                            crossOrigin="anonymous"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{i?.full_name?.charAt(0) || "U"}</span>
+                        )}
+                      </div>
+                    ))}
+
+                  {channelMembers?.filter((m) => m.User?.last_login !== null)
+                    .length > 3 && (
+                    <div className="w-7 h-7 rounded-full border-2 border-white bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-extrabold shadow-2xs">
+                      +
+                      {channelMembers.filter((m) => m.User?.last_login !== null)
+                        .length - 3}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Primary Communication Control Group */}
+            <div className="flex items-center gap-0.5 bg-slate-100/70 p-0.5 sm:p-1 rounded-xl border border-slate-200/50">
+              {/* Video Call */}
+              <button
+                onClick={handleStartMeeting}
+                className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+                title="Start Video Meeting"
+              >
+                <Video size={17} />
+              </button>
+
+              {/* Schedule Meeting */}
+              <button
+                onClick={() => setIsScheduleModalOpen(true)}
+                className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+                title="Schedule a meeting"
+              >
+                <Plus size={17} strokeWidth={2.5} />
+              </button>
+
+              {/* Notifications */}
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="relative p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
+                title="Notifications"
+              >
+                {notifications.some((n) => !n.is_read) && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
+                )}
+                <BellIcon size={17} />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    )}
-
-    {/* Primary Communication Control Group */}
-    <div className="flex items-center gap-0.5 bg-slate-100/70 p-0.5 sm:p-1 rounded-xl border border-slate-200/50">
-      
-      {/* Video Call */}
-      <button
-        onClick={handleStartMeeting}
-        className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
-        title="Start Video Meeting"
-      >
-        <Video size={17} />
-      </button>
-
-      {/* Schedule Meeting */}
-      <button
-        onClick={() => setIsScheduleModalOpen(true)}
-        className="p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
-        title="Schedule a meeting"
-      >
-        <Plus size={17} strokeWidth={2.5} />
-      </button>
-
-      {/* Notifications */}
-      <button
-        onClick={() => setIsNotifOpen(!isNotifOpen)}
-        className="relative p-1.5 sm:p-2 text-slate-500 hover:text-indigo-600 hover:bg-white rounded-lg transition-all active:scale-95 touch-manipulation"
-        title="Notifications"
-      >
-        {notifications.some((n) => !n.is_read) && (
-          <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
-        )}
-        <BellIcon size={17} />
-      </button>
-    </div>
-  </div>
-</div>
 
         {/* Upcoming Meeting Banner Alert Element */}
         {upcomingMeeting && (
@@ -1416,8 +1419,8 @@ const DevChat = () => {
         </div>
 
         {/* Native Mobile App Style Input Area */}
-        <div className="px-2 pb-3 pt-1 md:px-8 md:pb-8 bg-[#eeeeee8a] flex-shrink-0 transition-all">
-          <div className="relative bg-white border border-slate-200/80 rounded-2xl md:rounded-[24px] shadow-sm md:shadow-sm md:shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
+        <div className="px-2 pb-3 pt-1 md:px-8 md:pb-8 bg-[#eeeeee8a] flex-shrink-0 transition-all flex w-full justify-center items-center gap-2">
+          <div className="w-full relative bg-white border border-slate-200/80 rounded-2xl md:rounded-[24px] shadow-sm md:shadow-sm md:shadow-slate-200/40 focus-within:border-blue-500/40 focus-within:ring-4 ring-blue-500/5 transition-all">
             {showMentions &&
               activeChat?.type === "channel" &&
               filteredUsers?.length > 0 && (
@@ -1481,30 +1484,8 @@ const DevChat = () => {
               </div>
             )}
 
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              multiple
-              className="hidden"
-              accept="image/*,.pdf,.doc,.docx,.zip"
-            />
-
-            <textarea
-              value={inputText}
-              onChange={handleInputChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              className="w-full px-4 md:px-6 pt-3 md:pt-5 text-[14px] text-slate-700 outline-none resize-none min-h-[44px] md:min-h-[60px] font-medium bg-transparent"
-              placeholder={`Message ${activeChat.name}...`}
-            />
-
-            <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-4 bg-slate-50/60 rounded-b-2xl md:rounded-b-[23px] border-t border-slate-300/50">
-              <div className="flex items-center gap-3.5 md:gap-5 text-slate-400">
+            <div className="flex items-center justify-between px-3 bg-slate-50/60 rounded-b-2xl md:rounded-b-[23px] border-t border-slate-300/50">
+              <div className="flex items-center w-full justify-between gap-3.5 md:gap-5 text-slate-400">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current.click()}
@@ -1512,6 +1493,28 @@ const DevChat = () => {
                 >
                   <Paperclip size={18} />
                 </button>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                  accept="image/*,.pdf,.doc,.docx,.zip"
+                />
+
+                <textarea
+                  value={inputText}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="w-full pt-5 text-[14px] text-slate-700 outline-none resize-none min-h-[44px] md:min-h-[60px] font-medium bg-transparent"
+                  placeholder={`Text...`}
+                />
 
                 <div
                   className="relative flex items-center"
@@ -1562,15 +1565,15 @@ const DevChat = () => {
                 </button>
               </div>
 
-              <button
-                onClick={handleSendMessage}
-                className="bg-blue-600 text-white p-2 sm:pl-5 sm:pr-4 sm:py-2 rounded-xl text-xs md:text-[13px] font-black flex items-center gap-1.5 hover:bg-blue-700 shadow-md shadow-blue-200 active:scale-95 transition-all flex-shrink-0"
-              >
-                <span className="hidden sm:inline">Send</span>
-                <Send size={14} className="transform rotate-0 sm:scale-100" />
-              </button>
             </div>
           </div>
+              <button
+                onClick={handleSendMessage}
+                className="flex justify-center items-center bg-blue-600 text-white rounded-full w-14 h-14 text-xs md:text-[13px] font-black flex items-center gap-1.5 hover:bg-blue-700 shadow-md shadow-blue-200 active:scale-95 transition-all flex-shrink-0"
+              >
+                {/* <span className="hidden sm:inline">Send</span> */}
+                <Send size={28} className="mr-1 rotate-45" />
+              </button>
         </div>
       </div>
 
