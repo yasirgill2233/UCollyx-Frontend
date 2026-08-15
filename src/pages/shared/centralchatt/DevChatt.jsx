@@ -1484,8 +1484,8 @@ const DevChat = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between px-3 bg-slate-50/60 rounded-b-2xl md:rounded-b-[23px] border-t border-slate-300/50">
-              <div className="flex items-center w-full justify-between gap-3.5 md:gap-5 text-slate-400">
+            <div className="flex items-center justify-between px-3 rounded-b-2xl md:rounded-b-[23px]">
+              <div className="flex items-center w-full h-[45px] justify-between gap-3.5 md:gap-5 text-slate-400">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current.click()}
@@ -1569,10 +1569,10 @@ const DevChat = () => {
           </div>
               <button
                 onClick={handleSendMessage}
-                className="flex justify-center items-center bg-blue-600 text-white rounded-full w-14 h-14 text-xs md:text-[13px] font-black flex items-center gap-1.5 hover:bg-blue-700 shadow-md shadow-blue-200 active:scale-95 transition-all flex-shrink-0"
+                className="flex justify-center items-center bg-blue-600 text-white rounded-full w-10 h-10 text-xs md:text-[13px] font-black flex items-center gap-1.5 hover:bg-blue-700 shadow-md shadow-blue-200 active:scale-95 transition-all flex-shrink-0"
               >
                 {/* <span className="hidden sm:inline">Send</span> */}
-                <Send size={28} className="mr-1 rotate-45" />
+                <Send size={20} className="mr-1 rotate-45" />
               </button>
         </div>
       </div>
