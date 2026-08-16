@@ -30,7 +30,7 @@ const Header = () => {
     } finally {
       queryClient.clear();
       localStorage.clear();
-      navigate("/sign-out");
+      navigate("/login");
     }
   };
 
