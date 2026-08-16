@@ -11,7 +11,7 @@ const SignedOutSuccess = () => {
       setProgress((old) => {
         if (old >= 100) {
           clearInterval(timer);
-          navigate("/"); // redirect to login
+          navigate("/login"); // redirect to login
           return 100;
         }
         return old + 2;

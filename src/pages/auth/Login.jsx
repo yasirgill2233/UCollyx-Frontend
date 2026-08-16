@@ -85,7 +85,7 @@ export default function Login() {
         navigate("/workspace-selection");
       }
     } catch (err) {
-      navigate("/");
+      navigate("/login");
     }
   };
 

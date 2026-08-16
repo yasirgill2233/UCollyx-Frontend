@@ -82,7 +82,7 @@ export default function RequestSuccessful() {
             </button>
             
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/login')}
               className="flex-1 py-3.5 bg-gradient-to-r from-[#3b59ff] to-[#8a2be2] hover:opacity-95 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 transition-all duration-300 shadow-lg order-1 sm:order-2"
             >
               <span>Return to Core Base</span> <ArrowRight size={16} />

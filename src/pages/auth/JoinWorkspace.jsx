@@ -27,7 +27,7 @@ export default function JoinWorkspace() {
   useEffect(() => {
     if (!token) {
       triggerToast("Invalid or missing invitation token", "error");
-      navigate("/");
+      navigate("/login");
     }
   }, [token, navigate]);
 
@@ -103,7 +103,7 @@ export default function JoinWorkspace() {
         <div className="bg-white border border-red-100 rounded-2xl p-8 max-w-md text-center shadow-xl">
           <p className="text-red-600 font-semibold mb-4">This invitation link is invalid or has expired.</p>
           <button 
-            onClick={() => navigate("/")} 
+            onClick={() => navigate("/login")} 
             className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all text-sm font-bold shadow-md shadow-indigo-600/10 active:scale-95"
           >
             Go to Home

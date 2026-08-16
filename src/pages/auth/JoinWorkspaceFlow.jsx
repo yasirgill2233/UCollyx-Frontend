@@ -85,7 +85,7 @@ export default function JoinWorkspaceFlow() {
       onSuccess: () => {
         if (tab === "invite") {
           triggerToast("Success! Welcome to the workspace.", "success");
-          navigate("/");
+          navigate("/login");
         } else {
           navigate("/request-pending");
         }

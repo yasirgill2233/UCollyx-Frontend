@@ -59,7 +59,7 @@ export default function Verify() {
     verifyMutation.mutate({ email, code: fullOtp }, {
       onSuccess: () => {
         triggerToast("Email verified successfully! Please login.", "success");
-        navigate("/");
+        navigate("/login");
       },
       onError: (err) => {
         triggerToast(err.response?.data?.message || "Invalid OTP", "error");

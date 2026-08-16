@@ -43,6 +43,7 @@ import AwaitingRole from "../pages/auth/AwaitingRole";
 import Unauthorized from "../pages/illustrations/Unauthorized";
 import Forbidden from "../pages/illustrations/Forbidden";
 import RoleAccessManager from "../pages/dashboards/orgadmin/RoleAccessManager";
+import LandingPage from "../components/layout/LandingPage";
 
 // const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
 
@@ -52,7 +53,8 @@ function AppRoutes() {
       <Routes>
         {/* --- PUBLIC / AUTH ROUTES --- */}
         <Route path="/">
-          <Route index element={<Login />} />
+          <Route index element={<LandingPage />} />
+          <Route path="login" element={<Login />} />
           <Route path="unauthorized" element={<Unauthorized />} />
           <Route path="forbidden" element={<Forbidden />} />
           <Route path="register" element={<Register />} />

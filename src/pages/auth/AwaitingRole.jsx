@@ -7,7 +7,7 @@ export default function AwaitingRole() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/");
+    navigate("/login");
   };
 
   return (

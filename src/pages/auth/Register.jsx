@@ -199,7 +199,7 @@ export default function Register() {
             <p className="text-xs text-gray-500 font-medium">
               Already have an account?{" "}
               <span
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/login")}
                 className="text-[#3b59ff] font-extrabold cursor-pointer hover:underline tracking-wide transition-all"
               >
                 Sign In
