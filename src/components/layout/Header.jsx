@@ -64,7 +64,7 @@ const Header = () => {
               {/* Circular Avatar using first letters of Full Name */}
               <div className="flex items-center gap-2.5 bg-gradient-to-r from-slate-900/90 to-slate-800/90 text-white p-1 pl-4 rounded-full border border-slate-700/60 shadow-lg shadow-slate-950/20 backdrop-blur-md transition-all duration-300 hover:border-slate-500 hover:shadow-slate-950/40 group">
                 {/* Role Label */}
-                <div className="text-[11px] font-black tracking-widest uppercase text-slate-200 group-hover:text-white transition-colors">
+                <div className="md:text-[11px] text-[8px] font-black tracking-widest uppercase text-slate-200 group-hover:text-white transition-colors">
                   {currentUser?.role
                     ? currentUser.role.split("_").join(" ")
                     : "USER"}
@@ -72,7 +72,7 @@ const Header = () => {
 
                 {/* Avatar Container with Active Outer Ring */}
                 <div className="relative flex items-center justify-center">
-                  <div className="relative w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-[2px] shadow-sm transition-transform duration-300 group-hover:scale-105">
+                  <div className="relative md:w-8 md:h-8 w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-[2px] shadow-sm transition-transform duration-300 group-hover:scale-105">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-xs uppercase overflow-hidden">
                       {currentUser?.avatar_url ? (
                         <img
