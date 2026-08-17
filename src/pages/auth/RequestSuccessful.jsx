@@ -17,19 +17,9 @@ export default function RequestSuccessful() {
 
   return (
     <div className="min-h-screen w-full flex bg-[#f8fafc] font-sans overflow-hidden">
-      
-      {/* LEFT SIDE PANEL: Spacious & High-Width Success Status Center */}
+    
       <div className="w-full lg:w-[55%] flex flex-col justify-between p-8 md:p-14 lg:p-20 bg-white relative z-10 overflow-y-auto">
-        
-        {/* Brand Header */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3b59ff] to-[#00f2fe] flex items-center justify-center font-black text-white shadow-lg text-sm">
-            U
-          </div>
-          <span className="text-xl font-black text-[#1e2238] tracking-wider">UCollyx</span>
-        </div>
 
-        {/* Dynamic Center Action Success Box */}
         <div className="w-full max-w-xl mx-auto my-auto py-10 animate-in fade-in zoom-in-95 duration-500 space-y-8">
           
           {/* Main Informative Block */}

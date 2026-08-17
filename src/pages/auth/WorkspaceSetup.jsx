@@ -124,13 +124,6 @@ export default function WorkspaceSetup() {
       
       <div className="w-full lg:w-[55%] flex flex-col justify-between p-8 md:p-14 lg:p-20 bg-white relative z-10 overflow-y-auto">
 
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#3b59ff] to-[#00f2fe] flex items-center justify-center font-black text-white shadow-lg text-sm">
-            U
-          </div>
-          <span className="text-xl font-black text-[#1e2238] tracking-wider">UCollyx</span>
-        </div>
-
         <div className="w-full max-w-xl mx-auto my-auto py-10">
           
           <div className="flex items-center gap-4 mb-10 text-xs font-bold uppercase tracking-widest text-gray-400">

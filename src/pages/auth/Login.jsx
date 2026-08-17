@@ -403,20 +403,13 @@ export default function Login() {
 
   return (
     <div className="w-full min-h-screen bg-white md:bg-[#f3f5fa] md:p-4 flex justify-center items-center font-sans relative overflow-x-hidden">
-      {/* Desktop Background Glow Effects */}
+
       <div className="hidden md:block absolute top-[-10%] left-[-10%] w-[550px] h-[550px] bg-gradient-to-tr from-[#3b59ff]/20 to-[#00f2fe]/30 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[6s]" />
       <div className="hidden md:block absolute bottom-[-10%] right-[-5%] w-[600px] h-[600px] bg-gradient-to-bl from-[#9d4edd]/20 to-[#00f2fe]/20 rounded-full blur-[120px] pointer-events-none animate-pulse duration-[8s]" />
       <div className="hidden md:block absolute top-[35%] left-[40%] w-[350px] h-[350px] bg-[#9d4edd]/15 rounded-full blur-[90px] pointer-events-none" />
-
-      {/* Main Container - Fullscreen on Mobile, Card on Desktop */}
       <div className="w-full min-h-screen md:min-h-0 md:max-w-[1050px] md:h-[720px] bg-white md:bg-white/70 md:backdrop-blur-2xl md:rounded-[32px] md:border md:border-white/60 md:shadow-[0_20px_50px_rgba(31,38,135,0.08)] overflow-hidden z-10 flex flex-col md:flex-row justify-between">
-        
-        {/* Left Side / Pure Mobile Edge-to-Edge Container */}
         <div className="w-full md:w-1/2 px-6 py-8 sm:p-10 md:p-14 flex flex-col justify-center min-h-screen md:min-h-0 relative bg-white md:bg-white/40">
-          
-          {/* Top Brand Logo & Graphic Area */}
           <div>
-            {/* Mobile Mascot/Illustration (Mobile Only) */}
             <div className="flex md:hidden justify-center my-4">
               <div className="rounded-3xl flex items-center justify-center relative">
                 <div className="rounded-2xl mb-4 flex items-center justify-center text-white font-black text-xl">
@@ -425,7 +418,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Welcome Title */}
             <div className="mb-6 md:mb-8 md:mt-6 text-center md:text-left">
               <h1 className="text-3xl md:text-4xl font-black text-[#1a1d2f] tracking-tight mb-2 flex items-center justify-center md:justify-start gap-2">
                 Welcome Back <Sparkles size={24} className="text-[#3b59ff]" />
@@ -435,14 +427,12 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Error Message */}
             {error && (
               <p className="mb-4 text-red-600 text-xs md:text-sm bg-red-50/80 px-4 py-3 rounded-xl border border-red-200 text-center md:text-left">
                 {error}
               </p>
             )}
 
-            {/* Form */}
             <form className="flex flex-col gap-4 md:gap-5" onSubmit={handleLogin}>
               <div>
                 <label className="text-[#565d7a] text-[11px] md:text-xs mb-1.5 block font-bold uppercase tracking-wider">
