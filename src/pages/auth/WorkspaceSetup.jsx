@@ -97,7 +97,7 @@ export default function WorkspaceSetup() {
 
   const handleSendInvites = () => {
     const validEmails = emails.filter((email) => email.trim() !== "");
-    if (validEmails.length === 0) return navigate(`/`);
+    if (validEmails.length === 0) return navigate(`/login`);
 
     const user = JSON.parse(localStorage.getItem("user"));
 
@@ -108,11 +108,11 @@ export default function WorkspaceSetup() {
     }, {
       onSuccess: () => {
         triggerToast("Invitations sent successfully!", "success");
-        navigate(`/`);
+        navigate(`/login`);
       },
       onError: (err) => {
         triggerToast(err.response?.data?.message || "Invites failed.", "error");
-        navigate(`/`); 
+        navigate(`/login`); 
       }
     });
   };
