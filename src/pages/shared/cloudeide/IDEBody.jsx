@@ -38,22 +38,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { FileTreeItem } from "./components/FileTreeItem";
 import API from "../../../api/axios";
+import { VibeEditorPanel } from "./VibeEditorPanel";
 
-const getAISuggestion = async (codeSnippet) => {
-  try {
-    const res = await axios.post("http://localhost:11434/api/generate", {
-      model: "deepseek-coder:1.3b",
-      // model: "codellama:7b",
-      prompt: `Instruction: Provide ONLY the code completion. No explanations, no markdown, no greetings. only code suggestion
-      Context: \n ${codeSnippet}`,
-      stream: false,
-    });
-    return res.data.response;
-  } catch (error) {
-    console.error("Ollama connection error:", error);
-    return "";
-  }
-};
 
 const IDEBody = () => {
   const location = useLocation();
@@ -86,14 +72,79 @@ const IDEBody = () => {
   const [isBrowsedProject, setIsBrowsedProject] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  // const [terminals, setTerminals] = useState([
-  //   {
-  //     id: crypto.randomUUID(),
-  //     title: "bash",
-  //   },
-  // ]);
+  // const [activeCode, setActiveCode] = useState("// Your active editor code here");
+  // const [fileTree, setFileTree] = useState(["src/App.jsx", "src/components/Header.jsx"]);
+  // const [isVibeOpen, setIsVibeOpen] = useState(true); // Panel toggle control
+  // const [isSaving, setIsSaving] = useState(false);
 
-  // const [activeTerminal, setActiveTerminal] = useState(terminals[0].id);
+  // // 🚀 Fixed Auto-Clean, Monaco Model Sync & Disk Save Handler
+  // const handleApplyCode = async (generatedCode) => {
+  //   if (!activeFilePath || !activeTab) {
+  //     toast.error("Pehle koi file editor mein open karein!");
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsSaving(true);
+
+  //     // 1. Markdown code blocks (```jsx ... ```) extract & clean
+  //     const cleanedCode = generatedCode.includes("```")
+  //       ? generatedCode.replace(/```[\w]*\n([\s\S]*?)```/g, "$1").trim()
+  //       : generatedCode.trim();
+
+  //     // 2. Editor local state & fileContents state sync
+  //     setActiveCode(cleanedCode);
+  //     setFileContents((prev) => ({
+  //       ...prev,
+  //       [activeTab]: cleanedCode,
+  //     }));
+
+  //     // 3. 🎯 CRITICAL: Direct Monaco Editor Model Sync (Real-time UI update)
+  //     if (editorRef.current) {
+  //       const editor = editorRef.current;
+  //       const model = editor.getModel();
+
+  //       if (model) {
+  //         // Force execute edit on active Monaco model
+  //         const fullRange = model.getFullModelRange();
+  //         editor.executeEdits("vibe-ai-apply", [
+  //           {
+  //             range: fullRange,
+  //             text: cleanedCode,
+  //             forceMoveMarkers: true,
+  //           },
+  //         ]);
+  //       }
+  //     }
+
+  //     // 4. Collaborative Socket Emit (Real-time sync to all active workspace users)
+  //     if (socket && slug) {
+  //       socket.emit("code:update", {
+  //         projectId: slug,
+  //         filePath: activeFilePath,
+  //         content: cleanedCode,
+  //       });
+  //     }
+
+  //     // 5. Backend Disk File Save API Call
+  //     const response = await API.post("/vibefiles/save", {
+  //       filePath: activeFilePath,
+  //       content: cleanedCode,
+  //     });
+
+  //     if (response.data?.success) {
+  //       toast.success("Code successfully applied & saved to disk!");
+  //       console.log("Saved on disk:", response.data.savedPath);
+  //     } else {
+  //       toast.success("Code editor mein apply ho gaya!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Auto Save Error:", error);
+  //     toast.error("Code UI par update hua lekin disk save fail ho gaya.");
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
 
   const modelDecorationsRef = useRef({});
 
@@ -108,7 +159,6 @@ const IDEBody = () => {
         `🚀 Triggering terminal init for: ${activeProjectId}, isBrowsed: ${isBrowsedProject}`,
       );
 
-      // Server ko metadata object bhej rahe hain taake switch catch kar sakay
       socket.emit("terminal:init", {
         projectId: activeProjectId,
         isBrowsed: isBrowsedProject,
@@ -1713,6 +1763,23 @@ const IDEBody = () => {
           </div>
         </div>
       )}
+
+      {/* {isSaving && (
+          <div className="absolute top-6 right-6 bg-indigo-600 text-xs px-3 py-1 rounded shadow-lg animate-pulse z-10">
+            💾 Saving changes to file...
+          </div>
+        )} */}
+
+      {/* {isVibeOpen && (
+        <div className="w-80 border-l border-slate-800 p-2 bg-slate-900">
+          <VibeEditorPanel
+            activeFilePath={activeFilePath}
+            activeCode={activeCode}
+            fileTree={fileTree}
+            onApplyCode={handleApplyCode}
+          />
+        </div>
+      )} */}
     </div>
   );
 };

@@ -454,7 +454,301 @@ const CommentsModal = ({ isOpen, onClose, issue }) => {
   );
 };
 
-// --- Main Console Dashboard Component ---
+// // --- Main Console Dashboard Component ---
+// const IssuesDashboard = () => {
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [severityFilter, setSeverityFilter] = useState("All");
+//   const [openMenuId, setOpenMenuId] = useState(null);
+//   const [selectedIssue, setSelectedIssue] = useState(null);
+//   const [commentIssue, setCommentIssue] = useState(null);
+
+//   // --- 1. REACT QUERY ASSIGNED LIVE FETCH ---
+//   const {
+//     data: issues = [],
+//     isLoading,
+//     isError,
+//   } = useAssignedIssues(severityFilter);
+//   const updateStatusMutation = useUpdateIssueStatus();
+
+//   // --- 2. CLIENT-SIDE LIVE TEXT FILTERS ---
+//   // --- CLIENT-SIDE LIVE SEARCH & SEVERITY FILTERS ---
+//   const filteredIssues = useMemo(() => {
+//     if (!Array.isArray(issues)) return [];
+
+//     return issues.filter((issue) => {
+//       // 1. Search Filter Logic
+//       const titleText = issue?.title || "";
+//       const matchesSearch = titleText
+//         .toLowerCase()
+//         .includes(searchTerm.toLowerCase());
+
+//       // 2. Frontend Severity Filter Logic 🔥
+//       const bugSeverity = (issue?.severity || "").toUpperCase();
+//       const matchesSeverity =
+//         severityFilter === "All" ||
+//         bugSeverity === severityFilter.toUpperCase();
+
+//       // Dono conditions true hongi to hi record show hoga
+//       return matchesSearch && matchesSeverity;
+//     });
+//   }, [searchTerm, severityFilter, issues]);
+
+//   const handleInlineStatusUpdate = (issueId, nextStatus) => {
+//     updateStatusMutation.mutate(
+//       {
+//         issueId,
+//         status: nextStatus,
+//         note: "Inline dashboard update status applied.",
+//       },
+//       { onSuccess: () => setOpenMenuId(null) },
+//     );
+//   };
+
+//   if (isLoading) {
+//     return (
+//       <div className="flex justify-center items-center min-h-screen bg-[#F8FAFC]">
+//         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="p-8 md:p-12 bg-[#F8FAFC] font-sans min-h-screen">
+//       <div className="mx-auto">
+//         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+//           <div>
+//             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+//               Project Health Console
+//             </h1>
+//             <p className="text-slate-500 font-bold text-sm mt-1">
+//               Issues explicitly assigned for your review and resolution
+//               pipelines.
+//             </p>
+//           </div>
+
+//           <div className="flex flex-wrap gap-4 w-full md:w-auto">
+//             <div className="relative flex-1 md:w-80">
+//               <Search
+//                 size={18}
+//                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+//               />
+//               <input
+//                 type="text"
+//                 placeholder="Filter by issue title..."
+//                 className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm font-bold outline-none focus:ring-4 ring-blue-500/5 focus:border-blue-500 transition-all shadow-sm"
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//               />
+//             </div>
+
+//             <select
+//               value={severityFilter}
+//               className="px-6 py-3 bg-white border border-slate-200 rounded-md text-xs font-black text-slate-600 outline-none cursor-pointer hover:border-slate-300 shadow-sm"
+//               onChange={(e) => setSeverityFilter(e.target.value)}
+//             >
+//               <option value="All">All Severity</option>
+//               <option value="Critical">Critical</option>
+//               <option value="High">High</option>
+//               <option value="Medium">Medium</option>
+//               <option value="Low">Low</option>
+//             </select>
+//           </div>
+//         </div>
+
+//         {/* Issues Rendering Table Layout */}
+//         <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
+//           <div className="overflow-x-auto">
+//             <table className="w-full text-left border-collapse">
+//               <thead>
+//                 <tr className="bg-slate-50/50 border-b border-slate-100">
+//                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+//                     Severity
+//                   </th>
+//                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+//                     Assigned by
+//                   </th>
+//                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+//                     Issue Details
+//                   </th>
+//                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+//                     Status
+//                   </th>
+//                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">
+//                     Actions
+//                   </th>
+//                 </tr>
+//               </thead>
+//               <tbody className="divide-y divide-slate-50">
+//                 {filteredIssues.length > 0 ? (
+//                   filteredIssues.map((issue) => (
+//                     <tr
+//                       key={issue.id}
+//                       className="hover:bg-slate-50/80 transition-all group"
+//                     >
+//                       <td className="px-8 py-6">
+//                         <span
+//                           className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest border shadow-sm inline-block ${
+//                             (issue.severity || "").toUpperCase() === "CRITICAL"
+//                               ? "bg-red-50 text-red-600 border-red-100"
+//                               : "bg-white text-slate-500 border-slate-200"
+//                           }`}
+//                         >
+//                           {issue.severity}
+//                         </span>
+//                       </td>
+
+//                       <td className="px-8 py-6 max-w-md">
+//                         <div className="flex gap-2  items-center">
+//                         <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
+//                           {issue.reporter?.avatar_url ? (
+//                             <img
+//                               src={
+//                                 issue.reporter?.avatar_url
+//                               }
+//                               alt="Avatar"
+//                               crossOrigin="anonymous"
+//                               className="w-full h-full object-cover"
+//                             />
+//                           ) : issue.reporter.full_name ? (
+//                             issue.reporter.full_name[0]
+//                           ) : (
+//                             "U"
+//                           )}
+//                         </div>
+//                         <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
+//                           {issue.reporter.full_name}
+//                         </p>
+//                         </div>
+//                       </td>
+
+//                       <td className="px-8 py-6 max-w-md">
+//                         <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
+//                           {issue.title}
+//                         </p>
+//                         <div className="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-tight">
+//                           <span>ID: #{issue.id}</span>
+//                           <span className="w-1 h-1 bg-slate-300 rounded-full" />
+//                           <span>
+//                             {issue.created_at
+//                               ? new Date(issue.created_at).toLocaleDateString()
+//                               : "Recently"}
+//                           </span>
+//                         </div>
+//                       </td>
+
+//                       <td className="px-8 py-6">
+//                         <div
+//                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold tracking-tight ${
+//                             issue.retest_status === "Failed"
+//                               ? "bg-red-50 border-red-100 text-red-600"
+//                               : issue.status === "In Progress"
+//                                 ? "bg-blue-50 border-blue-100 text-blue-600"
+//                                 : issue.status === "Acknowledged"
+//                                   ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+//                                   : "bg-slate-50 border-slate-100 text-slate-500"
+//                           }`}
+//                         >
+//                           <span
+//                             className={`w-1.5 h-1.5 rounded-full ${
+//                               issue.retest_status === "Failed"
+//                                 ? "bg-red-500"
+//                                 : issue.status === "In Progress"
+//                                   ? "bg-blue-500"
+//                                   : issue.status === "Acknowledged"
+//                                     ? "bg-emerald-500"
+//                                     : "bg-slate-300"
+//                             }`}
+//                           />
+//                           {issue.retest_status === "Failed"
+//                             ? issue.retest_status
+//                             : issue.status}
+//                         </div>
+//                       </td>
+
+//                       <td className="px-8 py-6 text-center">
+//                         <div className="flex items-center justify-center gap-3">
+//                           <button
+//                             onClick={() => setSelectedIssue(issue)}
+//                             className="px-5 py-2 bg-blue-600 text-white rounded-md text-[11px] font-bold hover:bg-blue-700 shadow-md transition-all"
+//                           >
+//                             View
+//                           </button>
+//                           <button
+//                             onClick={() => setCommentIssue(issue)}
+//                             className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md border border-transparent transition-all"
+//                           >
+//                             <MessageSquare size={16} />
+//                           </button>
+
+//                           <div className="relative">
+//                             <button
+//                               onClick={() =>
+//                                 setOpenMenuId(
+//                                   openMenuId === issue.id ? null : issue.id,
+//                                 )
+//                               }
+//                               className="p-2.5 rounded-md text-slate-400 hover:text-slate-600"
+//                             >
+//                               <MoreVertical size={18} />
+//                             </button>
+//                             {openMenuId === issue.id && (
+//                               <div className="absolute right-8 bottom-0 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
+                               
+//                                 {[
+//                                   "Acknowledged",
+//                                   "In Progress",
+//                                   "Ready for QA",
+//                                 ].map((st) => (
+//                                   <button
+//                                     key={st}
+//                                     onClick={() =>
+//                                       handleInlineStatusUpdate(issue.id, st)
+//                                     }
+//                                     className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+//                                   >
+//                                     {st}
+//                                   </button>
+//                                 ))}
+//                               </div>
+//                             )}
+//                           </div>
+//                         </div>
+//                       </td>
+//                     </tr>
+//                   ))
+//                 ) : (
+//                   <tr>
+//                     <td
+//                       colSpan="5"
+//                       className="px-8 py-20 text-center text-slate-400 text-xs font-bold uppercase tracking-wider"
+//                     >
+//                       No issues matched requirements.
+//                     </td>
+//                   </tr>
+//                 )}
+//               </tbody>
+//             </table>
+//           </div>
+//         </div>
+//       </div>
+
+//       {selectedIssue && (
+//         <IssueDetailModal
+//           isOpen={!!selectedIssue}
+//           onClose={() => setSelectedIssue(null)}
+//           issue={selectedIssue}
+//         />
+//       )}
+//       {commentIssue && (
+//         <CommentsModal
+//           isOpen={!!commentIssue}
+//           onClose={() => setCommentIssue(null)}
+//           issue={commentIssue}
+//         />
+//       )}
+//     </div>
+//   );
+// };
+
 const IssuesDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [severityFilter, setSeverityFilter] = useState("All");
@@ -500,7 +794,7 @@ const IssuesDashboard = () => {
         status: nextStatus,
         note: "Inline dashboard update status applied.",
       },
-      { onSuccess: () => setOpenMenuId(null) },
+      { onSuccess: () => setOpenMenuId(null) }
     );
   };
 
@@ -513,20 +807,20 @@ const IssuesDashboard = () => {
   }
 
   return (
-    <div className="p-8 md:p-12 bg-[#F8FAFC] font-sans min-h-screen">
+    <div className="p-4 sm:p-8 md:p-12 bg-[#F8FAFC] font-sans min-h-screen">
       <div className="mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-12">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Project Health Console
             </h1>
-            <p className="text-slate-500 font-bold text-sm mt-1">
+            <p className="text-slate-500 font-bold text-xs sm:text-sm mt-1">
               Issues explicitly assigned for your review and resolution
               pipelines.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
             <div className="relative flex-1 md:w-80">
               <Search
                 size={18}
@@ -536,6 +830,7 @@ const IssuesDashboard = () => {
                 type="text"
                 placeholder="Filter by issue title..."
                 className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-md text-sm font-bold outline-none focus:ring-4 ring-blue-500/5 focus:border-blue-500 transition-all shadow-sm"
+                value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
@@ -554,8 +849,155 @@ const IssuesDashboard = () => {
           </div>
         </div>
 
-        {/* Issues Rendering Table Layout */}
-        <div className="bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
+        {/* 📱 MOBILE VIEW: Cards Layout (< 768px) */}
+        <div className="block md:hidden space-y-4">
+          {filteredIssues.length > 0 ? (
+            filteredIssues.map((issue) => {
+              const reporterName = issue?.reporter?.full_name || "Unknown User";
+              const avatarUrl = issue?.reporter?.avatar_url;
+
+              return (
+                <div
+                  key={issue.id}
+                  className="bg-white rounded-md border border-slate-100 p-5 shadow-sm space-y-4"
+                >
+                  {/* Top Badges: Severity & Status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest border shadow-sm inline-block ${
+                        (issue.severity || "").toUpperCase() === "CRITICAL"
+                          ? "bg-red-50 text-red-600 border-red-100"
+                          : "bg-white text-slate-500 border-slate-200"
+                      }`}
+                    >
+                      {issue.severity || "Low"}
+                    </span>
+
+                    <div
+                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-bold tracking-tight ${
+                        issue.retest_status === "Failed"
+                          ? "bg-red-50 border-red-100 text-red-600"
+                          : issue.status === "In Progress"
+                          ? "bg-blue-50 border-blue-100 text-blue-600"
+                          : issue.status === "Acknowledged"
+                          ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                          : "bg-slate-50 border-slate-100 text-slate-500"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          issue.retest_status === "Failed"
+                            ? "bg-red-500"
+                            : issue.status === "In Progress"
+                            ? "bg-blue-500"
+                            : issue.status === "Acknowledged"
+                            ? "bg-emerald-500"
+                            : "bg-slate-300"
+                        }`}
+                      />
+                      {issue.retest_status === "Failed"
+                        ? issue.retest_status
+                        : issue.status}
+                    </div>
+                  </div>
+
+                  {/* Title & Metadata */}
+                  <div>
+                    <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
+                      {issue.title}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400 uppercase tracking-tight">
+                      <span>ID: #{issue.id}</span>
+                      <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                      <span>
+                        {issue.created_at
+                          ? new Date(issue.created_at).toLocaleDateString()
+                          : "Recently"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  {/* Reporter Info & Action Buttons */}
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <div className="flex gap-2 items-center min-w-0">
+                      <div className="rounded-full border border-blue-100 bg-blue-600 w-9 h-9 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden shrink-0">
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt="Avatar"
+                            crossOrigin="anonymous"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          reporterName.charAt(0)
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-800 truncate">
+                        {reporterName}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => setSelectedIssue(issue)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md text-[11px] font-bold hover:bg-blue-700 shadow-md transition-all"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => setCommentIssue(issue)}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md border border-slate-100 transition-all"
+                      >
+                        <MessageSquare size={16} />
+                      </button>
+
+                      <div className="relative">
+                        <button
+                          onClick={() =>
+                            setOpenMenuId(
+                              openMenuId === issue.id ? null : issue.id
+                            )
+                          }
+                          className="p-2 rounded-md text-slate-400 hover:text-slate-600 border border-slate-100"
+                        >
+                          <MoreVertical size={18} />
+                        </button>
+                        {openMenuId === issue.id && (
+                          <div className="absolute right-0 bottom-10 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
+                            {[
+                              "Acknowledged",
+                              "In Progress",
+                              "Ready for QA",
+                            ].map((st) => (
+                              <button
+                                key={st}
+                                onClick={() =>
+                                  handleInlineStatusUpdate(issue.id, st)
+                                }
+                                className="w-full text-left px-4 py-2 text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              >
+                                {st}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="bg-white rounded-md border border-slate-100 p-12 text-center text-slate-400 text-xs font-bold uppercase tracking-wider">
+              No issues matched requirements.
+            </div>
+          )}
+        </div>
+
+        {/* 💻 DESKTOP VIEW: Table Layout (≥ 768px) */}
+        <div className="hidden md:block bg-white rounded-md border border-slate-100 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -597,26 +1039,24 @@ const IssuesDashboard = () => {
                       </td>
 
                       <td className="px-8 py-6 max-w-md">
-                        <div className="flex gap-2  items-center">
-                        <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden">
-                          {issue.reporter?.avatar_url ? (
-                            <img
-                              src={
-                                issue.reporter?.avatar_url
-                              }
-                              alt="Avatar"
-                              crossOrigin="anonymous"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : issue.reporter.full_name ? (
-                            issue.reporter.full_name[0]
-                          ) : (
-                            "U"
-                          )}
-                        </div>
-                        <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
-                          {issue.reporter.full_name}
-                        </p>
+                        <div className="flex gap-2 items-center">
+                          <div className="rounded-full border border-blue-100 bg-blue-600 w-10 h-10 flex items-center justify-center text-white font-black text-xs shadow-sm uppercase overflow-hidden shrink-0">
+                            {issue.reporter?.avatar_url ? (
+                              <img
+                                src={issue.reporter?.avatar_url}
+                                alt="Avatar"
+                                crossOrigin="anonymous"
+                                className="w-full h-full object-cover"
+                              />
+                            ) : issue.reporter?.full_name ? (
+                              issue.reporter.full_name[0]
+                            ) : (
+                              "U"
+                            )}
+                          </div>
+                          <p className="text-[14px] font-bold text-slate-800 leading-tight mb-1">
+                            {issue.reporter?.full_name || "Unknown"}
+                          </p>
                         </div>
                       </td>
 
@@ -641,10 +1081,10 @@ const IssuesDashboard = () => {
                             issue.retest_status === "Failed"
                               ? "bg-red-50 border-red-100 text-red-600"
                               : issue.status === "In Progress"
-                                ? "bg-blue-50 border-blue-100 text-blue-600"
-                                : issue.status === "Acknowledged"
-                                  ? "bg-emerald-50 border-emerald-100 text-emerald-600"
-                                  : "bg-slate-50 border-slate-100 text-slate-500"
+                              ? "bg-blue-50 border-blue-100 text-blue-600"
+                              : issue.status === "Acknowledged"
+                              ? "bg-emerald-50 border-emerald-100 text-emerald-600"
+                              : "bg-slate-50 border-slate-100 text-slate-500"
                           }`}
                         >
                           <span
@@ -652,10 +1092,10 @@ const IssuesDashboard = () => {
                               issue.retest_status === "Failed"
                                 ? "bg-red-500"
                                 : issue.status === "In Progress"
-                                  ? "bg-blue-500"
-                                  : issue.status === "Acknowledged"
-                                    ? "bg-emerald-500"
-                                    : "bg-slate-300"
+                                ? "bg-blue-500"
+                                : issue.status === "Acknowledged"
+                                ? "bg-emerald-500"
+                                : "bg-slate-300"
                             }`}
                           />
                           {issue.retest_status === "Failed"
@@ -683,7 +1123,7 @@ const IssuesDashboard = () => {
                             <button
                               onClick={() =>
                                 setOpenMenuId(
-                                  openMenuId === issue.id ? null : issue.id,
+                                  openMenuId === issue.id ? null : issue.id
                                 )
                               }
                               className="p-2.5 rounded-md text-slate-400 hover:text-slate-600"
@@ -692,7 +1132,6 @@ const IssuesDashboard = () => {
                             </button>
                             {openMenuId === issue.id && (
                               <div className="absolute right-8 bottom-0 mt-3 w-48 bg-white border border-slate-100 rounded-md shadow-xl z-[50] py-2">
-                               
                                 {[
                                   "Acknowledged",
                                   "In Progress",
@@ -748,6 +1187,7 @@ const IssuesDashboard = () => {
     </div>
   );
 };
+
 
 const InfoRow = ({ label, value, valueClass = "text-slate-800" }) => (
   <div className="flex justify-between items-center text-xs border-b border-slate-50 pb-3 last:border-0 last:pb-0">

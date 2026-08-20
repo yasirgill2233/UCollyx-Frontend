@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskService } from "../../../../api/services/taskService";
 import {
   MessageSquare,
-  Video,
   Bug,
   BookText,
   ClipboardList,
   FolderKanban,
   ChevronDown,
+  Layers,
 } from "lucide-react";
 import TaskModal from "./TaskModal";
 import ChatModal from "./ChatModal";
@@ -17,8 +17,6 @@ import MeetingModal from "./MeetingModal";
 import { useMyProjects } from "../../../../hooks/useProjects";
 import socket from "../../../../context/SocketContext";
 import { useSearchParams } from "react-router-dom";
-import toast from "react-hot-toast";
-import { triggerToast } from "../../../../utils/toastHelper";
 
 const KanbanBoard = () => {
   const queryClient = useQueryClient();
@@ -28,12 +26,14 @@ const KanbanBoard = () => {
   const [activeMeetingTask, setActiveMeetingTask] = useState(null);
 
   const [searchParams] = useSearchParams();
-  const queryProjectId = searchParams.get('projectId');
-  const queryProjectName = searchParams.get('projectName');
-  const queryTaskId = searchParams.get('taskId');
+  const queryProjectId = searchParams.get("projectId");
+  const queryProjectName = searchParams.get("projectName");
 
   const [projectId, setProjectId] = useState(null);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  
+  // Mobile Swimlane active column tab state
+  const [activeMobileColumn, setActiveMobileColumn] = useState("todo");
 
   const { data: myProjects } = useMyProjects();
   const projects = myProjects?.data || [];
@@ -52,8 +52,6 @@ const KanbanBoard = () => {
     enabled: !!projectId,
   });
 
-
-  // Drag optimization hook pipeline matrix
   const updateStatusMutation = useMutation({
     mutationFn: (vars) =>
       console.log("Updating Task Position with:", vars.id, vars.data) ||
@@ -78,7 +76,6 @@ const KanbanBoard = () => {
         const updatedColumns = { ...previousBoard.columns };
         const sourceIds = Array.from(updatedColumns[sourceCol]?.taskIds || []);
         
-        // 🚨 FIXED: Splice index calculation corrected from 'projectId' down to static index parameter count '1'
         sourceIds.splice(sourceIndex, 1);
 
         if (sourceCol === destCol) {
@@ -127,7 +124,11 @@ const KanbanBoard = () => {
   const onDragEnd = (result) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
-    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    )
+      return;
 
     updateStatusMutation.mutate({
       id: draggableId,
@@ -142,80 +143,133 @@ const KanbanBoard = () => {
   const tasks = boardData?.tasks || {};
   const columns = boardData?.columns || {};
 
-  // Find currently loaded workspace details cleanly
   const activeProjectObject = projects?.find((p) => p.id === projectId);
-  const currentDisplayedName = activeProjectObject?.name || queryProjectName || "Select Project";
+  const currentDisplayedName =
+    activeProjectObject?.name || queryProjectName || "Select Project";
+
+  const getColumnTitle = (id) => {
+    switch (id) {
+      case "todo":
+        return "To Do";
+      case "inprogress":
+        return "In Progress";
+      case "review":
+        return "Review";
+      case "done":
+        return "Done";
+      default:
+        return id;
+    }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 gap-3">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <div className="w-9 h-9 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
         <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
-          Loading Developer Board...
+          Loading Workspace Board...
         </p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-white min-h-screen font-sans">
-      {/* Header Context Bar */}
-  
-
-      {/* Dynamic Dropdown Toolbar Section */}
-      <div className="mb-6 flex justify-between items-center">
-        <div className="relative">
+    <div className="p-4 sm:p-6 md:p-8 bg-[#F8FAFC] min-h-screen font-sans">
+      {/* Upper Navigation & Project Filter Bar */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+        <div className="relative w-full sm:w-auto">
           <button
             onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-            className="flex items-center gap-2.5 bg-white border border-slate-200 rounded-md px-4 py-2.5 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors z-50 relative cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-between gap-3 bg-white border border-slate-200 rounded-lg px-4 py-2.5 shadow-sm text-slate-800 hover:bg-slate-50 transition-all text-left"
           >
-            <FolderKanban size={18} className="text-blue-600" />
-            <span className="font-bold text-sm">
-              {currentDisplayedName}
-            </span>
-            <ChevronDown size={14} className="text-slate-400 ml-1" />
+            <div className="flex items-center gap-2.5">
+              <FolderKanban size={18} className="text-blue-600 shrink-0" />
+              <span className="font-extrabold text-sm truncate max-w-[200px]">
+                {currentDisplayedName}
+              </span>
+            </div>
+            <ChevronDown size={14} className="text-slate-400 shrink-0" />
           </button>
 
-          {/* Fully Unlocked Interactive Dropdown Layout */}
           {showProjectDropdown && (
-            <div className="absolute left-0 mt-2 w-64 bg-white border border-slate-100 rounded-md shadow-sm z-[200] py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-3 py-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+            <div className="absolute left-0 mt-2 w-full sm:w-72 bg-white border border-slate-100 rounded-xl shadow-xl z-[200] py-2 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-wider">
                 Switch Workspace
               </div>
-              {projects.length > 0 ? (
-                projects.map((project) => (
-                  <button
-                    key={project.id}
-                    onClick={() => {
-                      setProjectId(project.id); // Allows dynamic context adjustments anytime
-                      setShowProjectDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 text-sm font-semibold flex items-center justify-between transition-colors ${project.id === projectId ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-600 hover:bg-slate-50"}`}
-                  >
-                    {project.name}
-                    {project.id === projectId && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                    )}
-                  </button>
-                ))
-              ) : (
-                <div className="text-[12px] font-black text-slate-400 flex justify-center items-center py-2">
-                  No Project Assigned
-                </div>
-              )}
+              <div className="max-h-60 overflow-y-auto">
+                {projects.length > 0 ? (
+                  projects.map((project) => (
+                    <button
+                      key={project.id}
+                      onClick={() => {
+                        setProjectId(project.id);
+                        setShowProjectDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2.5 text-xs font-bold flex items-center justify-between transition-colors ${
+                        project.id === projectId
+                          ? "bg-blue-50/80 text-blue-600"
+                          : "text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span className="truncate">{project.name}</span>
+                      {project.id === projectId && (
+                        <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                      )}
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-xs font-bold text-slate-400 text-center py-3">
+                    No Projects Assigned
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        <div className="text-xs text-slate-400 font-medium">
-          Active Project ID:{" "}
-          <span className="font-bold text-slate-600">#{projectId}</span>
+        <div className="flex items-center gap-2 self-end sm:self-center text-xs text-slate-400 font-semibold bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+          <Layers size={14} className="text-slate-400" />
+          <span>
+            Workspace ID: <strong className="text-slate-700">#{projectId || "N/A"}</strong>
+          </span>
         </div>
       </div>
 
-      {/* Kanban Board Board Grids */}
+      {/* 📱 MOBILE NAVIGATION TABS (< 768px) */}
+      <div className="flex md:hidden overflow-x-auto gap-2 mb-4 pb-1 scrollbar-none">
+        {columnsOrder.map((columnId) => {
+          const count = (columns[columnId]?.taskIds || []).filter(
+            (id) => tasks[id] && tasks[id].type !== "epic"
+          ).length;
+
+          return (
+            <button
+              key={columnId}
+              onClick={() => setActiveMobileColumn(columnId)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shrink-0 transition-all ${
+                activeMobileColumn === columnId
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                  : "bg-white text-slate-500 border border-slate-200"
+              }`}
+            >
+              <span>{getColumnTitle(columnId)}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] ${
+                  activeMobileColumn === columnId
+                    ? "bg-white/20 text-white"
+                    : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Dynamic Kanban Grid Container */}
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {columnsOrder.map((columnId) => {
             const currentColumn = columns[columnId] || {
               id: columnId,
@@ -226,25 +280,23 @@ const KanbanBoard = () => {
               .map((id) => tasks[id])
               .filter((task) => task && task.type !== "epic");
 
-            const columnTitle =
-              columnId === "todo"
-                ? "To Do"
-                : columnId === "inprogress"
-                  ? "In Progress"
-                  : columnId === "review"
-                    ? "Review"
-                    : "Done";
+            const columnTitle = getColumnTitle(columnId);
 
             return (
               <div
                 key={columnId}
-                className="bg-slate-50/70 rounded-sm p-4 flex flex-col min-h-[75vh] border border-slate-200"
+                className={`bg-slate-100/60 rounded-2xl p-4 flex flex-col min-h-[70vh] border border-slate-200/70 transition-all ${
+                  activeMobileColumn !== columnId ? "hidden md:flex" : "flex"
+                }`}
               >
-                <div className="flex justify-between items-center mb-5 px-1">
-                  <h3 className="font-black text-slate-700 text-xs tracking-wider uppercase">
-                    {columnTitle}
-                  </h3>
-                  <span className="bg-white border border-slate-200 text-slate-500 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
+                <div className="flex justify-between items-center mb-4 px-1">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <h3 className="font-black text-slate-800 text-xs tracking-wider uppercase">
+                      {columnTitle}
+                    </h3>
+                  </div>
+                  <span className="bg-white border border-slate-200 text-slate-600 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-sm">
                     {columnTasks.length}
                   </span>
                 </div>
@@ -254,7 +306,9 @@ const KanbanBoard = () => {
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className={`space-y-4 flex-1 transition-colors rounded-xl min-h-[150px] ${snapshot.isDraggingOver ? "bg-indigo-50/30" : ""}`}
+                      className={`space-y-3.5 flex-1 transition-colors rounded-xl min-h-[150px] ${
+                        snapshot.isDraggingOver ? "bg-blue-50/50" : ""
+                      }`}
                     >
                       {columnTasks.map((task, index) => (
                         <DraggableCard
@@ -276,7 +330,7 @@ const KanbanBoard = () => {
         </div>
       </DragDropContext>
 
-      {/* Operations Trigger Modals */}
+      {/* Workspace Interactive Modals */}
       {isModalOpen && (
         <TaskModal task={selectedTask} onClose={() => setIsModalOpen(false)} />
       )}
@@ -305,28 +359,25 @@ const DraggableCard = ({
 }) => {
   const [searchParams] = useSearchParams();
   const [isHighlighted, setIsHighlighted] = useState(false);
-  const cardRef = useRef(null); // 🎯 Card ko track karne keliye ref lagayi
+  const cardRef = useRef(null);
 
   const totalSubtasks = task.subtasks?.length || 0;
   const completedSubtasks =
     task.subtasks?.filter((sub) => sub.is_done).length || 0;
 
-  // 🎯 URL Parameter checking + Smooth Auto Scroll + Premium Glow Timer
   useEffect(() => {
     const highlightId = searchParams.get("highlightTaskId");
-    
+
     if (highlightId && String(task.id) === String(highlightId)) {
       setIsHighlighted(true);
 
-      // 🔥 Premium Feature: Agar card screen se baahir neeche chhupa hai, to scroll karke samne le aaye
       setTimeout(() => {
         cardRef.current?.scrollIntoView({
           behavior: "smooth",
-          block: "center", // Card screen ke bilkul center mein aakar rukega
+          block: "center",
         });
-      }, 300); // Halkay se delay ke sath taake board layout pehle render ho jaye
+      }, 300);
 
-      // 3 seconds baad glow smoothly khatam ho jaye
       const timer = setTimeout(() => {
         setIsHighlighted(false);
       }, 3000);
@@ -339,7 +390,6 @@ const DraggableCard = ({
     <Draggable draggableId={String(task.id)} index={index}>
       {(provided, snapshot) => (
         <div
-          // 🎯 provided.innerRef aur cardRef ko aapas mein merge kiya HTML element attach karne keliye
           ref={(node) => {
             provided.innerRef(node);
             cardRef.current = node;
@@ -347,64 +397,73 @@ const DraggableCard = ({
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onOpen}
-          // 🎯 Dynamic Active Style Trigger Logic:
-          className={`p-5 rounded-2xl border transition-all duration-500 select-none group cursor-pointer ${
+          className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 select-none group cursor-pointer ${
             snapshot.isDragging
-              ? "border-indigo-500 shadow-2xl rotate-2 z-50 bg-white"
+              ? "border-blue-500 shadow-2xl rotate-2 z-50 bg-white"
               : isHighlighted
-              ? "border-blue-500 ring-4 ring-blue-500/20 shadow-2xl scale-[1.03] bg-gradient-to-br from-white to-blue-50/40 z-40" // 🔥 UCollyx Special Premium Active Glow
-              : "bg-white border-slate-100 shadow-sm hover:border-indigo-400 hover:shadow-md"
+              ? "border-blue-500 ring-4 ring-blue-500/20 shadow-xl scale-[1.02] bg-gradient-to-br from-white to-blue-50/50 z-40"
+              : "bg-white border-slate-200/80 shadow-sm hover:border-blue-400 hover:shadow-md"
           }`}
         >
-          <div className="flex justify-between items-start mb-3">
-            <span className={`text-[10px] font-black transition-colors uppercase tracking-widest ${
-              isHighlighted ? "text-blue-500" : "text-slate-300 group-hover:text-indigo-400"
-            }`}>
+          <div className="flex justify-between items-start mb-2.5">
+            <span
+              className={`text-[10px] font-black transition-colors uppercase tracking-widest ${
+                isHighlighted
+                  ? "text-blue-600"
+                  : "text-slate-400 group-hover:text-blue-600"
+              }`}
+            >
               #{task.id}
             </span>
-            <div className={`p-1.5 rounded-xl transition-colors ${
-              isHighlighted ? "bg-blue-50" : "bg-slate-50 group-hover:bg-indigo-50"
-            }`}>
+            <div
+              className={`p-1.5 rounded-xl transition-colors ${
+                isHighlighted
+                  ? "bg-blue-100/60"
+                  : "bg-slate-100 group-hover:bg-blue-50"
+              }`}
+            >
               {task.type === "bug" ? (
                 <Bug size={14} className="text-red-500" />
               ) : task.type === "story" ? (
-                <BookText size={14} className="text-green-600" />
+                <BookText size={14} className="text-emerald-600" />
               ) : (
                 <ClipboardList size={14} className="text-blue-500" />
               )}
             </div>
           </div>
 
-          <p className="text-[14px] font-bold text-slate-700 leading-snug mb-3 group-hover:text-slate-900 transition-colors">
+          <p className="text-[13px] sm:text-[14px] font-bold text-slate-800 leading-snug mb-3 group-hover:text-blue-600 transition-colors line-clamp-2">
             {task.title}
           </p>
 
           {task.ParentTask && (
-            <div className="mb-4">
-              <span className="bg-pink-50 text-pink-600 text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-tight border border-pink-100/50">
+            <div className="mb-3">
+              <span className="bg-pink-50 text-pink-600 text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-tight border border-pink-100/60 inline-block truncate max-w-full">
                 EPIC : {task.ParentTask.title}
               </span>
             </div>
           )}
 
           {task.priority && (
-            <div className="flex items-center gap-1.5 mb-4">
+            <div className="flex items-center gap-1.5 mb-3">
               <div
-                className={`w-1.5 h-1.5 rounded-full ${task.priority === "High" ? "bg-orange-500" : "bg-blue-500"}`}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  task.priority === "High" ? "bg-red-500" : "bg-blue-500"
+                }`}
               />
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight">
                 Priority: {task.priority}
               </span>
             </div>
           )}
 
-          <div className="flex justify-between items-center pt-3 border-t border-slate-50">
+          <div className="flex justify-between items-center pt-3 border-t border-slate-100">
             <div className="flex -space-x-1.5">
               {(task.assignees || []).map((user, i) => (
                 <div
                   key={user.id || i}
                   title={user.full_name}
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-sm bg-indigo-600 text-white flex items-center justify-center text-[9px] font-black uppercase overflow-hidden shrink-0"
+                  className="w-6 h-6 rounded-full border-2 border-white shadow-sm bg-blue-600 text-white flex items-center justify-center text-[9px] font-black uppercase overflow-hidden shrink-0"
                 >
                   {user?.avatar_url ? (
                     <img
@@ -422,29 +481,20 @@ const DraggableCard = ({
               ))}
             </div>
 
-            <div className="flex items-center gap-3 text-slate-400 font-bold">
+            <div className="flex items-center gap-2.5 text-slate-400 font-bold">
               <span className="text-[10px] font-black text-slate-400">
                 {completedSubtasks}/{totalSubtasks}
               </span>
-              <div className="flex gap-1.5 pl-2 border-l border-slate-100">
+              <div className="flex gap-1 pl-2 border-l border-slate-200">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onChatClick();
                   }}
-                  className="hover:text-indigo-600 text-slate-300 transition-colors p-1"
+                  className="hover:text-blue-600 text-slate-400 transition-colors p-1"
                 >
                   <MessageSquare size={13} />
                 </button>
-                {/* <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMeetingClick();
-                  }}
-                  className="hover:text-red-500 text-slate-300 transition-colors p-1"
-                >
-                  <Video size={13} />
-                </button> */}
               </div>
             </div>
           </div>
