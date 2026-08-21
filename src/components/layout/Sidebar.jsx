@@ -210,7 +210,6 @@
 
 
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
@@ -225,11 +224,17 @@ const Sidebar = () => {
   const location = useLocation();
   const path = location.pathname;
 
-  // 📱 Mobile Floating Bubble States
+  // 📱 Mobile Edge-Docking Floating Trigger States
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 20, y: 150 }); // Default position (top-left)
+  const [dockEdge, setDockEdge] = useState("left"); // 'left' | 'right'
+  const [isDocked, setIsDocked] = useState(true); // Half-hide edge flag
+  const [positionY, setPositionY] = useState(150); // Dynamic vertical height in px
   const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef({ startX: 0, startY: 0, initialX: 0, initialY: 0 });
+
+  const isDraggingRef = useRef(false);
+  const dragStartYRef = useRef(0);
+  const initialYRef = useRef(150);
+  const hasMovedRef = useRef(false);
 
   // 🔄 Dynamic Links State
   const [filteredNavItems, setFilteredNavItems] = useState([]);
@@ -320,35 +325,48 @@ const Sidebar = () => {
     }
   }, [userRole, workspaceSlug]);
 
-  // 🖐️ Touch/Mouse Drag Logic for Floating Button
+  // 🖐️ Touch & Edge-Snap Mechanics
   const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    dragRef.current = {
-      startX: touch.clientX,
-      startY: touch.clientY,
-      initialX: position.x,
-      initialY: position.y,
-    };
-    setIsDragging(false);
+    isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    dragStartYRef.current = e.touches[0].clientY;
+    initialYRef.current = positionY;
+    setIsDragging(true);
+    setIsDocked(false); // Drag event chalne par complete circle emerge hoga
   };
 
   const handleTouchMove = (e) => {
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - dragRef.current.startX;
-    const deltaY = touch.clientY - dragRef.current.startY;
+    if (!isDraggingRef.current) return;
+    const deltaY = e.touches[0].clientY - dragStartYRef.current;
 
-    // Small threshold check to distinguish drag from tap click
-    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
-      setIsDragging(true);
-      setPosition({
-        x: Math.min(Math.max(10, dragRef.current.initialX + deltaX), window.innerWidth - 65),
-        y: Math.min(Math.max(10, dragRef.current.initialY + deltaY), window.innerHeight - 65),
-      });
+    if (Math.abs(deltaY) > 5) {
+      hasMovedRef.current = true;
     }
+
+    const newY = Math.max(30, Math.min(window.innerHeight - 90, initialYRef.current + deltaY));
+    setPositionY(newY);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    setIsDragging(false);
+
+    // X coordinate check karke auto Left vs Right snap decision
+    const touchX = e.changedTouches[0].clientX;
+    if (touchX < window.innerWidth / 2) {
+      setDockEdge("left");
+    } else {
+      setDockEdge("right");
+    }
+
+    // Touch releasing par auto half-hide lock activate hoga
+    setIsDocked(true);
   };
 
   const handleToggleMenu = () => {
-    if (!isDragging) {
+    if (!hasMovedRef.current) {
+      if (isDocked) setIsDocked(false);
       setIsOpen(!isOpen);
     }
   };
@@ -357,46 +375,61 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* 📱 MOBILE FLOATING ORBITAL MENU SYSTEM (< 768px Screens) */}
+      {/* 📱 MOBILE FLOATING DOCKED MENU SYSTEM (< 768px Screens) */}
       <div className="md:hidden">
         {/* Backdrop overlay */}
         {isOpen && (
           <div 
-            onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-40 transition-opacity duration-300 animate-in fade-in"
+            onClick={() => {
+              setIsOpen(false);
+              setIsDocked(true);
+            }}
+            className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs z-40 transition-opacity duration-300 animate-in fade-in"
           />
         )}
 
-        {/* Floating Bubble Container */}
+        {/* Floating Bubble Edge Container */}
         <div 
-          style={{ left: `${position.x}px`, top: `${position.y}px` }}
-          className="fixed z-50 touch-none select-none"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ top: `${positionY}px` }}
+          className={`fixed z-50 touch-none select-none transition-all ${
+            isDragging ? "duration-0 scale-105" : "duration-300 ease-out scale-100"
+          } ${dockEdge === "right" ? "right-0" : "left-0"} ${
+            isDocked && !isOpen
+              ? dockEdge === "right"
+                ? "translate-x-1/2 opacity-70 hover:opacity-100" // 50% Right Side Hidden
+                : "-translate-x-1/2 opacity-70 hover:opacity-100" // 50% Left Side Hidden
+              : "translate-x-0 opacity-100"
+          }`}
         >
-          {/* Main Moveable Trigger Button */}
+          {/* Main Moveable Hexagon Trigger Button */}
           <button
             onClick={handleToggleMenu}
-            className={`w-13 h-13 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 active:scale-90 border-2 border-white/40 ${
-              isOpen ? 'bg-slate-900 rotate-90 scale-110 shadow-slate-900/50' : 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 shadow-blue-500/40'
+            className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-300 active:scale-90 border-2 border-white/40 ${
+              isOpen 
+                ? 'bg-slate-900 rotate-90 scale-110 shadow-slate-900/50' 
+                : 'bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 shadow-blue-500/40'
             }`}
           >
             {isOpen ? (
-              <X size={22} className="text-white" />
+              <X size={20} className="text-white" />
             ) : (
-              <Hexagon size={24} className="animate-pulse" />
+              <Hexagon size={22} className="animate-pulse" />
             )}
           </button>
 
-          {/* Orbital Circular Menu Options */}
+          {/* Orbital Radial Menu Options */}
           {isOpen && (
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 pointer-events-none">
               {filteredNavItems.map((item, index) => {
                 const Icon = item.icon;
                 const totalItems = filteredNavItems.length;
-                // Calculate angle for circular arrangement
+
+                // Circular positioning math
                 const angle = (index * (360 / totalItems)) * (Math.PI / 180);
-                const radius = 75; // Distance of icons from center bubble
+                const radius = 80;
                 const x = Math.round(radius * Math.cos(angle));
                 const y = Math.round(radius * Math.sin(angle));
 
@@ -404,18 +437,21 @@ const Sidebar = () => {
                   <NavLink
                     key={index}
                     to={item.path}
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsDocked(true);
+                    }}
                     style={{
                       transform: `translate(${x}px, ${y}px)`,
                     }}
                     className={({ isActive }) => `
                       absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
                       w-11 h-11 rounded-full flex items-center justify-center 
-                      shadow-lg backdrop-blur-xl border border-white/40 pointer-events-auto
+                      shadow-xl backdrop-blur-xl border border-white/40 pointer-events-auto
                       transition-all duration-300 animate-in zoom-in-50
                       ${isActive 
                         ? 'bg-blue-600 text-white shadow-blue-500/40 scale-110' 
-                        : 'bg-white/90 text-slate-700 hover:bg-white active:scale-95'
+                        : 'bg-white/95 text-slate-700 hover:bg-white active:scale-95'
                       }
                     `}
                   >

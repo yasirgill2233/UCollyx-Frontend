@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import { Search, Bell, ChevronDown, LogOut, Key, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
-import ProfileModal from "./ProfileModal"; // Naya Profile Modal
-import ChangePasswordModal from "./ChangePasswordModal"; // Naya Change Password Modal
+import ProfileModal from "./ProfileModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Header = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
-  // 1. User state initialized directly from localStorage fallback
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -43,7 +41,6 @@ const Header = () => {
   return (
     <>
       <header className="h-16 border-b border-gray-200 flex items-center justify-between px-8 bg-white relative">
-        {/* Search Bar */}
         <div className="relative w-1/2 md:ml-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -54,23 +51,17 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-
-          {/* Profile Section with Dropdown Logic */}
           <div className="relative">
             <div
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-all"
             >
-              {/* Circular Avatar using first letters of Full Name */}
               <div className="flex items-center gap-2.5 bg-gradient-to-r from-slate-900/90 to-slate-800/90 text-white p-1 pl-4 rounded-full border border-slate-700/60 shadow-lg shadow-slate-950/20 backdrop-blur-md transition-all duration-300 hover:border-slate-500 hover:shadow-slate-950/40 group">
-                {/* Role Label */}
                 <div className="md:text-[11px] text-[8px] font-black tracking-widest uppercase text-slate-200 group-hover:text-white transition-colors">
                   {currentUser?.role
                     ? currentUser.role.split("_").join(" ")
                     : "USER"}
                 </div> 
-
-                {/* Avatar Container with Active Outer Ring */}
                 <div className="relative flex items-center justify-center">
                   <div className="relative md:w-8 md:h-8 w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-500 to-cyan-400 p-[2px] shadow-sm transition-transform duration-300 group-hover:scale-105">
                     <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-xs uppercase overflow-hidden">
@@ -90,8 +81,6 @@ const Header = () => {
                       )}
                     </div>
                   </div>
-
-                  {/* Online Status Dot indicator */}
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-slate-900 rounded-full shadow-sm"></span>
                 </div>
               </div>
@@ -99,8 +88,6 @@ const Header = () => {
                 className={`w-4 h-4 text-gray-400 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
               />
             </div>
-
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
               <>
                 <div
@@ -158,7 +145,6 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Profile Modal */}
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
@@ -166,7 +152,6 @@ const Header = () => {
         onUpdate={updateUserInfo}
       />
 
-      {/* Change Password Modal */}
       <ChangePasswordModal
         isOpen={isPasswordOpen}
         onClose={() => setIsPasswordOpen(false)}
