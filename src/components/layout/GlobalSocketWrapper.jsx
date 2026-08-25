@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import socket from "../../context/SocketContext";
 import { useMyProjects } from "../../hooks/useProjects";
 import { useNavigate } from "react-router";
+import { triggerToast } from "../../utils/toastHelper";
 
 const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
   const queryClient = useQueryClient();
@@ -449,7 +450,7 @@ useEffect(() => {
         <div className="flex flex-col gap-1 w-full max-w-xs text-left">
           <div className="flex justify-between items-center gap-4 border-b border-white/5 pb-1">
             <span className="font-black text-amber-400 text-[10px] uppercase tracking-wider animate-pulse">
-              🔄 VERIFICATION REQUIRED
+              VERIFICATION REQUIRED
             </span>
             <span className="text-[8px] text-emerald-300 font-bold bg-emerald-950/80 px-1.5 py-0.5 rounded uppercase border border-emerald-800">
               {data.newStatus}
@@ -495,6 +496,9 @@ useEffect(() => {
       queryClient.invalidateQueries({ queryKey: ["issues", "readyForQA"] });
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
+
+      triggerToast('.','success')
+      
     };
     socket.on("developer:status_updated", handleDevStatusUpdated);
     return () => {
