@@ -4,7 +4,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import socket from "../../context/SocketContext";
 import { useMyProjects } from "../../hooks/useProjects";
 import { useNavigate } from "react-router";
-import { triggerToast } from "../../utils/toastHelper";
 
 const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
   const queryClient = useQueryClient();
@@ -496,8 +495,6 @@ useEffect(() => {
       queryClient.invalidateQueries({ queryKey: ["issues", "readyForQA"] });
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
-
-      triggerToast('.','success')
       
     };
     socket.on("developer:status_updated", handleDevStatusUpdated);
