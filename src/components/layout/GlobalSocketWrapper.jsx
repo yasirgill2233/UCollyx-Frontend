@@ -495,10 +495,6 @@ useEffect(() => {
       queryClient.invalidateQueries({ queryKey: ["issues", "readyForQA"] });
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
-
-      const audio = new Audio("/sounds/short_bongo.mp3");
-    audio.volume = 0.5;
-    audio.play().catch((e) => console.log("Sound blocked by browser policy"));
       
     };
     socket.on("developer:status_updated", handleDevStatusUpdated);
