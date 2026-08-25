@@ -142,7 +142,7 @@ const AdminProjectsView = () => {
       });
       setSelectedUserId("");
       triggerToast(
-        `${user.full_name || "Member"} staging context bound!`,
+        `${user.full_name || "Member"} added successfully!`,
         "success",
       );
     } else {

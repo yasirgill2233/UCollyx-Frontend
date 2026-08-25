@@ -105,11 +105,11 @@ function LandingPage() {
 
           {/* Actions */}
           <div className="hidden items-center gap-3 md:flex">
-            <button onClick={() => navigate('/login')} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+            <button onClick={() => navigate('/login')} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:cursor-pointer">
               Log in
             </button>
 
-            <button onClick={() => navigate('/register')} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
+            <button onClick={() => navigate('/register')} className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 hover:cursor-pointer">
               Get Started
             </button>
           </div>
