@@ -191,7 +191,7 @@ const VerificationPage = () => {
                   <div className="flex gap-10">
                     {['steps', 'summary'].map((t) => (
                       <button key={t} onClick={() => setActiveTab(t)} className={`pb-4 text-[10px] font-black tracking-[0.2em] relative transition-colors ${activeTab === t ? 'text-indigo-600' : 'text-slate-300 hover:text-slate-500'}`}>
-                        {t === 'steps' ? 'EXECUTION PROCEDURE' : 'BUG RECAP'}
+                        {t === 'steps' ? 'EXECUTION PROCEDURE' : ''}
                         {activeTab === t && <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-600 rounded-full" />}
                       </button>
                     ))}
