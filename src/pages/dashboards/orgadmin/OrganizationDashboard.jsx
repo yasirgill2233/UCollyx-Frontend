@@ -25,8 +25,8 @@ import InstanceActivityMatrix from "../../../components/InstanceActivityMatrix";
 import API from "../../../api/axios";
 
 const OrganizationDashboard = () => {
-  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [logs, setLogs] = useState([]);
 
   const fetchLogs = async () => {
     try {
@@ -390,12 +390,12 @@ const OrganizationDashboard = () => {
         </div>
 
         {/* LOGS MATRIX FULL WIDTH COMPONENT */}
-        <div className="lg:col-span-3">
+        {/* <div className="lg:col-span-3">
           <InstanceActivityMatrix
             logs={logs}
             onQueryFullLogs={() => console.log("Navigate to full logs page")}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* MODAL MOUNT ROUTERS */}
