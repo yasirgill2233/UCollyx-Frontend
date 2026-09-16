@@ -156,141 +156,159 @@ const GlobalSocketWrapper = ({ children, currentUserId, activeChat }) => {
   // ==========================================
   // 2. CHAT GLOBAL REAL-TIME ENGINE (DMs & Channels)
   // ==========================================
-useEffect(() => {
-  if (!socket) return;
-  if (currentUserId) {
-    socket.emit("user_online", currentUserId);
-  }
+  useEffect(() => {
+    if (!socket) return;
+    if (currentUserId) {
+      socket.emit("user_online", currentUserId);
+    }
 
-  const handleGlobalIncomingMessage = (newIncomingMessage) => {
-    const currentActiveNumericId = activeChat?.id?.toString().split("-").pop();
-    const isSenderMe = Number(newIncomingMessage.sender_id) === Number(currentUserId);
+    const handleGlobalIncomingMessage = (newIncomingMessage) => {
+      const currentActiveNumericId = activeChat?.id
+        ?.toString()
+        .split("-")
+        .pop();
+      const isSenderMe =
+        Number(newIncomingMessage.sender_id) === Number(currentUserId);
 
-    console.log("Global Wrapper intercepted a message:", newIncomingMessage, isSenderMe, activeChat);
+      console.log(
+        "Global Wrapper intercepted a message:",
+        newIncomingMessage,
+        isSenderMe,
+        activeChat,
+      );
 
-    const isCurrentChatOpen =
-      activeChat?.id &&
-      ((activeChat.type === "channel" &&
-        Number(newIncomingMessage.channel_id) === Number(currentActiveNumericId)) ||
-        (activeChat.type === "dm" &&
-          ((Number(newIncomingMessage.sender_id) === Number(currentActiveNumericId) &&
-            Number(newIncomingMessage.receiver_id) === Number(currentUserId)) ||
-            (Number(newIncomingMessage.sender_id) === Number(currentUserId) &&
-              Number(newIncomingMessage.receiver_id) === Number(currentActiveNumericId)))));
+      const isCurrentChatOpen =
+        activeChat?.id &&
+        ((activeChat.type === "channel" &&
+          Number(newIncomingMessage.channel_id) ===
+            Number(currentActiveNumericId)) ||
+          (activeChat.type === "dm" &&
+            ((Number(newIncomingMessage.sender_id) ===
+              Number(currentActiveNumericId) &&
+              Number(newIncomingMessage.receiver_id) ===
+                Number(currentUserId)) ||
+              (Number(newIncomingMessage.sender_id) === Number(currentUserId) &&
+                Number(newIncomingMessage.receiver_id) ===
+                  Number(currentActiveNumericId)))));
 
-    if (!isSenderMe && !isCurrentChatOpen) {
-      const senderName = newIncomingMessage.Sender?.full_name || "Team Member";
-      let messagePreview = "";
+      if (!isSenderMe && !isCurrentChatOpen) {
+        const senderName =
+          newIncomingMessage.Sender?.full_name || "Team Member";
+        let messagePreview = "";
 
-      const hasContent = Boolean(newIncomingMessage.content?.trim());
-      const hasAttachments = Array.isArray(newIncomingMessage.attachments) && newIncomingMessage.attachments.length > 0;
+        const hasContent = Boolean(newIncomingMessage.content?.trim());
+        const hasAttachments =
+          Array.isArray(newIncomingMessage.attachments) &&
+          newIncomingMessage.attachments.length > 0;
 
-      if (hasContent && hasAttachments) {
-        const count = newIncomingMessage.attachments.length;
-        messagePreview = `${newIncomingMessage.content} 📎 (${count} attachment${count > 1 ? "s" : ""})`;
-      } else if (hasContent) {
-        messagePreview = newIncomingMessage.content;
-      } else if (hasAttachments) {
-        const count = newIncomingMessage.attachments.length;
-        messagePreview = `📎 Sent ${count} attachment${count > 1 ? "s" : ""}`;
-      } else {
-        messagePreview = "Sent a message...";
-      }
+        if (hasContent && hasAttachments) {
+          const count = newIncomingMessage.attachments.length;
+          messagePreview = `${newIncomingMessage.content} 📎 (${count} attachment${count > 1 ? "s" : ""})`;
+        } else if (hasContent) {
+          messagePreview = newIncomingMessage.content;
+        } else if (hasAttachments) {
+          const count = newIncomingMessage.attachments.length;
+          messagePreview = `📎 Sent ${count} attachment${count > 1 ? "s" : ""}`;
+        } else {
+          messagePreview = "Sent a message...";
+        }
 
-      // Slack Style Channel name or DM label
-      const chatContext = newIncomingMessage.channel_id ? "# group-channel" : "Direct Message";
+        // Slack Style Channel name or DM label
+        const chatContext = newIncomingMessage.channel_id
+          ? "# group-channel"
+          : "Direct Message";
 
-      const avatarUrl = newIncomingMessage.Sender?.avatar_url
-        ? `${newIncomingMessage.Sender?.avatar_url}`
-        : null;
-        
-      const isMobile = window.innerWidth < 768;
+        const avatarUrl = newIncomingMessage.Sender?.avatar_url
+          ? `${newIncomingMessage.Sender?.avatar_url}`
+          : null;
 
-      if (!isMobile) {
-        toast.custom(
-          (t) => (
-            <div
-              className={`${
-                t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-sm w-full bg-[#1A1D21] text-[#D1D2D3] shadow-2xl rounded-lg pointer-events-auto flex overflow-hidden border border-[#35373B] transition-all`}
-            >
-              {/* Slack Sidebar Active Strip - Blue for Messages */}
-              <div className="w-1.5 bg-[#1D9BD1] shrink-0" />
+        const isMobile = window.innerWidth < 768;
 
-              <div className="flex-1 p-3.5 flex gap-3 items-start">
-                {/* Slack Avatar (Square with slight radius) */}
-                <div className="shrink-0">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt={senderName}
-                      crossOrigin="anonymous"
-                      className="w-9 h-9 rounded-[4px] object-cover"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-[4px] bg-[#611f69] flex items-center justify-center text-white font-black text-sm uppercase">
-                      {senderName[0]}
-                    </div>
-                  )}
-                </div>
+        if (!isMobile) {
+          toast.custom(
+            (t) => (
+              <div
+                className={`${
+                  t.visible ? "animate-enter" : "animate-leave"
+                } max-w-sm w-full bg-[#1A1D21] text-[#D1D2D3] shadow-2xl rounded-lg pointer-events-auto flex overflow-hidden border border-[#35373B] transition-all`}
+              >
+                {/* Slack Sidebar Active Strip - Blue for Messages */}
+                <div className="w-1.5 bg-[#1D9BD1] shrink-0" />
 
-                {/* Content Area */}
-                <div className="flex-1 min-w-0">
-                  {/* Header: Sender Name & Context */}
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-black text-white text-sm tracking-tight truncate">
-                      {senderName}
-                    </span>
-                    <span className="text-[10px] text-[#ABABAD] font-medium truncate">
-                      {chatContext}
-                    </span>
+                <div className="flex-1 p-3.5 flex gap-3 items-start">
+                  {/* Slack Avatar (Square with slight radius) */}
+                  <div className="shrink-0">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={senderName}
+                        crossOrigin="anonymous"
+                        className="w-9 h-9 rounded-[4px] object-cover"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-[4px] bg-[#611f69] flex items-center justify-center text-white font-black text-sm uppercase">
+                        {senderName[0]}
+                      </div>
+                    )}
                   </div>
 
-                  {/* Slack Message Body */}
-                  <p className="text-sm text-[#D1D2D3] mt-0.5 break-words line-clamp-2 leading-relaxed">
-                    {messagePreview}
-                  </p>
+                  {/* Content Area */}
+                  <div className="flex-1 min-w-0">
+                    {/* Header: Sender Name & Context */}
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-black text-white text-sm tracking-tight truncate">
+                        {senderName}
+                      </span>
+                      <span className="text-[10px] text-[#ABABAD] font-medium truncate">
+                        {chatContext}
+                      </span>
+                    </div>
 
-                  {/* Actions Row */}
-                  <div className="mt-2 flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        toast.dismiss(t.id);
-                        navigate(`/${role?.split("_")?.join("-")}/chat`);
-                      }}
-                      className="text-[11px] bg-[#222529] hover:bg-[#2A2D31] text-[#1D9BD1] hover:text-[#147BB1] font-bold px-2.5 py-1 rounded border border-[#35373B] transition-all shadow-sm"
-                    >
-                      Open Chat
-                    </button>
-                    <button
-                      onClick={() => toast.dismiss(t.id)}
-                      className="text-[11px] text-[#ABABAD] hover:text-white font-medium px-2 py-1 transition-all"
-                    >
-                      Dismiss
-                    </button>
+                    {/* Slack Message Body */}
+                    <p className="text-sm text-[#D1D2D3] mt-0.5 break-words line-clamp-2 leading-relaxed">
+                      {messagePreview}
+                    </p>
+
+                    {/* Actions Row */}
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          toast.dismiss(t.id);
+                          navigate(`/${role?.split("_")?.join("-")}/chat`);
+                        }}
+                        className="text-[11px] bg-[#222529] hover:bg-[#2A2D31] text-[#1D9BD1] hover:text-[#147BB1] font-bold px-2.5 py-1 rounded border border-[#35373B] transition-all shadow-sm"
+                      >
+                        Open Chat
+                      </button>
+                      <button
+                        onClick={() => toast.dismiss(t.id)}
+                        className="text-[11px] text-[#ABABAD] hover:text-white font-medium px-2 py-1 transition-all"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ),
-          { duration: 5000, position: "bottom-right" }
-        );
+            ),
+            { duration: 5000, position: "bottom-right" },
+          );
+        }
       }
-    }
 
-    queryClient.invalidateQueries(["conversations"]);
-    queryClient.invalidateQueries(["channels"]);
-    
-    const audio = new Audio("/sounds/short_bongo.mp3");
-    audio.volume = 0.5;
-    audio.play().catch((e) => console.log("Sound blocked by browser policy"));
-  };
+      queryClient.invalidateQueries(["conversations"]);
+      queryClient.invalidateQueries(["channels"]);
 
-  socket.on("chat:receive_message", handleGlobalIncomingMessage);
-  return () => {
-    socket.off("chat:receive_message", handleGlobalIncomingMessage);
-  };
-}, [currentUserId, activeChat, queryClient, navigate, role]);
+      const audio = new Audio("/sounds/short_bongo.mp3");
+      audio.volume = 0.5;
+      audio.play().catch((e) => console.log("Sound blocked by browser policy"));
+    };
+
+    socket.on("chat:receive_message", handleGlobalIncomingMessage);
+    return () => {
+      socket.off("chat:receive_message", handleGlobalIncomingMessage);
+    };
+  }, [currentUserId, activeChat, queryClient, navigate, role]);
 
   // =========================================================
   // ⚡ 1. BULLETPROOF PRESENCE PIPELINE (ROOM REGISTRATION)
@@ -337,6 +355,7 @@ useEffect(() => {
 
     const handleQABugDetected = (data) => {
       // Severity ke mutabiq vertical line ka color (Slack sidebar style)
+      console.log(data)
       const severityColor =
         data.severity?.toLowerCase() === "critical"
           ? "bg-red-500"
@@ -349,66 +368,87 @@ useEffect(() => {
           <div
             className={`${
               t.visible ? "animate-enter" : "animate-leave"
-            } max-w-sm w-full bg-[#1A1D21] text-[#D1D2D3] shadow-xl rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5 overflow-hidden border border-[#35373B]`}
+            } w-[360px] bg-[#202124] text-[#E8EAED] shadow-2xl rounded-xl pointer-events-auto flex flex-col ring-1 ring-white/10 overflow-hidden border border-[#3C4043] font-sans`}
           >
-            {/* Slack Left Indicator Bar */}
-            <div className={`w-1.5 ${severityColor} shrink-0`} />
-
-            <div className="flex-1 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  {/* Header / App Name */}
-                  <div className="flex items-center gap-1.5 text-xs text-[#ABABAD]">
-                    <span className="font-black text-[#E8912D]"># Project</span>
-                    <span>•</span>
-                    <span className="font-semibold text-xs capitalize text-slate-300">
-                      {data.projectName}
-                    </span>
-                  </div>
-
-                  {/* Bug Message Text */}
-                  <p className="text-sm mt-1 text-[#D1D2D3] leading-normal font-medium">
-                    <span className="font-bold text-white">
-                      QA Bug Detected:
-                    </span>{" "}
-                    "{data.title}"
-                  </p>
-
-                  {/* Meta details with Slack attachment style feel */}
-                  <div className="mt-2 flex items-center gap-2 text-[11px] text-[#ABABAD]">
-                    <span className="px-1.5 py-0.5 rounded bg-[#222529] font-semibold uppercase text-xs text-red-400 border border-red-900/50">
-                      {data.severity || "High"}
-                    </span>
-                    <span>•</span>
-                    <span className="italic">Fix it as soon as possible</span>
-                  </div>
-                </div>
-
-                {/* Right Side Action Button */}
-                <div className="flex shrink-0">
-                  <button
-                    onClick={() => {
-                      navigate(`/${role?.split("_")?.join("-")}/issues`);
-                      toast.dismiss(t.id); // Click hone par toast band ho jaye
-                    }}
-                    className="text-xs bg-[#222529] hover:bg-[#2A2D31] text-[#1D9BD1] hover:text-[#147BB1] font-bold px-3 py-1.5 rounded border border-[#35373B] transition-all self-start shadow-sm"
-                  >
-                    View
-                  </button>
-                </div>
+            {/* 1. Native Windows Chrome Notification Title Bar with Explicit Close (X) */}
+            <div className="bg-[#292A2D] px-3 py-2 flex items-center justify-between border-b border-[#3C4043]">
+              <div className="flex items-center gap-2">
+                {/* Chrome Icon */}
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 3c2.1 0 4.02.74 5.53 1.97L13.5 11.5H6.42C7.38 6.78 11.26 3 12 3zM3.45 14.25c-.29-.72-.45-1.5-.45-2.25 0-1.02.25-1.99.7-2.85h7.19l3.58 6.2h-7.1c-1.63 0-3.08-.68-4.02-1.1zm9.3 6.75c-2.21 0-4.19-.85-5.67-2.23l3.58-6.2h7.11c-.57 2.45-2.52 4.43-5.02 5.02z"
+                  />
+                </svg>
+                <span className="text-[11px] font-medium text-[#BDC1C6]">
+                  QA Bug Detected
+                </span>
               </div>
+
+              {/* Explicit 'X' Button on Title Bar */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toast.dismiss(t.id)}
+                  className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#3C4043] text-[#9AA0A6] hover:text-white text-xs font-bold transition-colors cursor-pointer"
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Notification Body Content */}
+            <div className="p-4 flex gap-3.5 items-start">
+              {/* Left Square Avatar / Severity Box */}
+              <div className="w-12 h-12 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                {data.avatar_url ? (
+                  <img
+                    src={import.meta.env.VITE_SERVER_URL + data.avatar_url}
+                    alt="User"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xs font-black text-blue-400 uppercase">
+                    {data.severity?.substring(0,4) || "QA"}
+                  </span>
+                )}
+              </div>
+
+              {/* Right Text Content */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-white truncate">
+                  "{data.title || "Quality Issue Detected"}"
+                </p>
+                <p className="text-[11px] text-[#9AA0A6] mt-0.5 truncate">
+                  @{data.module || "Checkout"}
+                </p>
+                <p className="text-[10px] text-blue-400 font-mono mt-1">
+                  Project: {data.projectName || "Workspace"} {" "}
+                  Environment: {data.env || "staging"}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Bottom Action Button */}
+            <div className="px-4 pb-4 pt-1">
+              <button
+                onClick={() => {
+                  navigate(`/${role?.split("_")?.join("-")}/issues`);
+                  toast.dismiss(t.id);
+                }}
+                className="w-full bg-[#35363A] hover:bg-[#3C4043] active:scale-[0.99] text-[#8AB4F8] font-bold text-xs py-2.5 rounded-lg border border-[#5F6368]/40 transition-all shadow-sm text-center cursor-pointer"
+              >
+                View Issue Details
+              </button>
             </div>
           </div>
         ),
         {
-          duration: 8000,
+          duration: Infinity, // Auto-dismiss disable kar diya hai takay khud se gayab na ho
           position: "bottom-right",
         },
       );
 
-      // =========================================================
-      // 🔥 TARGETED LIVE CACHE INVALIDATION TREE (FOR YOUR HOOKS)
-      // =========================================================
       console.log(
         "🔄 [Cache Pipeline] Invalidating dynamic hooks layout queries...",
       );
@@ -495,7 +535,6 @@ useEffect(() => {
       queryClient.invalidateQueries({ queryKey: ["issues", "readyForQA"] });
       queryClient.invalidateQueries({ queryKey: ["issues"] });
       queryClient.invalidateQueries({ queryKey: ["board"] });
-      
     };
     socket.on("developer:status_updated", handleDevStatusUpdated);
     return () => {
