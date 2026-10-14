@@ -5,7 +5,7 @@ import remarkGfm from "remark-gfm";
 export const TranscriptWrapper = ({ transcript }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (!transcript) return null;
+  if (!transcript) return null; 
 
   return (
     <div className="mt-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm transition-all duration-300 hover:border-slate-300">
